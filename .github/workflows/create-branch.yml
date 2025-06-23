@@ -1,0 +1,74 @@
+name: Auto Create Branch
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  create-feature-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract branch keyword
+        id: extract_keyword
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = context.payload.issue.body;
+            const keywordMatch = body.match(/### Branch Keyword\s*\n([^\n]+)/);
+            const keyword = keywordMatch ? keywordMatch[1].trim() : null;
+            core.setOutput('keyword', keyword);
+
+      - name: Validate keyword
+        if: steps.extract_keyword.outputs.keyword == null
+        run: |
+          echo "::error::브랜치 키워드가 입력되지 않았습니다."
+          exit 1
+
+      - name: Set branch metadata
+        id: set_metadata
+        run: |
+          LABELS=$(echo "${{ join(github.event.issue.labels.*.name, ',') }}" | tr '[:upper:]' '[:lower:]')
+          case "${LABELS}" in
+            *feat*)
+              echo "prefix=feat" >> $GITHUB_OUTPUT
+              echo "suffix=" >> $GITHUB_OUTPUT
+              ;;
+            *refactor*)
+              echo "prefix=feat" >> $GITHUB_OUTPUT
+              echo "suffix=-refactor" >> $GITHUB_OUTPUT
+              ;;
+            *hotfix*)
+              echo "prefix=hotfix" >> $GITHUB_OUTPUT
+              echo "suffix=" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "prefix=task" >> $GITHUB_OUTPUT
+              echo "suffix=" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Sanitize branch name
+        id: sanitize
+        run: |
+          CLEAN_KEYWORD=$(echo "${{ steps.extract_keyword.outputs.keyword }}" | 
+            iconv -f utf-8 -t ascii//TRANSLIT//IGNORE |
+            tr -cd '[:alnum:]-_' |
+            tr '[:upper:]' '[:lower:]' |
+            cut -c 1-20)
+
+          FINAL_NAME="${CLEAN_KEYWORD}${{ steps.set_metadata.outputs.suffix }}"
+          echo "name=${FINAL_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create branch
+        uses: peterjgrainger/action-create-branch@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: ${{ steps.set_metadata.outputs.prefix }}/#${{ github.event.issue.number }}/${{ steps.sanitize.outputs.name }}

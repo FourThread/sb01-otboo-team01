@@ -1,8 +1,10 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
 group = 'com.fourthread'
@@ -24,7 +26,12 @@ repositories {
     mavenCentral()
 }
 
+springBoot {
+    buildInfo()
+}
+
 dependencies {
+    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -32,51 +39,129 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // Development Tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Database
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
-    annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // queryDSL
+    // QueryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    // aws s3
-    implementation("software.amazon.awssdk:s3:2.31.14")
-    implementation("software.amazon.awssdk:protocol-core:2.31.14")
-    implementation("software.amazon.awssdk:s3-transfer-manager:2.31.14")
-    implementation("software.amazon.awssdk.crt:aws-crt:0.34.1")
+    // AWS S3
+    implementation 'software.amazon.awssdk:s3:2.31.14'
+    implementation 'software.amazon.awssdk:protocol-core:2.31.14'
+    implementation 'software.amazon.awssdk:s3-transfer-manager:2.31.14'
+    implementation 'software.amazon.awssdk.crt:aws-crt:0.34.1'
+
+    // MapStruct (객체 매핑)
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // OpenAPI/Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+    // Configuration Processor
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // Environment Variables
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.h2database:h2'
+    testImplementation 'org.instancio:instancio-junit:5.4.0'
+
+    // TestContainers (필요시 주석 해제)
+    // testImplementation 'org.testcontainers:junit-jupiter'
+    // testImplementation 'org.testcontainers:postgresql'
+
+    // 유틸리티 라이브러리 (필요시 주석 해제)
+    // implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3'
+    // implementation 'org.apache.commons:commons-text:1.10.0'
 }
 
 clean {
     delete file('src/main/generated')
 }
 
-
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-
-// 테스트가 끝난 후 커버리지 리포트 생성
-test {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport
+// OpenAPI 자동 문서 생성 (필요시 설정)
+openApi {
+    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
+    outputDir.set(layout.buildDirectory.dir("openapi/docs"))
+    outputFileName.set("swagger-${project.version}.json")
+    waitTimeInSeconds.set(100)
 }
 
+// Jacoco 설정
 jacoco {
-    toolVersion = "0.8.10" // 최신 안정 버전 사용
+    toolVersion = '0.8.11'
 }
 
 jacocoTestReport {
-    dependsOn test
     reports {
-        xml.required.set(true)
-        html.required.set(true)
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    'com/fourthread/**/config/**',
+                    'com/fourthread/**/exception/**',
+                    'com/fourthread/**/dto/**',
+                    'com/fourthread/**/entity/**',
+                    'com/fourthread/**/Q*.class',
+                    'com/fourthread/**/*Application.class'
+            ])
+        }))
+    }
+
+    dependsOn test
+}
+
+// 테스트 태스크 분리 (향후 통합/단위 테스트 분리시 사용)
+tasks.register('unitTest', Test) {
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+}
+
+// 테스트 커버리지 검증 (필요시 활성화)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = false  // 초기에는 비활성화, 필요시 true로 변경
+            limit {
+                minimum = 0.80
+            }
+        }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
 }

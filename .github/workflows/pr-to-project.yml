@@ -1,0 +1,110 @@
+name: Update Project Status for PRs
+on:
+  pull_request:
+    types: [opened, ready_for_review, edited]
+jobs:
+  update_project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const projectId = '${{ secrets.PROJECT_ID }}';
+            const statusFieldId = '${{ secrets.STATUS_FIELD_ID }}';
+            const inReviewStatusId = '${{ secrets.IN_REVIEW_OPTION_ID }}';
+            
+            try {
+              const addPrResult = await github.graphql(`
+                mutation {
+                  addProjectV2ItemById(input: {
+                    projectId: "${projectId}"
+                    contentId: "${context.payload.pull_request.node_id}"
+                  }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `);
+              
+              const prItemId = addPrResult.addProjectV2ItemById.item.id;
+              
+              await github.graphql(`
+                mutation {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: "${projectId}"
+                      itemId: "${prItemId}"
+                      fieldId: "${statusFieldId}" 
+                      value: { 
+                        singleSelectOptionId: "${inReviewStatusId}"
+                      }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `);
+              console.log('Pull request added to project and status updated to In Review');
+            } catch (error) {
+              console.log('Error with PR:', error.message);
+            }
+
+            const body = context.payload.pull_request.body || '';
+            const issueMatches = body.match(/(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)/gi);
+            
+            if (issueMatches) {
+              for (const match of issueMatches) {
+                const issueNumber = match.match(/#(\d+)/)[1];
+                
+                try {
+                  const issue = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: parseInt(issueNumber)
+                  });
+                  
+                  const addIssueResult = await github.graphql(`
+                    mutation {
+                      addProjectV2ItemById(input: {
+                        projectId: "${projectId}"
+                        contentId: "${issue.data.node_id}"
+                      }) {
+                        item {
+                          id
+                        }
+                      }
+                    }
+                  `);
+                  
+                  const issueItemId = addIssueResult.addProjectV2ItemById.item.id;
+                  
+                  await github.graphql(`
+                    mutation {
+                      updateProjectV2ItemFieldValue(
+                        input: {
+                          projectId: "${projectId}"
+                          itemId: "${issueItemId}"
+                          fieldId: "${statusFieldId}"
+                          value: {
+                            singleSelectOptionId: "${inReviewStatusId}"
+                          }
+                        }
+                      ) {
+                        projectV2Item {
+                          id
+                        }
+                      }
+                    }
+                  `);
+                  console.log(`Issue #${issueNumber} added to project and status updated to In Review`);
+                } catch (error) {
+                  console.log(`Error with issue #${issueNumber}:`, error.message);
+                }
+              }
+            } else {
+              console.log('No linked issues found in PR body');
+            }
