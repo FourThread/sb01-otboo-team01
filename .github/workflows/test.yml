@@ -1,0 +1,41 @@
+name: Backend CI Test
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend  # backend 디렉토리 기준으로 명령어 실행
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Run tests
+        env:
+          SPRING_PROFILES_ACTIVE: test
+        run: ./gradlew test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: FourThread/O-ZANG
