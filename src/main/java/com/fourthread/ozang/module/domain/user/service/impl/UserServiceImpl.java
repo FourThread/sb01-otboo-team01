@@ -1,8 +1,10 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
+import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -24,6 +26,7 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final ProfileRepository profileRepository;
   private final UserMapper userMapper;
+  private final ProfileMapper profileMapper;
 
 
   @Transactional
@@ -80,5 +83,13 @@ public class UserServiceImpl implements UserService {
     findUser.updatePassword(newPassword);
     log.info("Update user password - end");
 
+  }
+
+  @Override
+  public ProfileDto getUserProfile(UUID userId) {
+    Profile findProfile = profileRepository.findByUserId(userId)
+        .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+    return profileMapper.toDto(findProfile);
   }
 }

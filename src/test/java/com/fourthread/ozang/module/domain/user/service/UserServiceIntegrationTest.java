@@ -1,8 +1,10 @@
 package com.fourthread.ozang.module.domain.user.service;
 
+import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -30,17 +32,18 @@ public class UserServiceIntegrationTest {
   @Autowired
   private ProfileRepository profileRepository;
 
-  private User savedUser;
+  private UserDto savedUser;
 
   @BeforeEach
   void setUp() {
-    User user = new User("tester1", "tester1@codeit.com", "password");
-    savedUser = userRepository.save(user);
+    UserCreateRequest request = new UserCreateRequest("tester1", "tester1@codeit.com", "password");
+    savedUser = userService.createUser(request);
   }
 
   @Nested
   @DisplayName("사용자 생성")
   class CreateUser {
+
     @Test
     @DisplayName("사용자 생성 시 아무 정보 없는 프로필이 생성됩니다")
     void createUser_success_with_profile() {
@@ -71,8 +74,8 @@ public class UserServiceIntegrationTest {
     @Test
     @DisplayName("사용자 역할을 업데이트 합니다.")
     void updateUser_success_role_changed() {
-      UserDto userDto = userService.updateUserRole(savedUser.getId(), Role.ADMIN);
-      User findUser = userRepository.findById(savedUser.getId())
+      UserDto userDto = userService.updateUserRole(savedUser.id(), Role.ADMIN);
+      User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
       assertThat(userDto.role()).isEqualTo(Role.ADMIN);
       assertThat(findUser.getRole()).isEqualTo(Role.ADMIN);
@@ -81,11 +84,24 @@ public class UserServiceIntegrationTest {
     @Test
     @DisplayName("사용자 비밀번호를 변경합니다")
     void updateUser_success_password_changed() {
-      userService.updateUserPassword(savedUser.getId(), "newPassword!!");
-      User findUser = userRepository.findById(savedUser.getId())
+      userService.updateUserPassword(savedUser.id(), "newPassword!!");
+      User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
 
       assertThat(findUser.getPassword()).isEqualTo("newPassword!!");
+    }
+  }
+
+  @Nested
+  @DisplayName("프로필 조회하기")
+  class GetProfile {
+
+    @Test
+    @DisplayName("생성된 사용자의 프로필 조회하기")
+    void getProfile_success() {
+      ProfileDto userProfile = userService.getUserProfile(savedUser.id());
+
+      assertThat(userProfile).isNotNull();
     }
   }
 }
