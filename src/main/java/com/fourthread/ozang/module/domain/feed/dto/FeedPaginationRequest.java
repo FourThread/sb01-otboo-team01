@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.feed.dto;
 
-import com.fourthread.ozang.module.domain.feed.entity.PrecipitationTypeEqual;
-import com.fourthread.ozang.module.domain.feed.entity.SkyStatusEqual;
-import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.PrecipitationTypeEqual;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SkyStatusEqual;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Builder;

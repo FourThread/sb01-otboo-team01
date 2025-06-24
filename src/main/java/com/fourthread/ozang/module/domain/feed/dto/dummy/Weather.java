@@ -4,6 +4,6 @@ import com.fourthread.ozang.module.domain.BaseEntity;
 import jakarta.persistence.Entity;
 
 @Entity
-public class User extends BaseEntity {
+public class Weather extends BaseEntity {
 
 }

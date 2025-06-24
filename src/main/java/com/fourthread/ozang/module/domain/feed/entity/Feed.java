@@ -1,12 +1,12 @@
 package com.fourthread.ozang.module.domain.feed.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.User;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
 
 @Getter
@@ -17,7 +17,7 @@ public class Feed extends BaseUpdatableEntity {
   private User author;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  private WeatherData weather;
+  private Weather weather;
 
   private String content;
   private AtomicInteger likeCount;
