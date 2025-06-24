@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.user.repository;
 
 import com.fourthread.ozang.module.config.AppConfig;
-import com.fourthread.ozang.module.domain.user.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import java.util.Optional;

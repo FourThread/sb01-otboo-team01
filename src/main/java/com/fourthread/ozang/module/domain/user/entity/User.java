@@ -1,9 +1,12 @@
 package com.fourthread.ozang.module.domain.user.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.module.domain.user.dto.type.Items;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +14,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +40,12 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "profile_id", referencedColumnName = "id")
   private Profile profile;
+
+  @ElementCollection(fetch = FetchType.LAZY)
+  @Enumerated(EnumType.STRING)
+  @CollectionTable(name = "user_oauth_providers", joinColumns = @JoinColumn(name = "user_id"))
+  @Column(name = "provider", length = 20)
+  private List<Items> linkedOAuthProviders = new ArrayList<>();
 
   // 사용자 초기화(초기 Role은 User이고 계정 잠금은 False)
   public User(String name, String email, String password) {
@@ -62,5 +73,9 @@ public class User extends BaseUpdatableEntity {
     if (this.locked != locked) {
       this.locked = locked;
     }
+  }
+
+  public void setProfile(Profile profile) {
+    this.profile = profile;
   }
 }
