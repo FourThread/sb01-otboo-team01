@@ -10,4 +10,6 @@ public interface UserService {
   UserDto createUser(UserCreateRequest request);
 
   UserDto updateUserRole(UUID userId, Role newRole);
+
+  void updateUserPassword(UUID userId,  String newPassword);
 }

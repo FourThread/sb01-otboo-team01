@@ -9,6 +9,7 @@ import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,11 +60,27 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @Override
   public UserDto updateUserRole(UUID userId, Role newRole) {
+    log.debug("Update user role start : {}", newRole);
     User findUser = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
     findUser.updateRole(newRole);
 
+    log.debug("Update user role end : username = {}", findUser.getName());
+
     return userMapper.toDto(findUser);
   }
+
+  @Override
+  public void updateUserPassword(UUID userId, String newPassword) {
+    log.info("Update user password - start");
+    User findUser = userRepository.findById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+    findUser.updatePassword(newPassword);
+    log.info("Update user password - end");
+
+  }
+
+
 }

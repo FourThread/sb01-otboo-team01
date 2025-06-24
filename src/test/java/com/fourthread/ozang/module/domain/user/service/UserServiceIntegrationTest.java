@@ -67,6 +67,7 @@ public class UserServiceIntegrationTest {
   @Nested
   @DisplayName("사용자 정보 업데이트")
   class UpdateUser {
+
     @Test
     @DisplayName("사용자 역할을 업데이트 합니다.")
     void updateUser_success_role_changed() {
@@ -77,5 +78,14 @@ public class UserServiceIntegrationTest {
       assertThat(findUser.getRole()).isEqualTo(Role.ADMIN);
     }
 
+    @Test
+    @DisplayName("사용자 비밀번호를 변경합니다")
+    void updateUser_success_password_changed() {
+      userService.updateUserPassword(savedUser.getId(), "newPassword!!");
+      User findUser = userRepository.findById(savedUser.getId())
+          .orElseThrow(() -> new IllegalArgumentException());
+
+      assertThat(findUser.getPassword()).isEqualTo("newPassword!!");
+    }
   }
 }
