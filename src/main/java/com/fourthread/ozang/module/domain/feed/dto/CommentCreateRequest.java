@@ -5,14 +5,16 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public class CommentCreateRequest {
+public record CommentCreateRequest(
 
-  @NotNull
-  private UUID feedId;
+    @NotNull
+    UUID feedId,
 
-  @NotNull
-  private UUID authorId;
+    @NotNull
+    UUID authorId,
 
-  @NotNull
-  private String content;
+    @NotNull
+    String content
+) {
+
 }

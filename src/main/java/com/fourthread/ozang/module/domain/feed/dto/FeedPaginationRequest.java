@@ -5,23 +5,28 @@ import com.fourthread.ozang.module.domain.feed.entity.SkyStatusEqual;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import lombok.Builder;
 
-public class FeedPaginationRequest {
+@Builder
+public record FeedPaginationRequest(
 
-  private String cursor;
-  private String idAfter;
+    String cursor,
+    String idAfter,
 
-  @NotNull
-  private Integer limit;
+    @NotNull
+    Integer limit,
 
-  @NotNull
-  private String sortBy;
+    @NotNull
+    String sortBy,
 
-  @NotNull
-  private SortDirection sortDirection;
+    @NotNull
+    SortDirection sortDirection,
 
-  private String keywordLike;
-  private SkyStatusEqual skyStatusEqual;
-  private PrecipitationTypeEqual precipitationTypeEqual;
-  private UUID authorIdEqual;
+    String keywordLike,
+    SkyStatusEqual skyStatusEqual,
+    PrecipitationTypeEqual precipitationTypeEqual,
+    UUID authorIdEqual
+
+) {
+
 }

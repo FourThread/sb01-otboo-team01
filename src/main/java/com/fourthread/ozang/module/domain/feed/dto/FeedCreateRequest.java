@@ -6,17 +6,18 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public class FeedCreateRequest {
+public record FeedCreateRequest(
+    @NotNull
+    UUID authorId,
 
-  @NotNull
-  private UUID authorId;
+    @NotNull
+    UUID weatherId,
 
-  @NotNull
-  private UUID weatherId;
+    @NotNull
+    List<UUID> clothesIds,
 
-  @NotNull
-  private List<UUID> clothesIds;
+    @NotNull
+    String content
+) {
 
-  @NotNull
-  private String content;
 }

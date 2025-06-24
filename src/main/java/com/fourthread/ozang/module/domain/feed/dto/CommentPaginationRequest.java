@@ -2,12 +2,16 @@ package com.fourthread.ozang.module.domain.feed.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import lombok.Builder;
 
-public class CommentPaginationRequest {
+@Builder
+public record CommentPaginationRequest (
 
-  private String cursor;
-  private UUID idAfter;
+  String cursor,
+  UUID idAfter,
 
   @NotNull
-  private Integer limit;
-}
+  Integer limit
+
+)
+{}

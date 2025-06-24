@@ -1,23 +1,27 @@
 package com.fourthread.ozang.module.domain.feed.dto;
 
+import com.fourthread.ozang.module.domain.feed.dto.dummy.OotdDto;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.UserSummary;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherSummaryDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public class FeedDto {
+public record FeedDto (
+    UUID id,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt,
 
-  private UUID id;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+    UserSummary author,
+    WeatherSummaryDto weather,
+    List<OotdDto> ootds,
 
-  private UserSummary author;
-  private WeatherSummaryDto weather;
-  private List<OotdDto> ootds;
+    String content,
+    Long likeCount,
+    Integer commentCount,
+    Boolean likedByMe
+) {
 
-  private String contnet;
-  private Long likeCount;
-  private Integer commentCount;
-  private Boolean likedByMe;
 }
