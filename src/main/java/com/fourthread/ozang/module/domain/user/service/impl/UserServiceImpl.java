@@ -81,6 +81,4 @@ public class UserServiceImpl implements UserService {
     log.info("Update user password - end");
 
   }
-
-
 }
