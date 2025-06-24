@@ -1,7 +1,7 @@
 package com.fourthread.ozang.module.domain.user.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.user.dto.Role;
+import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,9 +32,9 @@ public class User extends BaseUpdatableEntity {
   private Role role;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   private boolean locked;
-//  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//  @JoinColumn(name = "profile_id", columnDefinition = "uuid")
-//  private Profile profile;
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id", referencedColumnName = "id")
+  private Profile profile;
 
   // 사용자 초기화(초기 Role은 User이고 계정 잠금은 False)
   public User(String name, String email, String password) {
