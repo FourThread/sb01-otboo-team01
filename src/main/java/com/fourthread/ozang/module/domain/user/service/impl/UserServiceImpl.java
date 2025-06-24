@@ -1,6 +1,8 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
+import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -27,6 +30,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileRepository profileRepository;
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
+  private final ProfileStorage profileStorage;
 
 
   @Transactional
@@ -74,6 +78,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDto(findUser);
   }
 
+  @Transactional
   @Override
   public void updateUserPassword(UUID userId, String newPassword) {
     log.info("Update user password - start");
@@ -85,10 +90,39 @@ public class UserServiceImpl implements UserService {
 
   }
 
+  @Transactional(readOnly = true)
   @Override
   public ProfileDto getUserProfile(UUID userId) {
     Profile findProfile = profileRepository.findByUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+    return profileMapper.toDto(findProfile);
+  }
+
+  @Transactional
+  @Override
+  public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request, Optional<MultipartFile> nullableProfile) {
+    Profile findProfile = profileRepository.findByUserId(userId)
+        .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+    String profileImageUrl = findProfile.getProfileImageUrl();
+
+    if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
+      MultipartFile file = nullableProfile.get();
+
+      UUID s3Key = profileStorage.put(file);
+
+      profileImageUrl = profileStorage.generatePresignedUrl(s3Key, file.getContentType());
+    }
+
+    findProfile.updateProfile(
+        request.name(),
+        request.gender(),
+        request.birthDate(),
+        request.location(),
+        request.temperatureSensitivity(),
+        profileImageUrl
+    );
 
     return profileMapper.toDto(findProfile);
   }

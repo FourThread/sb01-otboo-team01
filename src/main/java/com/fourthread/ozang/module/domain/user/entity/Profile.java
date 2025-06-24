@@ -40,7 +40,7 @@ public class Profile extends BaseUpdatableEntity {
   private String profileImageUrl;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+  @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
   public Profile(String name, Gender gender, LocalDateTime birthDate, Location location,
