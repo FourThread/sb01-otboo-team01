@@ -15,4 +15,5 @@ public record UserDto(
     List<Items> linkedOAuthProviders,
     boolean locked
 ) {
+
 }
