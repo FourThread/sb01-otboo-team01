@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.dto;
+package com.fourthread.ozang.module.domain.user.dto.type;
 
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;

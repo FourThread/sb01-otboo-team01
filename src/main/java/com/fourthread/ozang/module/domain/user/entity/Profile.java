@@ -1,13 +1,13 @@
 package com.fourthread.ozang.module.domain.user.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.user.dto.Location;
+import com.fourthread.ozang.module.domain.user.dto.type.Location;
 import com.fourthread.ozang.module.domain.user.dto.type.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -23,7 +23,7 @@ public class Profile extends BaseUpdatableEntity {
   private Gender gender;
 
   @Column(nullable = false)
-  private Instant birthDate;
+  private LocalDateTime birthDate;
 
   @Column(length = 50, nullable = false)
   private Location location;
@@ -34,7 +34,7 @@ public class Profile extends BaseUpdatableEntity {
   @Column(length = 2048)
   private String profileImageUrl;
 
-  public Profile(String name, Gender gender, Instant birthDate, Location location,
+  public Profile(String name, Gender gender, LocalDateTime birthDate, Location location,
       int temperatureSensitivity, String profileImageUrl) {
     this.name = name;
     this.gender = gender;
@@ -44,7 +44,7 @@ public class Profile extends BaseUpdatableEntity {
     this.profileImageUrl = profileImageUrl;
   }
 
-  public void updateProfile(String name, Gender gender, Instant birthDate,
+  public void updateProfile(String name, Gender gender, LocalDateTime birthDate,
       Location location, int temperatureSensitivity, String profileImageUrl) {
     this.name = name;
     this.gender = gender;
