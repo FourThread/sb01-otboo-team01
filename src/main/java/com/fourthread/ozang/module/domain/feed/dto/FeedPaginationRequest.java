@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.feed.dto;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.PrecipitationTypeEqual;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SkyStatusEqual;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.weather.entity.PrecipitationType;
+import com.fourthread.ozang.module.domain.weather.entity.SkyStatus;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Builder;
@@ -23,8 +23,8 @@ public record FeedPaginationRequest(
     SortDirection sortDirection,
 
     String keywordLike,
-    SkyStatusEqual skyStatusEqual,
-    PrecipitationTypeEqual precipitationTypeEqual,
+    SkyStatus skyStatusEqual,
+    PrecipitationType precipitationTypeEqual,
     UUID authorIdEqual
 
 ) {
