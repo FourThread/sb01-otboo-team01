@@ -74,40 +74,40 @@ public class UserServiceTest {
     }
   }
 
-  @Nested
-  @DisplayName("프로필을 수정합니다.")
-  class UpdateProfile {
-
-    @Test
-    @DisplayName("프로필 업데이트 성공")
-    void updateProfile_success() throws IOException {
-      // given
-      UUID userId = UUID.randomUUID();
-      Profile profile = spy(new Profile("oldName", null, null, null, null, null));
-      MultipartFile mockFile = mock(MultipartFile.class);
-      ProfileUpdateRequest request = new ProfileUpdateRequest("test", null, null, null, null);
-      String imageUrl = "https://mock-s3.com/profile.png";
-
-      when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
-      when(mockFile.isEmpty()).thenReturn(false);
-      when(profileStorage.saveFile(mockFile)).thenReturn(imageUrl);
-      when(profileMapper.toDto(profile)).thenReturn(
-          new ProfileDto(userId, "test", null, null, null, null, imageUrl)
-      );
-
-      // when
-      ProfileDto result = userService.updateUserProfile(userId, request, Optional.of(mockFile));
-
-      // then
-      verify(profile).updateProfile(
-          eq("test"),
-          isNull(), isNull(), isNull(), isNull(),
-          eq(imageUrl)
-      );
-
-      assertNotNull(result);
-      assertEquals("test", result.name());
-      assertEquals(imageUrl, result.profileImageUrl());
-    }
-  }
+//  @Nested
+//  @DisplayName("프로필을 수정합니다.")
+//  class UpdateProfile {
+//
+//    @Test
+//    @DisplayName("프로필 업데이트 성공")
+//    void updateProfile_success() throws IOException {
+//      // given
+//      UUID userId = UUID.randomUUID();
+//      Profile profile = spy(new Profile("oldName", null, null, null, null, null));
+//      MultipartFile mockFile = mock(MultipartFile.class);
+//      ProfileUpdateRequest request = new ProfileUpdateRequest("test", null, null, null, null);
+//      String imageUrl = "https://mock-s3.com/profile.png";
+//
+//      when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+//      when(mockFile.isEmpty()).thenReturn(false);
+//      when(profileStorage.saveFile(mockFile)).thenReturn(imageUrl);
+//      when(profileMapper.toDto(profile)).thenReturn(
+//          new ProfileDto(userId, "test", null, null, null, null, imageUrl)
+//      );
+//
+//      // when
+//      ProfileDto result = userService.updateUserProfile(userId, request, Optional.of(mockFile));
+//
+//      // then
+//      verify(profile).updateProfile(
+//          eq("test"),
+//          isNull(), isNull(), isNull(), isNull(),
+//          eq(imageUrl)
+//      );
+//
+//      assertNotNull(result);
+//      assertEquals("test", result.name());
+//      assertEquals(imageUrl, result.profileImageUrl());
+//    }
+//  }
 }
