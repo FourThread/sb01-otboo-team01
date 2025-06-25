@@ -16,8 +16,8 @@ public enum ErrorCode {
   PROFILE_NOT_FOUND("PROFILE_NOT_FOUND", "프로필을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   
   // 피드 관련
-  FEED_NOT_FOUND("Feed Not Found", "존재하지 않는 피드입니다"),
-  FEED_LIKE_NOT_FOUND("Feed Like Not Found", "피드를 좋아요 하지 않았습니다");
+  FEED_NOT_FOUND("Feed Not Found", "존재하지 않는 피드입니다", HttpStatus.NOT_FOUND),
+  FEED_LIKE_NOT_FOUND("Feed Like Not Found", "피드를 좋아요 하지 않았습니다", HttpStatus.NOT_FOUND);
 
   private final String code;
   private final String message;
