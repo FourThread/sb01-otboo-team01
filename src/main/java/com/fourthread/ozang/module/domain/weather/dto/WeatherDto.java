@@ -1,6 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.dto;
 
-import com.fourthread.ozang.module.domain.weather.entity.SkyStatus;
+import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

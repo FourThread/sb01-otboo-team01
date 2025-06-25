@@ -1,13 +1,13 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.fourthread.ozang.module.domain.weather.dto.type;
 
-public enum WindSpeedLevel {
+public enum WindStrength {
     WEAK("약함"),
     MODERATE("보통"),
     STRONG("강함");
 
     private final String description;
 
-    WindSpeedLevel(String description) {
+    WindStrength(String description) {
         this.description = description;
     }
 
@@ -15,16 +15,13 @@ public enum WindSpeedLevel {
         return description;
     }
 
-    public static WindSpeedLevel fromSpeed(Double speed) {
-        if (speed == null) {
-            return WEAK;
-        }
+    public static WindStrength fromSpeed(double speed) {
         if (speed < 4.0) {
             return WEAK;
-        }
-        if (speed < 9.0) {
+        } else if (speed < 9.0) {
             return MODERATE;
+        } else {
+            return STRONG;
         }
-        return STRONG;
     }
 }
