@@ -41,5 +41,4 @@ out/
 
 ### 설정 파일 ###
 .env
-application*.yml
 /src/main/resources/static/
