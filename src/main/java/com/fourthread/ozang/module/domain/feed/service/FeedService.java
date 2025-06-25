@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.service;
 
+import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_LIKE_NOT_FOUND;
 import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FOUND;
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
@@ -8,6 +9,8 @@ import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
+import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
@@ -61,12 +64,35 @@ public class FeedService {
 
   public FeedDto like(UUID feedId) {
 
-    Feed feed = feedRepository.findById(feedId)
-        .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getExceptionName(), FEED_NOT_FOUND.getMessage(),
-            new ErrorDetails(this.getClass().getSimpleName(), FEED_NOT_FOUND.getMessage())));
+    Feed feed = getFeed(feedId);
+    FeedLike feedLike = new FeedLike(feed, feed.getAuthor());
+    feedLikeRepository.save(feedLike);
 
     feed.increaseLike();
 
     return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  public FeedDto doNotLike(UUID feedId) {
+
+    Feed feed = getFeed(feedId);
+
+    FeedLike feedLike = feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
+            feed.getAuthor().getId())
+        .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getExceptionName(),
+            FEED_LIKE_NOT_FOUND.getMessage(),
+            new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));
+
+    feedLikeRepository.delete(feedLike);
+    feed.decreaseLike();
+
+    return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  private Feed getFeed(UUID feedId) {
+
+    return feedRepository.findById(feedId)
+        .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getExceptionName(), FEED_NOT_FOUND.getMessage(),
+            new ErrorDetails(this.getClass().getSimpleName(), FEED_NOT_FOUND.getMessage())));
   }
 }
