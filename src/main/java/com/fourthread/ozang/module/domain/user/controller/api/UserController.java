@@ -109,7 +109,7 @@ public class UserController {
   @PatchMapping("/{userId}/password")
   public ResponseEntity<Void> changePassword(
       @PathVariable(name = "userId") UUID userId,
-      @RequestBody ChangePasswordRequest request
+      @RequestBody @Validated ChangePasswordRequest request
   ) {
     userService.updateUserPassword(userId, request);
 
