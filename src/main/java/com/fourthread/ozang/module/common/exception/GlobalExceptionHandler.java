@@ -1,8 +1,40 @@
 package com.fourthread.ozang.module.common.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
+    log.error("Unhandled exception occurred", e);
+
+    Map<String, Object> details = new HashMap<>();
+    details.put("exception", e.getClass().getSimpleName());
+
+    ErrorResponse errorResponse = new ErrorResponse(
+        ErrorCode.INTERNAL_SERVER_ERROR.name(),
+        ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+        details);
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+  }
+
+  @ExceptionHandler(BaseException.class)
+  public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
+    ErrorResponse errorResponse = new ErrorResponse(
+        e.getErrorCode().name(),
+        e.getErrorCode().getMessage(),
+        e.getDetails()
+    );
+
+    return ResponseEntity.badRequest().body(errorResponse);
+  }
 }
