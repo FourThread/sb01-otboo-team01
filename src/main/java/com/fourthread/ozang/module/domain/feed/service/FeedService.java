@@ -99,7 +99,7 @@ public class FeedService {
   private FeedLike getFeedLike(Feed feed) {
     return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
             feed.getAuthor().getId())
-        .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getExceptionName(),
+        .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getCode(),
             FEED_LIKE_NOT_FOUND.getMessage(),
             new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));
   }
@@ -107,7 +107,7 @@ public class FeedService {
   private Feed getFeed(UUID feedId) {
 
     return feedRepository.findById(feedId)
-        .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getExceptionName(), FEED_NOT_FOUND.getMessage(),
+        .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getCode(), FEED_NOT_FOUND.getMessage(),
             new ErrorDetails(this.getClass().getSimpleName(), FEED_NOT_FOUND.getMessage())));
   }
 }
