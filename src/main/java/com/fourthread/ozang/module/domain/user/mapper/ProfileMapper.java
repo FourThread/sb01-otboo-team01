@@ -1,11 +1,41 @@
 package com.fourthread.ozang.module.domain.user.mapper;
 
+import com.fourthread.ozang.module.domain.user.dto.data.LocationDto;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.module.domain.user.dto.type.Location;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
-import org.mapstruct.Mapper;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface ProfileMapper {
+@Component
+public class ProfileMapper {
 
-  ProfileDto toDto(Profile profile);
+  public ProfileDto toDto(Profile profile) {
+    return new ProfileDto(
+        profile.getUser().getId(),
+        profile.getName(),
+        profile.getGender(),
+        profile.getBirthDate(),
+        toLocationDto(profile.getLocation()),
+        profile.getTemperatureSensitivity(),
+        profile.getProfileImageUrl()
+    );
+  }
+
+  public LocationDto toLocationDto(Location location) {
+    if (location == null) return null;
+
+    List<String> locationNames = location.getLocationNames() == null
+        ? List.of()
+        : new ArrayList<>(location.getLocationNames());
+
+    return new LocationDto(
+        location.getLatitude(),
+        location.getLongitude(),
+        location.getX(),
+        location.getY(),
+        locationNames
+    );
+  }
 }

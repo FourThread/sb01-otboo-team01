@@ -101,10 +101,14 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
   @Override
   public ProfileDto getUserProfile(UUID userId) {
-    Profile findProfile = profileRepository.findByUserId(userId)
+    Profile profile = profileRepository.findByUserId(userId)
         .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
 
-    return profileMapper.toDto(findProfile);
+    if (profile.getLocation() != null && profile.getLocation().getLocationNames() != null) {
+      profile.getLocation().getLocationNames().size();
+    }
+
+    return profileMapper.toDto(profile);
   }
 
   @Transactional

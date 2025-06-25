@@ -10,7 +10,7 @@ public record ProfileDto(
     String name,
     Gender gender,
     LocalDateTime birthDate,
-    Location location,
+    LocationDto location,
     Integer temperatureSensitivity,
     String profileImageUrl
 ) {
