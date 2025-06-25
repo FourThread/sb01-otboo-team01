@@ -3,7 +3,9 @@ package com.fourthread.ozang.module.domain.user.service.impl;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -69,7 +71,8 @@ public class UserServiceImpl implements UserService {
 
   @Transactional
   @Override
-  public UserDto updateUserRole(UUID userId, Role newRole) {
+  public UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request) {
+    Role newRole = request.role();
     log.debug("Update user role start : {}", newRole);
     User findUser = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
@@ -84,8 +87,9 @@ public class UserServiceImpl implements UserService {
 
   @Transactional
   @Override
-  public void updateUserPassword(UUID userId, String newPassword) {
+  public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
     log.info("Update user password - start");
+    String newPassword = request.password();
     User findUser = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
 

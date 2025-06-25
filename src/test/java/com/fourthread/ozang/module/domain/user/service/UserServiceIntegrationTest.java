@@ -2,7 +2,9 @@ package com.fourthread.ozang.module.domain.user.service;
 
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -74,7 +76,8 @@ public class UserServiceIntegrationTest {
     @Test
     @DisplayName("사용자 역할을 업데이트 합니다.")
     void updateUser_success_role_changed() {
-      UserDto userDto = userService.updateUserRole(savedUser.id(), Role.ADMIN);
+      UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+      UserDto userDto = userService.updateUserRole(savedUser.id(), request);
       User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
       assertThat(userDto.role()).isEqualTo(Role.ADMIN);
@@ -84,7 +87,8 @@ public class UserServiceIntegrationTest {
     @Test
     @DisplayName("사용자 비밀번호를 변경합니다")
     void updateUser_success_password_changed() {
-      userService.updateUserPassword(savedUser.id(), "newPassword!!");
+      ChangePasswordRequest request = new ChangePasswordRequest("newPassword!!");
+      userService.updateUserPassword(savedUser.id(), request);
       User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
 
