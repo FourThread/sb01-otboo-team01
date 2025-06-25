@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.util.Optional;
@@ -24,5 +25,5 @@ public interface UserService {
   ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request,
       Optional<MultipartFile> nullableProfile);
 
-
+  UUID changeLock(UUID userId, UserLockUpdateRequest request);
 }

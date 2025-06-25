@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
@@ -136,5 +137,18 @@ public class UserServiceImpl implements UserService {
     );
 
     return profileMapper.toDto(findProfile);
+  }
+
+  @Transactional
+  @Override
+  public UUID changeLock(UUID userId, UserLockUpdateRequest request) {
+    boolean locked = request.locked();
+    User findUser = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
+            this.getClass().getSimpleName()));
+
+    findUser.changeLocked(locked);
+
+    return findUser.getId();
   }
 }

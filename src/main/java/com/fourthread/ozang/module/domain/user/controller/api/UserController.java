@@ -2,8 +2,10 @@ package com.fourthread.ozang.module.domain.user.controller.api;
 
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import java.util.Optional;
@@ -63,6 +65,26 @@ public class UserController {
   ) {
     ProfileDto updatedProfile = userService.updateUserProfile(userId, request, Optional.ofNullable(image));
     return ResponseEntity.ok(updatedProfile);
+  }
+
+  @PatchMapping("/{userId}/lock")
+  public ResponseEntity<UUID> changeLock(
+      @PathVariable(name = "userId") UUID userId,
+      @RequestBody UserLockUpdateRequest request
+  ) {
+    UUID uuid = userService.changeLock(userId, request);
+
+    return ResponseEntity.ok(uuid);
+  }
+
+  @PatchMapping("/{userId}/password")
+  public ResponseEntity<Void> changePassword(
+      @PathVariable(name = "userId") UUID userId,
+      @RequestBody ChangePasswordRequest request
+  ) {
+    userService.updateUserPassword(userId, request);
+
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{userId}/profiles")
