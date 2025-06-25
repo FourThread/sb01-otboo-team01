@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.dto;
+package com.fourthread.ozang.module.domain.feed.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
