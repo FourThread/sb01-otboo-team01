@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.user.controller.api;
 
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,13 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(user);
   }
 
-//  @PatchMapping("/{userId}/role")
-//  public ResponseEntity<UserDto> changeUserRole(
-//      @PathVariable(name = "userId")UUID userId,
-//      @RequestBody Use
-//  )
+  @PatchMapping("/{userId}/role")
+  public ResponseEntity<UserDto> changeUserRole(
+      @PathVariable(name = "userId")UUID userId,
+      @RequestBody UserRoleUpdateRequest request
+  ) {
+    UserDto userDto = userService.updateUserRole(userId, request);
+
+    return ResponseEntity.status(HttpStatus.OK).body(userDto);
+  }
 }
