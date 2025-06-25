@@ -4,6 +4,7 @@ import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.entity.QProfile;
 import com.fourthread.ozang.module.domain.user.entity.QUser;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
@@ -34,6 +35,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
       Boolean locked
   ) {
     QUser user = QUser.user;
+    QProfile profile = QProfile.profile;
 
     BooleanBuilder builder = new BooleanBuilder();
     if (emailLike != null && !emailLike.isBlank()) {
@@ -58,7 +60,8 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
     );
 
     List<User> users = queryFactory
-        .selectFrom(user)
+        .selectFrom(user).distinct()
+        .leftJoin(user.profile, profile).fetchJoin()
         .where(builder)
         .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
         .limit(limit + 1)

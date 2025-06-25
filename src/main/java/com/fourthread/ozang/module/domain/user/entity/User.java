@@ -19,6 +19,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "users")
@@ -41,6 +42,7 @@ public class User extends BaseUpdatableEntity {
   private Profile profile;
 
   @ElementCollection(fetch = FetchType.LAZY)
+  @BatchSize(size = 50)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_oauth_providers", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "provider", length = 20)
