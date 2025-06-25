@@ -84,6 +84,9 @@ dependencies {
     testImplementation 'com.h2database:h2'
     testImplementation 'org.instancio:instancio-junit:5.4.0'
 
+    //S3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
     // TestContainers (필요시 주석 해제)
     // testImplementation 'org.testcontainers:junit-jupiter'
     // testImplementation 'org.testcontainers:postgresql'
