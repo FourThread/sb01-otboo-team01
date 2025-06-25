@@ -1,16 +1,21 @@
 package com.fourthread.ozang.module.domain.feed.service;
 
+import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FOUND;
+
+import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,17 +51,22 @@ public class FeedService {
     Weather weather = weatherRepository.findById(request.weatherId())
         .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
 
-    Feed feed = Feed.builder()
-        .author(user)
-        .weather(weather)
-        .content(request.content())
-        .likeCount(new AtomicInteger(0))
-        .commentCount(new AtomicInteger(0))
-        .build();
+    Feed feed = Feed.builder().author(user).weather(weather).content(request.content())
+        .likeCount(new AtomicInteger(0)).commentCount(new AtomicInteger(0)).build();
     feedRepository.save(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user);
   }
 
+  public FeedDto like(UUID feedId) {
+
+    Feed feed = feedRepository.findById(feedId)
+        .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getExceptionName(), FEED_NOT_FOUND.getMessage(),
+            new ErrorDetails(this.getClass().getSimpleName(), FEED_NOT_FOUND.getMessage())));
+
+    feed.increaseLike();
+
+    return feedMapper.toDto(feed, feed.getAuthor());
+  }
 }
