@@ -1,7 +1,7 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
-import com.fourthread.ozang.module.domain.weather.dto.data.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.data.WeatherDto;
+import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 
 public interface WeatherService {
 
