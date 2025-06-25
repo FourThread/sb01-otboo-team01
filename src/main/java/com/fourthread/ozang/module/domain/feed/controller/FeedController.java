@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.service.FeedService;
@@ -83,6 +84,19 @@ public class FeedController {
   @DeleteMapping("/{feedId}/like")
   public FeedDto undoLike(@PathVariable UUID feedId) {
     return feedService.doNotLike(feedId);
+  }
+
+  /**
+  * @methodName : publishComment
+  * @date : 2025-06-25 오후 5:55
+  * @author : wongil
+  * @Description: 피드 댓글 등록
+  **/
+  @PostMapping("/{feedId}/comments")
+  public FeedDto publishComment(@PathVariable UUID feedId,
+      @Validated @RequestBody CommentCreateRequest request) {
+
+    return feedService.postComment(request);
   }
 
 }
