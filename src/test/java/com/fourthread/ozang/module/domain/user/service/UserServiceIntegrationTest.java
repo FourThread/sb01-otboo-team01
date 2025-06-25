@@ -4,6 +4,7 @@ import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
@@ -93,6 +94,17 @@ public class UserServiceIntegrationTest {
           .orElseThrow(() -> new IllegalArgumentException());
 
       assertThat(findUser.getPassword()).isEqualTo("newPassword!!");
+    }
+
+    @Test
+    @DisplayName("사용자 계정 잠금 상태를 변경합니다")
+    void updateUser_success_locked_changed() {
+      UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+      userService.changeLock(savedUser.id(), request);
+      User findUser = userRepository.findById(savedUser.id())
+          .orElseThrow(() -> new IllegalArgumentException());
+
+      assertThat(findUser.getLocked()).isEqualTo(true);
     }
   }
 

@@ -66,7 +66,7 @@ public class UserRepositoryTest {
       savedUser.changeLocked(true);
 
       User updated = userRepository.findById(savedUser.getId()).orElseThrow();
-      assertThat(updated.isLocked()).isEqualTo(true);
+      assertThat(updated.getLocked()).isEqualTo(true);
     }
   }
 }
