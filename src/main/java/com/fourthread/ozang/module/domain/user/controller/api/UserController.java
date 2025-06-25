@@ -113,7 +113,7 @@ public class UserController {
   ) {
     userService.updateUserPassword(userId, request);
 
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{userId}/profiles")
