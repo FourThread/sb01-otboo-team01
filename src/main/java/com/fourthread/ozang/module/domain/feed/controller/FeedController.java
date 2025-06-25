@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.feed.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
@@ -34,6 +35,18 @@ public class FeedController {
   @PostMapping
   public FeedDto createFeed(@Validated @RequestBody FeedCreateRequest request) {
     return feedService.registerFeed(request);
+  }
+
+  /**
+   * @methodName : feedDelete
+   * @date : 2025-06-24 오전 11:46
+   * @author : wongil
+   * @Description: 피드 삭제
+   **/
+  @ResponseStatus(NO_CONTENT)
+  @DeleteMapping("/{feedId}")
+  public FeedDto deleteFeed(@PathVariable @NotNull UUID feedId) {
+    return feedService.delete(feedId);
   }
 
   /**
