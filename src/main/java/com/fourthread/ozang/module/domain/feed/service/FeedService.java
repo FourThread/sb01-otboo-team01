@@ -63,6 +63,21 @@ public class FeedService {
   }
 
   /**
+  * @methodName : delete
+  * @date : 2025-06-25 오후 1:50
+  * @author : wongil
+  * @Description: 피드 삭제
+  **/
+  public FeedDto delete(UUID feedId) {
+    Feed feed = getFeed(feedId);
+
+    feedLikeRepository.deleteAllByFeed_Id(feedId);
+    feedRepository.delete(feed);
+
+    return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  /**
   * @methodName : like
   * @date : 2025-06-25 오전 11:35
   * @author : wongil

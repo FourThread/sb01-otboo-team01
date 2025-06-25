@@ -84,7 +84,7 @@ class FeedServiceTest {
         new Location(1.0, 1.0, 1, 1, new ArrayList<>()), 10, "url"));
 
     feed = Feed.builder()
-        .author(null)
+        .author(user)
         .weather(null)
         .content(null)
         .likeCount(new AtomicInteger(0))
@@ -151,9 +151,37 @@ class FeedServiceTest {
   }
 
   @Test
+  @DisplayName("피드 삭제")
+  void delete() {
+
+    when(feedMapper.toDto(feed, feed.getAuthor()))
+        .thenReturn(expectedFeedDto);
+    when(feedRepository.findById(feedId))
+        .thenReturn(Optional.of(feed));
+
+    FeedDto delete = feedService.delete(feedId);
+
+    assertThat(delete).isNotNull();
+    assertThat(delete.content()).isEqualTo("created");
+
+    verify(feedRepository).delete(any());
+    verify(feedLikeRepository).deleteAllByFeed_Id(feedId);
+  }
+
+  @Test
+  @DisplayName("피드 삭제 실패")
+  void failDelete() {
+
+    assertThatThrownBy(() -> feedService.delete(feedId))
+        .isInstanceOf(FeedNotFoundException.class);
+
+    verify(feedRepository, never()).delete(any());
+
+  }
+
+  @Test
   @DisplayName("피드 좋아요")
   void like() {
-
     when(feedRepository.findById(any()))
         .thenReturn(Optional.of(feed));
 
