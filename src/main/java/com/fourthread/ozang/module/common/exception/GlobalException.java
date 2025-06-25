@@ -15,4 +15,5 @@ public class GlobalException extends RuntimeException {
     this.message = message;
     this.details = details;
   }
+
 }
