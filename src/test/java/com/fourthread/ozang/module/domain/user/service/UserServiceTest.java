@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
@@ -56,7 +57,7 @@ public class UserServiceTest {
 
       assertThatThrownBy(() -> {
         userService.createUser(request);
-      }).isInstanceOf(IllegalArgumentException.class);
+      }).isInstanceOf(UserException.class);
     }
 
     @Test
@@ -67,7 +68,7 @@ public class UserServiceTest {
 
       assertThatThrownBy(() -> {
         userService.createUser(request);
-      }).isInstanceOf(IllegalArgumentException.class);
+      }).isInstanceOf(UserException.class);
     }
   }
 

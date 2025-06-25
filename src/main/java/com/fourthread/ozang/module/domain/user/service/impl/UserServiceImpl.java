@@ -1,11 +1,13 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
@@ -13,6 +15,7 @@ import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -42,11 +45,11 @@ public class UserServiceImpl implements UserService {
     String email = request.email();
 
     if (userRepository.existsByName(username)) {
-      throw new IllegalArgumentException("Username is already in use");
+      throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, Map.of("username", username));
     }
 
     if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("Email is already in use");
+      throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS,  Map.of("email", email));
     }
 
     String password = request.password();
@@ -69,7 +72,7 @@ public class UserServiceImpl implements UserService {
   public UserDto updateUserRole(UUID userId, Role newRole) {
     log.debug("Update user role start : {}", newRole);
     User findUser = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, Map.of("id", userId)));
 
     findUser.updateRole(newRole);
 
@@ -83,7 +86,7 @@ public class UserServiceImpl implements UserService {
   public void updateUserPassword(UUID userId, String newPassword) {
     log.info("Update user password - start");
     User findUser = userRepository.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, Map.of("id", userId)));
 
     findUser.updatePassword(newPassword);
     log.info("Update user password - end");
@@ -94,7 +97,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto getUserProfile(UUID userId) {
     Profile findProfile = profileRepository.findByUserId(userId)
-        .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, Map.of("id", userId)));
 
     return profileMapper.toDto(findProfile);
   }
@@ -103,7 +106,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request, Optional<MultipartFile> nullableProfile) {
     Profile findProfile = profileRepository.findByUserId(userId)
-        .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, Map.of("id", userId)));
 
     String profileImageUrl = findProfile.getProfileImageUrl();
 
