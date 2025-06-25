@@ -11,6 +11,7 @@ import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -177,6 +179,25 @@ class FeedServiceTest {
 
     verify(feedRepository, never()).delete(any());
 
+  }
+
+  @Test
+  @DisplayName("피드 수정")
+  void update() {
+
+    FeedUpdateRequest newContent = new FeedUpdateRequest("new content");
+
+    ArgumentCaptor<Feed> captor = ArgumentCaptor.forClass(Feed.class);
+    when(feedMapper.toDto(captor.capture(), any(User.class)))
+        .thenReturn(expectedFeedDto);
+    when(feedRepository.findById(any()))
+        .thenReturn(Optional.of(feed));
+
+    FeedDto updatedFeed = feedService.update(feedId, newContent);
+
+    assertThat(updatedFeed).isNotNull();
+    assertThat(captor.getValue().getContent())
+        .isEqualTo(newContent.content());
   }
 
   @Test
