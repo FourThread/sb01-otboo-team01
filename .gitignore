@@ -38,5 +38,7 @@ out/
 
 ### VS Code ###
 .vscode/
-/.env
-/src/main/resources/static/
+
+### 설정 파일 ###
+.env
+application*.yml
