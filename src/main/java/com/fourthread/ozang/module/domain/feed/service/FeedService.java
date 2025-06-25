@@ -5,7 +5,6 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FO
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
@@ -17,6 +16,8 @@ import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
