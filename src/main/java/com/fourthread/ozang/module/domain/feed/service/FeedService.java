@@ -1,0 +1,62 @@
+package com.fourthread.ozang.module.domain.feed.service;
+
+import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
+import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
+import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
+import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
+import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import java.util.concurrent.atomic.AtomicInteger;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class FeedService {
+
+  private final FeedRepository feedRepository;
+  private final FeedLikeRepository feedLikeRepository;
+  private final FeedCommentRepository feedCommentRepository;
+  private final UserRepository userRepository;
+  private final WeatherRepository weatherRepository;
+  private final FeedMapper feedMapper;
+
+  /**
+   * @methodName : register
+   * @date : 2025-06-24 오전 11:12
+   * @author : wongil
+   * @Description: feed 생성
+   **/
+  public FeedDto registerFeed(FeedCreateRequest request) {
+    if (request == null) {
+      log.info("null FeedCreateRequest");
+      throw new IllegalArgumentException();
+    }
+
+    User user = userRepository.findById(request.authorId())
+        .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
+
+    Weather weather = weatherRepository.findById(request.weatherId())
+        .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
+
+    Feed feed = Feed.builder()
+        .author(user)
+        .weather(weather)
+        .content(request.content())
+        .likeCount(new AtomicInteger(0))
+        .commentCount(new AtomicInteger(0))
+        .build();
+    feedRepository.save(feed);
+    log.info("피드 저장 완료: feed id={}", feed.getId());
+
+    return feedMapper.toDto(feed, user);
+  }
+
+}

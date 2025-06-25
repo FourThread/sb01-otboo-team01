@@ -1,12 +1,12 @@
 package com.fourthread.ozang.module.domain.feed.exception;
 
-public class FeedNotFoundException extends RuntimeException {
+import com.fourthread.ozang.module.common.exception.ErrorDetails;
+import com.fourthread.ozang.module.common.exception.GlobalException;
 
-  public FeedNotFoundException(String message) {
-    super(message);
-  }
+public class FeedNotFoundException extends GlobalException {
 
-  public FeedNotFoundException() {
-    super();
+  public FeedNotFoundException(String exceptionName, String message,
+      ErrorDetails details) {
+    super(exceptionName, message, details);
   }
 }
