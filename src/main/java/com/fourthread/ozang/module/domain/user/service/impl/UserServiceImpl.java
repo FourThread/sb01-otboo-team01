@@ -1,12 +1,14 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -48,11 +50,13 @@ public class UserServiceImpl implements UserService {
     String email = request.email();
 
     if (userRepository.existsByName(username)) {
-      throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, username, this.getClass().getSimpleName());
+      throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, username,
+          this.getClass().getSimpleName());
     }
 
     if (userRepository.existsByEmail(email)) {
-      throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS, email, this.getClass().getSimpleName());
+      throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS, email,
+          this.getClass().getSimpleName());
     }
 
     String password = request.password();
@@ -92,7 +96,8 @@ public class UserServiceImpl implements UserService {
     log.info("Update user password - start");
     String newPassword = request.password();
     User findUser = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
+            this.getClass().getSimpleName()));
 
     findUser.updatePassword(newPassword);
     log.info("Update user password - end");
@@ -103,7 +108,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto getUserProfile(UUID userId) {
     Profile profile = profileRepository.findByUserId(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
+        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
+            this.getClass().getSimpleName()));
 
     if (profile.getLocation() != null && profile.getLocation().getLocationNames() != null) {
       profile.getLocation().getLocationNames().size();
@@ -114,7 +120,8 @@ public class UserServiceImpl implements UserService {
 
   @Transactional
   @Override
-  public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request, Optional<MultipartFile> nullableProfile) {
+  public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request,
+      Optional<MultipartFile> nullableProfile) {
     Profile findProfile = profileRepository.findByUserId(userId)
         .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
@@ -150,5 +157,24 @@ public class UserServiceImpl implements UserService {
     findUser.changeLocked(locked);
 
     return findUser.getId();
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
+      SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked) {
+    if (!"createdAt".equals(sortBy)) {
+      throw new IllegalArgumentException("현재는 createdAt 기준 정렬만 지원합니다");
+    }
+
+    return userRepository.searchUsers(
+        cursor,
+        idAfter,
+        limit,
+        sortDirection,
+        emailLike,
+        roleEqual,
+        locked
+    );
   }
 }

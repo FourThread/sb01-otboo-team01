@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.user.controller.api;
 
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -7,6 +8,8 @@ import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
+import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +37,31 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
+
+  @GetMapping
+  public ResponseEntity<UserCursorPageResponse> getUserList(
+      @RequestParam(required = false) String cursor,
+      @RequestParam(required = false) UUID idAfter,
+      @RequestParam int limit,
+      @RequestParam String sortBy,
+      @RequestParam SortDirection sortDirection,
+      @RequestParam(required = false) String emailLike,
+      @RequestParam(required = false) Role roleEqual,
+      @RequestParam(required = false) Boolean locked
+  ) {
+    UserCursorPageResponse response = userService.getUserList(
+        cursor,
+        idAfter,
+        limit,
+        sortBy,
+        sortDirection,
+        emailLike,
+        roleEqual,
+        locked
+    );
+
+    return ResponseEntity.ok(response);
+  }
 
   @PostMapping
   public ResponseEntity<UserDto> createUser(

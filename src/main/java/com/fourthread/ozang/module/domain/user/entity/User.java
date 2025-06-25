@@ -36,7 +36,7 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false)
   private Role role;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-  private boolean locked;
+  private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
 
@@ -68,7 +68,7 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
-  public void changeLocked(boolean locked) {
+  public void changeLocked(Boolean locked) {
     if (this.locked != locked) {
       this.locked = locked;
     }
