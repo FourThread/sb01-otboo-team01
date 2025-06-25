@@ -11,6 +11,8 @@ import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,6 +63,7 @@ class FeedServiceTest {
 
   UUID userId = UUID.randomUUID();
   UUID weatherId = UUID.randomUUID();
+  UUID feedId = UUID.randomUUID();
   List<UUID> clothesIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
   FeedCreateRequest request = FeedCreateRequest.builder()
@@ -70,6 +74,7 @@ class FeedServiceTest {
       .build();
 
   User user;
+  Feed feed;
   FeedDto expectedFeedDto;
 
   @BeforeEach
@@ -78,11 +83,20 @@ class FeedServiceTest {
     user.setProfile(new Profile("test", Gender.ETC, LocalDateTime.now(),
         new Location(1.0, 1.0, 1, 1, new ArrayList<>()), 10, "url"));
 
+    feed = Feed.builder()
+        .author(null)
+        .weather(null)
+        .content(null)
+        .likeCount(new AtomicInteger(0))
+        .commentCount(new AtomicInteger(0))
+        .build();
+
     expectedFeedDto = FeedDto.builder()
         .id(UUID.randomUUID()) // Use a test ID
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
-        .author(new UserSummary(user.getId(), user.getName(), user.getProfile().getProfileImageUrl()))
+        .author(
+            new UserSummary(user.getId(), user.getName(), user.getProfile().getProfileImageUrl()))
         .weather(null)
         .ootds(null)
         .content("created")
@@ -134,5 +148,28 @@ class FeedServiceTest {
         .isInstanceOf(RuntimeException.class);
 
     verify(feedRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("피드 좋아요")
+  void like() {
+
+    when(feedRepository.findById(any()))
+        .thenReturn(Optional.of(feed));
+
+    feedService.like(feedId);
+
+    assertThat(feed.getLikeCount().intValue()).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("피드 좋아요 실패 - 피드가 없음")
+  void failLike() {
+
+    when(feedRepository.findById(any()))
+        .thenThrow(new FeedNotFoundException(null, null, null));
+
+    assertThatThrownBy(() -> feedService.like(any()))
+        .isInstanceOf(FeedNotFoundException.class);
   }
 }
