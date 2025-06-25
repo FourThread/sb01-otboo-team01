@@ -45,11 +45,11 @@ public class UserServiceImpl implements UserService {
     String email = request.email();
 
     if (userRepository.existsByName(username)) {
-      throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, Map.of("username", username));
+      throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, username, this.getClass().getSimpleName());
     }
 
     if (userRepository.existsByEmail(email)) {
-      throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS,  Map.of("email", email));
+      throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS, email, this.getClass().getSimpleName());
     }
 
     String password = request.password();
@@ -72,7 +72,8 @@ public class UserServiceImpl implements UserService {
   public UserDto updateUserRole(UUID userId, Role newRole) {
     log.debug("Update user role start : {}", newRole);
     User findUser = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, Map.of("id", userId)));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
+            this.getClass().getSimpleName()));
 
     findUser.updateRole(newRole);
 
@@ -86,7 +87,7 @@ public class UserServiceImpl implements UserService {
   public void updateUserPassword(UUID userId, String newPassword) {
     log.info("Update user password - start");
     User findUser = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, Map.of("id", userId)));
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
 
     findUser.updatePassword(newPassword);
     log.info("Update user password - end");
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto getUserProfile(UUID userId) {
     Profile findProfile = profileRepository.findByUserId(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, Map.of("id", userId)));
+        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(), this.getClass().getSimpleName()));
 
     return profileMapper.toDto(findProfile);
   }
@@ -106,7 +107,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request, Optional<MultipartFile> nullableProfile) {
     Profile findProfile = profileRepository.findByUserId(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, Map.of("id", userId)));
+        .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
+            this.getClass().getSimpleName()));
 
     String profileImageUrl = findProfile.getProfileImageUrl();
 

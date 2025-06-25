@@ -1,16 +1,15 @@
 package com.fourthread.ozang.module.domain.user.exception;
 
-import com.fourthread.ozang.module.common.exception.BaseException;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import java.util.Map;
+import com.fourthread.ozang.module.common.exception.ErrorDetails;
+import com.fourthread.ozang.module.common.exception.GlobalException;
 
-public class UserException extends BaseException {
-
-  public UserException(ErrorCode errorCode) {
-    super(errorCode);
-  }
-
-  public UserException(ErrorCode errorCode, Map<String, Object> details) {
-    super(errorCode, details);
+public class UserException extends GlobalException {
+  public UserException(ErrorCode errorCode, String debugMessage, String source) {
+    super(
+        errorCode.getCode(),
+        errorCode.getMessage(),
+        new ErrorDetails(source, debugMessage)
+    );
   }
 }
