@@ -62,6 +62,12 @@ public class FeedService {
     return feedMapper.toDto(feed, user);
   }
 
+  /**
+  * @methodName : like
+  * @date : 2025-06-25 오전 11:35
+  * @author : wongil
+  * @Description: 피드 좋아요
+  **/
   public FeedDto like(UUID feedId) {
 
     Feed feed = getFeed(feedId);
@@ -73,6 +79,12 @@ public class FeedService {
     return feedMapper.toDto(feed, feed.getAuthor());
   }
 
+  /**
+  * @methodName : doNotLike
+  * @date : 2025-06-25 오전 11:35
+  * @author : wongil
+  * @Description: 피드 좋아요 취소
+  **/
   public FeedDto doNotLike(UUID feedId) {
 
     Feed feed = getFeed(feedId);
