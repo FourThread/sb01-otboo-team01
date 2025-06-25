@@ -1,10 +1,13 @@
 package com.fourthread.ozang.module.domain.feed.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 @Builder
-public record FeedUpdateRequest (
+public record FeedUpdateRequest(
 
-   String content
-)
-{}
+    @NotBlank
+    String content
+) {
+
+}

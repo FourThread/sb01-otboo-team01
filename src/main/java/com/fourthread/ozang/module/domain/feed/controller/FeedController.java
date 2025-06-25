@@ -1,15 +1,18 @@
 package com.fourthread.ozang.module.domain.feed.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.service.FeedService;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +37,30 @@ public class FeedController {
   @PostMapping
   public FeedDto createFeed(@Validated @RequestBody FeedCreateRequest request) {
     return feedService.registerFeed(request);
+  }
+
+  /**
+   * @methodName : feedDelete
+   * @date : 2025-06-24 오전 11:46
+   * @author : wongil
+   * @Description: 피드 삭제
+   **/
+  @ResponseStatus(NO_CONTENT)
+  @DeleteMapping("/{feedId}")
+  public FeedDto deleteFeed(@PathVariable @NotNull UUID feedId) {
+    return feedService.delete(feedId);
+  }
+
+  /**
+  * @methodName : updateFeed
+  * @date : 2025-06-25 오후 2:23
+  * @author : wongil
+  * @Description: 피드 수정
+  **/
+  @PatchMapping("/{feedId}")
+  public FeedDto updateFeed(@PathVariable @NotNull UUID feedId,
+      @Validated @RequestBody FeedUpdateRequest request) {
+    return feedService.update(feedId, request);
   }
 
   /**

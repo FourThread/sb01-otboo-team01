@@ -29,6 +29,12 @@ public class Feed extends BaseUpdatableEntity {
   private AtomicInteger likeCount;
   private AtomicInteger commentCount;
 
+  public Feed updateFeed(String content) {
+    this.content = content;
+
+    return this;
+  }
+
   public int increaseLike() {
     return likeCount.incrementAndGet();
   }

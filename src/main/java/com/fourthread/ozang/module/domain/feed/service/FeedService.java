@@ -8,6 +8,7 @@ import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
 import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
@@ -23,9 +24,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class FeedService {
 
@@ -60,6 +63,37 @@ public class FeedService {
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user);
+  }
+
+  /**
+  * @methodName : delete
+  * @date : 2025-06-25 오후 1:50
+  * @author : wongil
+  * @Description: 피드 삭제
+  **/
+  public FeedDto delete(UUID feedId) {
+    Feed feed = getFeed(feedId);
+
+    feedLikeRepository.deleteAllByFeed_Id(feedId);
+    feedRepository.delete(feed);
+
+    return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  /**
+  * @methodName : update
+  * @date : 2025-06-25 오후 2:24
+  * @author : wongil
+  * @Description: 피드 수정
+  **/
+  public FeedDto update(UUID feedId, FeedUpdateRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    Feed updatedFeed = getFeed(feedId).updateFeed(request.content());
+
+    return feedMapper.toDto(updatedFeed, updatedFeed.getAuthor());
   }
 
   /**
