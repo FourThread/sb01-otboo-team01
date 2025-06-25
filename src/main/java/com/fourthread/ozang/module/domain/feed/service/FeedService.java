@@ -76,17 +76,20 @@ public class FeedService {
   public FeedDto doNotLike(UUID feedId) {
 
     Feed feed = getFeed(feedId);
-
-    FeedLike feedLike = feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
-            feed.getAuthor().getId())
-        .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getExceptionName(),
-            FEED_LIKE_NOT_FOUND.getMessage(),
-            new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));
+    FeedLike feedLike = getFeedLike(feed);
 
     feedLikeRepository.delete(feedLike);
     feed.decreaseLike();
 
     return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  private FeedLike getFeedLike(Feed feed) {
+    return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
+            feed.getAuthor().getId())
+        .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getExceptionName(),
+            FEED_LIKE_NOT_FOUND.getMessage(),
+            new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));
   }
 
   private Feed getFeed(UUID feedId) {
