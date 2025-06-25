@@ -11,11 +11,13 @@ import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.service.impl.UserServiceImpl;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -77,26 +79,35 @@ public class UserServiceTest {
   class UpdateProfile {
 
     @Test
-    @DisplayName("프로필 업데이트")
-    void updateProfile_success() {
+    @DisplayName("프로필 업데이트 성공")
+    void updateProfile_success() throws IOException {
+      // given
       UUID userId = UUID.randomUUID();
-      Profile profile = mock(Profile.class);
+      Profile profile = spy(new Profile("oldName", null, null, null, null, null));
       MultipartFile mockFile = mock(MultipartFile.class);
       ProfileUpdateRequest request = new ProfileUpdateRequest("test", null, null, null, null);
+      String imageUrl = "https://mock-s3.com/profile.png";
 
       when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
       when(mockFile.isEmpty()).thenReturn(false);
-      when(mockFile.getContentType()).thenReturn("image/jpeg");
+      when(profileStorage.saveFile(mockFile)).thenReturn(imageUrl);
+      when(profileMapper.toDto(profile)).thenReturn(
+          new ProfileDto(userId, "test", null, null, null, null, imageUrl)
+      );
 
-      UUID s3Key = UUID.randomUUID();
-      String presignedUrl = "https://mock-s3.com/" + s3Key;
-
-      when(profileStorage.put(mockFile)).thenReturn(s3Key);
-      when(profileStorage.generatePresignedUrl(s3Key, "image/jpeg")).thenReturn(presignedUrl);
-
+      // when
       ProfileDto result = userService.updateUserProfile(userId, request, Optional.of(mockFile));
 
-      verify(profile).updateProfile(eq("test"), any(), any(), any(), any(), eq(presignedUrl));
+      // then
+      verify(profile).updateProfile(
+          eq("test"),
+          isNull(), isNull(), isNull(), isNull(),
+          eq(imageUrl)
+      );
+
+      assertNotNull(result);
+      assertEquals("test", result.name());
+      assertEquals(imageUrl, result.profileImageUrl());
     }
   }
 }

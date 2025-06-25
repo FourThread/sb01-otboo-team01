@@ -113,9 +113,7 @@ public class UserServiceImpl implements UserService {
     if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
       MultipartFile file = nullableProfile.get();
 
-      UUID s3Key = profileStorage.put(file);
-
-      profileImageUrl = profileStorage.generatePresignedUrl(s3Key, file.getContentType());
+      profileImageUrl = profileStorage.saveFile(file);
     }
 
     findProfile.updateProfile(
