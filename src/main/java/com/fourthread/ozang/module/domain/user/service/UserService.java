@@ -21,4 +21,6 @@ public interface UserService {
 
   ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request,
       Optional<MultipartFile> nullableProfile);
+
+
 }
