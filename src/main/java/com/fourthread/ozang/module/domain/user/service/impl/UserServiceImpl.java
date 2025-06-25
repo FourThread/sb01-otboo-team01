@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileRepository profileRepository;
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
-  private final ProfileStorage profileStorage;
+//  private final ProfileStorage profileStorage;
 
 
   @Transactional
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
     if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
       MultipartFile file = nullableProfile.get();
 
-      profileImageUrl = profileStorage.saveFile(file);
+//      profileImageUrl = profileStorage.saveFile(file);
     }
 
     findProfile.updateProfile(

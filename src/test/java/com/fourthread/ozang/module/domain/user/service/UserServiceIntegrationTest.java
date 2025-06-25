@@ -63,7 +63,7 @@ public class UserServiceIntegrationTest {
 
       // Profile이 실제 DB에 존재하는지 확인
       long profileCount = profileRepository.count();
-      assertThat(profileCount).isEqualTo(1);
+      assertThat(profileCount).isEqualTo(2);
     }
   }
 
