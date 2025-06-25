@@ -9,9 +9,12 @@ import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import java.util.UUID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,18 +56,14 @@ public class UserServiceIntegrationTest {
       // given
       UserCreateRequest request = new UserCreateRequest("test", "test@email.com", "securePassword");
 
-      // when
       UserDto createdUser = userService.createUser(request);
 
-      // then
-      // 사용자 조회
       User user = userRepository.findByName("test")
           .orElseThrow(() -> new RuntimeException("User not found"));
 
       assertThat(user.getProfile()).isNotNull();
       assertThat(user.getProfile().getName()).isEqualTo("test");
 
-      // Profile이 실제 DB에 존재하는지 확인
       long profileCount = profileRepository.count();
       assertThat(profileCount).isEqualTo(2);
     }
@@ -86,6 +85,16 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
+    @DisplayName("사용자 역할 변경 실패 - 존재하지 않는 사용자")
+    void updateUserRole_fail_userNotFound() {
+      UUID unknownId = UUID.randomUUID(); // 존재하지 않는 ID
+      UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+
+      assertThatThrownBy(() -> userService.updateUserRole(unknownId, request))
+          .isInstanceOf(UserException.class);
+    }
+
+    @Test
     @DisplayName("사용자 비밀번호를 변경합니다")
     void updateUser_success_password_changed() {
       ChangePasswordRequest request = new ChangePasswordRequest("newPassword!!");
@@ -97,6 +106,16 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
+    @DisplayName("사용자 비밀번호 변경 실패 - 존재하지 않는 사용자")
+    void updateUserPassword_fail_userNotFound() {
+      UUID unknownId = UUID.randomUUID();
+      ChangePasswordRequest request = new ChangePasswordRequest("newPassword!!");
+
+      assertThatThrownBy(() -> userService.updateUserPassword(unknownId, request))
+          .isInstanceOf(UserException.class);
+    }
+
+    @Test
     @DisplayName("사용자 계정 잠금 상태를 변경합니다")
     void updateUser_success_locked_changed() {
       UserLockUpdateRequest request = new UserLockUpdateRequest(true);
@@ -105,6 +124,16 @@ public class UserServiceIntegrationTest {
           .orElseThrow(() -> new IllegalArgumentException());
 
       assertThat(findUser.getLocked()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("사용자 역할 변경 실패 - 존재하지 않는 사용자")
+    void updateUserLocked_fail_userNotFound() {
+      UUID unknownId = UUID.randomUUID();
+      UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+
+      assertThatThrownBy(() -> userService.changeLock(unknownId, request))
+          .isInstanceOf(UserException.class);
     }
   }
 
