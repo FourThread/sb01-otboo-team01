@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.dto;
+package com.fourthread.ozang.module.domain.feed.dto.request;
 
 import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;

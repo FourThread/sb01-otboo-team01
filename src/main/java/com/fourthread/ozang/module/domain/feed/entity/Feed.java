@@ -7,10 +7,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Feed extends BaseUpdatableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
