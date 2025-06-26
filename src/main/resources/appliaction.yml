@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: sb01-otboo-team01
+  servlet:
+    multipart:
+      enabled: true
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
+  profiles:
+    active: test # 프로파일 설정
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        highlight_sql: true # SQL문 이쁘게 보기 위한 설정
+        use_sql_comments: true
+        hibernate.default_batch_fetch_size: 50
+    open-in-view: false # OSIV 끔
+
+# 로깅 레벨 설정
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: debug
+
+# 액츄에이터
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, loggers
+  info:
+    env:
+      enabled: true
+
+sb01-otboo-team01:
+  storage:
+    type: s3
+    s3:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+      region: ${AWS_REGION}
+      bucket: ${AWS_BUCKET}
+
+weather:
+  api:
+    key:  ${WEATHER_API_KEY}
+    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    nowcast:
+      url: ${weather.api.base-url}/getUltraSrtNcst
+    forecast:
+      url: ${weather.api.base-url}/getVilageFst
+
+  # ??? API ??
+kakao:
+  api:
+    key: ${KAKAO_API_KEY}
+    url: https://dapi.kakao.com
