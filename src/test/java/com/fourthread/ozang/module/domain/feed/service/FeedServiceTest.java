@@ -4,13 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
+<<<<<<< feat/#8/weather
+=======
+import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
+>>>>>>> develop
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
@@ -32,6 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -83,7 +92,7 @@ class FeedServiceTest {
         new Location(1.0, 1.0, 1, 1, new ArrayList<>()), 10, "url"));
 
     feed = Feed.builder()
-        .author(null)
+        .author(user)
         .weather(null)
         .content(null)
         .likeCount(new AtomicInteger(0))
@@ -150,9 +159,56 @@ class FeedServiceTest {
   }
 
   @Test
+  @DisplayName("피드 삭제")
+  void delete() {
+
+    when(feedMapper.toDto(feed, feed.getAuthor()))
+        .thenReturn(expectedFeedDto);
+    when(feedRepository.findById(feedId))
+        .thenReturn(Optional.of(feed));
+
+    FeedDto delete = feedService.delete(feedId);
+
+    assertThat(delete).isNotNull();
+    assertThat(delete.content()).isEqualTo("created");
+
+    verify(feedRepository).delete(any());
+    verify(feedLikeRepository).deleteAllByFeed_Id(feedId);
+  }
+
+  @Test
+  @DisplayName("피드 삭제 실패")
+  void failDelete() {
+
+    assertThatThrownBy(() -> feedService.delete(feedId))
+        .isInstanceOf(FeedNotFoundException.class);
+
+    verify(feedRepository, never()).delete(any());
+
+  }
+
+  @Test
+  @DisplayName("피드 수정")
+  void update() {
+
+    FeedUpdateRequest newContent = new FeedUpdateRequest("new content");
+
+    ArgumentCaptor<Feed> captor = ArgumentCaptor.forClass(Feed.class);
+    when(feedMapper.toDto(captor.capture(), any(User.class)))
+        .thenReturn(expectedFeedDto);
+    when(feedRepository.findById(any()))
+        .thenReturn(Optional.of(feed));
+
+    FeedDto updatedFeed = feedService.update(feedId, newContent);
+
+    assertThat(updatedFeed).isNotNull();
+    assertThat(captor.getValue().getContent())
+        .isEqualTo(newContent.content());
+  }
+
+  @Test
   @DisplayName("피드 좋아요")
   void like() {
-
     when(feedRepository.findById(any()))
         .thenReturn(Optional.of(feed));
 
@@ -170,5 +226,26 @@ class FeedServiceTest {
 
     assertThatThrownBy(() -> feedService.like(any()))
         .isInstanceOf(FeedNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("피드 댓글 등록")
+  void postComment() {
+
+    CommentCreateRequest commentCreateRequest = new CommentCreateRequest(feedId, userId, "댓글");
+
+    when(feedRepository.findById(feedId))
+        .thenReturn(Optional.of(feed));
+    when(userRepository.findById(userId))
+        .thenReturn(Optional.of(user));
+
+    feedService.postComment(commentCreateRequest);
+
+    ArgumentCaptor<FeedComment> captor = ArgumentCaptor.forClass(
+        FeedComment.class);
+    verify(feedCommentRepository, times(1)).save(captor.capture());
+
+    FeedComment comment = captor.getValue();
+    assertThat("댓글").isEqualTo(comment.getContent());
   }
 }
