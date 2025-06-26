@@ -54,7 +54,8 @@ public class SecurityConfig {
         "/favicon.ico",
         "/",
         "/assets/**",
-        "/index.html"
+        "/index.html",
+        "/closet-hanger-logo.png"
     };
   }
 
