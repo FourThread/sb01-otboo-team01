@@ -15,6 +15,7 @@ import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import com.fourthread.ozang.module.domain.weather.util.CoordinateConverter;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,11 @@ public class WeatherServiceImpl implements WeatherService {
             log.info("캐시된 날씨 데이터 사용");
             return weatherMapper.toDto(cachedWeather.get());
         }
+
+        LocalDateTime now = LocalDateTime.now();
+        String baseDate = calculateBaseDate(now);
+        String baseTime = calculateBaseTime(now);
+        log.debug("기상청 API 요청 시간 - base_date: {}, base_time: {}", baseDate, baseTime);
 
         //  4. 외부 API 호출 및 저장
         Weather weather = fetchAndSaveWeatherData(latitude, longitude, gridCoordinate);
@@ -177,6 +183,34 @@ public class WeatherServiceImpl implements WeatherService {
         if (body == null || body.items() == null || body.items().item() == null || body.items().item().isEmpty()) {
                 throw new WeatherDataFetchException("날씨 데이터가 없습니다.");
         }
+    }
+
+    /**
+     * 기상청 API용 base_time 계산 (정시 단위)
+     * 초단기실황 매시 30분에 생성(45분 이후에 호출)
+     */
+    private String calculateBaseDate(LocalDateTime now) {
+        LocalDateTime targetTime = now;
+
+        if (now.getMinute() < 45) {
+            targetTime = now.minusHours(1);
+        }
+
+        return targetTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    }
+
+    /**
+     * 기사청 API용 base_time 계산 (정시 단위)
+     */
+    private String calculateBaseTime(LocalDateTime now) {
+        LocalDateTime targetTime = now;
+
+        // 현재 시간이 해당 시간의 40분 이전이면 이전 시간 데이터 사용
+        if (now.getMinute() < 45) {
+            targetTime = now.minusHours(1);
+        }
+
+        return String.format("%02d00", targetTime.getHour());
     }
 
     private String generateResponseHash(WeatherApiResponse response) {
