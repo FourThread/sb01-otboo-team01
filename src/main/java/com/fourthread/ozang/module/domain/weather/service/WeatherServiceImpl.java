@@ -151,15 +151,24 @@ public class WeatherServiceImpl implements WeatherService {
             String errorMsg = header != null ? header.resultMsg() : "Unknown error";
             String resultCode = header != null ? header.resultCode() : "UNKNOWN";
 
-            // 에러 코드별 처리
+            // Open API 에러 코드
             switch (resultCode) {
-                case "01" -> throw new WeatherApiException("어플리케이션 에러", resultCode);
+                case "01" -> throw new WeatherApiException("어플리케이션 에러 - base_date/base_time 파라미터 오류", resultCode);
                 case "02" -> throw new WeatherApiException("데이터베이스 에러", resultCode);
-                case "03" -> throw new WeatherDataFetchException("해당 조건의 데이터가 없습니다.");
-                case "04" -> throw new WeatherApiException("HTTP 에러", resultCode);
+                case "03" -> throw new WeatherDataFetchException("해당 조건의 데이터가 없습니다 - nx/ny 좌표 오류");
+                case "04" -> throw new WeatherApiException("HTTP 에러 - 기상청 서버 연결 오류", resultCode);
                 case "05" -> throw new WeatherApiException("서비스 연결 실패", resultCode);
-                case "10" -> throw new InvalidCoordinateException("잘못된 요청 파라미터입니다.");
+                case "10" -> throw new InvalidCoordinateException("잘못된 요청 파라미터입니다");
+                case "11" -> throw new WeatherApiException("필수 요청 파라미터가 누락되었습니다", resultCode);
+                case "12" -> throw new WeatherApiException("해당 오픈API 서비스가 없거나 폐기되었습니다", resultCode);
+                case "20" -> throw new WeatherApiException("서비스 접근 거부", resultCode);
+                case "21" -> throw new WeatherApiException("일시적으로 사용할 수 없는 서비스키", resultCode);
+                case "22" -> throw new WeatherApiException("서비스 요청 제한 횟수 초과", resultCode);
                 case "30" -> throw new WeatherApiException("등록되지 않은 서비스키", resultCode);
+                case "31" -> throw new WeatherApiException("기한 만료된 서비스키", resultCode);
+                case "32" -> throw new WeatherApiException("등록되지 않은 IP", resultCode);
+                case "33" -> throw new WeatherApiException("서명되지 않은 호출", resultCode);
+                case "99" -> throw new WeatherApiException("기타 에러", resultCode);
                 default -> throw new WeatherApiException("API 호출 실패: " + errorMsg, resultCode);
             }
         }
