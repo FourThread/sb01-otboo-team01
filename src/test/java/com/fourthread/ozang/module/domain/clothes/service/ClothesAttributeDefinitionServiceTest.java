@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ClothesAttributeDefinitionServiceTest {
@@ -124,7 +125,7 @@ class ClothesAttributeDefinitionServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @DisplayName("이미 존재하는 이름으로 수정할 수 없다.")
+    @DisplayName("이미 존재하는 속성 정의 이름으로 수정할 수 없다.")
     @Test
     void update_fail_whenNameIsDuplicated() {
         //given
@@ -139,4 +140,33 @@ class ClothesAttributeDefinitionServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @DisplayName("의상 속성 정의를 삭제할 수 있다.")
+    @Test
+    void ClothesAttributeDefDelete() {
+        //given
+        UUID id = clothesAttributeDefinition.getId();
+
+        given(repository.findById(id)).willReturn(Optional.of(clothesAttributeDefinition));
+        given(mapper.toDto(clothesAttributeDefinition)).willReturn(clothesAttributeDefDto);
+
+        //when
+        ClothesAttributeDefDto result = service.delete(id);
+
+        //then
+        assertThat(result).isEqualTo(clothesAttributeDefDto);
+        verify(repository).delete(clothesAttributeDefinition);
+    }
+
+    @DisplayName("존재하지 않는 속성 정의는 삭제할 수 없다.")
+    @Test
+    void delete_fail_whenDefinitionNotFound() {
+        //given
+        UUID id = UUID.randomUUID();
+        given(repository.findById(id)).willReturn(Optional.empty());
+
+        //when then
+        assertThatThrownBy(() -> service.delete(id))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(repository, never()).delete(any());
+    }
 }

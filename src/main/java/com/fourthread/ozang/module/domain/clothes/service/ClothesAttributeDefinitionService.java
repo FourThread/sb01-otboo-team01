@@ -9,6 +9,7 @@ import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinit
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ public class ClothesAttributeDefinitionService {
     private final ClothesAttributeDefinitionRepository definitionRepository;
     private final ClothesAttributeDefinitionMapper definitionMapper;
 
+    @Transactional
     public ClothesAttributeDefDto create(ClothesAttributeDefCreateRequest request) {
         if (definitionRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("이미 존재하는 속성 이름입니다."); //TODO 커스텀 예외처리
@@ -28,6 +30,7 @@ public class ClothesAttributeDefinitionService {
         return definitionMapper.toDto(save);
     }
 
+    @Transactional
     public ClothesAttributeDefDto update(UUID definitionId, ClothesAttributeDefUpdateRequest request) {
         ClothesAttributeDefinition definition = definitionRepository.findById(definitionId)
                 .orElseThrow(() -> new IllegalArgumentException("속성 정의가 존재하지 않습니다.")); //TODO 커스텀 예외처리
@@ -40,5 +43,12 @@ public class ClothesAttributeDefinitionService {
         return definitionMapper.toDto(definition);
     }
 
-
+    @Transactional
+    public ClothesAttributeDefDto delete(UUID definitionId) {
+        ClothesAttributeDefinition definition = definitionRepository.findById(definitionId)
+                .orElseThrow(() -> new IllegalArgumentException("속성 정의가 존재하지 않습니다.")); //TODO 커스텀 예외처리
+        ClothesAttributeDefDto dto = definitionMapper.toDto(definition);
+        definitionRepository.delete(definition);
+        return dto;
+    }
 }
