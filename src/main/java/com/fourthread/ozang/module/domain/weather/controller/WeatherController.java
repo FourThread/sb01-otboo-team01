@@ -4,7 +4,6 @@ import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.service.WeatherService;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -28,16 +27,17 @@ public class WeatherController {
 
     private final WeatherService weatherService;
 
+    /**
+     * 날씨 정보 조회 API
+     */
     @GetMapping
     public ResponseEntity<WeatherDto> getWeather(
-        @Parameter(description = "경도", required = true, example = "126.9780")
         @RequestParam
         @NotNull(message = "경도는 필수입니다")
         @Min(value = 124, message = "경도는 124 이상이어야 합니다")
         @Max(value = 132, message = "경도는 132 이하여야 합니다")
         Double longitude,
 
-        @Parameter(description = "위도", required = true, example = "37.5665")
         @RequestParam
         @NotNull(message = "위도는 필수입니다")
         @Min(value = 33, message = "위도는 33 이상이어야 합니다")
@@ -51,6 +51,9 @@ public class WeatherController {
         return ResponseEntity.ok(weatherData);
     }
 
+    /**
+     * 날씨 위치 정보 조회 API
+     */
     @GetMapping("/location")
     public ResponseEntity<WeatherAPILocation> getWeatherLocation(
         @Parameter(description = "경도", required = true, example = "126.9780")
@@ -74,14 +77,3 @@ public class WeatherController {
         return ResponseEntity.ok(location);
     }
 }
-
-record ErrorResponse(
-    @Schema(description = "예외 이름", example = "InvalidCoordinateException")
-    String exceptionName,
-
-    @Schema(description = "오류 메시지", example = "잘못된 좌표입니다.")
-    String message,
-
-    @Schema(description = "오류 부가 정보")
-    java.util.Map<String, String> details
-) {}
