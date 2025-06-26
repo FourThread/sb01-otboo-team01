@@ -32,3 +32,18 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: DEBUG
     com.discodeit: debug
+
+weather:
+  api:
+    key:  ${WEATHER_API_KEY}
+    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    nowcast:
+      url: ${weather.api.base-url}/getUltraSrtNcst
+    forecast:
+      url: ${weather.api.base-url}/getVilageFst
+
+  # ??? API ??
+kakao:
+  api:
+    key: ${KAKAO_API_KEY}
+    url: https://dapi.kakao.com
