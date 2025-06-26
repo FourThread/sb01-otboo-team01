@@ -5,8 +5,11 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FO
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
 import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
@@ -23,9 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class FeedService {
 
@@ -48,9 +53,7 @@ public class FeedService {
       throw new IllegalArgumentException();
     }
 
-    User user = userRepository.findById(request.authorId())
-        .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
-
+    User user = getUser(request.authorId()); // TODO: 커스텀 예외로 변경
     Weather weather = weatherRepository.findById(request.weatherId())
         .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
 
@@ -60,6 +63,37 @@ public class FeedService {
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user);
+  }
+
+  /**
+  * @methodName : delete
+  * @date : 2025-06-25 오후 1:50
+  * @author : wongil
+  * @Description: 피드 삭제
+  **/
+  public FeedDto delete(UUID feedId) {
+    Feed feed = getFeed(feedId);
+
+    feedLikeRepository.deleteAllByFeed_Id(feedId);
+    feedRepository.delete(feed);
+
+    return feedMapper.toDto(feed, feed.getAuthor());
+  }
+
+  /**
+  * @methodName : update
+  * @date : 2025-06-25 오후 2:24
+  * @author : wongil
+  * @Description: 피드 수정
+  **/
+  public FeedDto update(UUID feedId, FeedUpdateRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    Feed updatedFeed = getFeed(feedId).updateFeed(request.content());
+
+    return feedMapper.toDto(updatedFeed, updatedFeed.getAuthor());
   }
 
   /**
@@ -96,6 +130,31 @@ public class FeedService {
     return feedMapper.toDto(feed, feed.getAuthor());
   }
 
+  /**
+  * @methodName : registerComment
+  * @date : 2025-06-25 오후 6:00
+  * @author : wongil
+  * @Description: 피드 댓글 등록
+  **/
+  public FeedDto postComment(CommentCreateRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    Feed feed = getFeed(request.feedId());
+    User user = getUser(request.authorId());
+
+    FeedComment comment = FeedComment.builder()
+        .feed(feed)
+        .author(user)
+        .content(request.content())
+        .build();
+
+    feedCommentRepository.save(comment);
+
+    return feedMapper.toDto(feed, user);
+  }
+
   private FeedLike getFeedLike(Feed feed) {
     return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
             feed.getAuthor().getId())
@@ -109,5 +168,10 @@ public class FeedService {
     return feedRepository.findById(feedId)
         .orElseThrow(() -> new FeedNotFoundException(FEED_NOT_FOUND.getCode(), FEED_NOT_FOUND.getMessage(),
             new ErrorDetails(this.getClass().getSimpleName(), FEED_NOT_FOUND.getMessage())));
+  }
+
+  private User getUser(UUID userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException());
   }
 }
