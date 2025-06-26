@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileRepository profileRepository;
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
+  private final PasswordEncoder passwordEncoder;
 //  private final ProfileStorage profileStorage;
 
 
@@ -60,12 +62,13 @@ public class UserServiceImpl implements UserService {
     }
 
     String password = request.password();
+    String encodePassword = passwordEncoder.encode(password);
 
     // 빈 프로필 생성하기
     Profile emptyProfile = new Profile(username, null, null,
         null, null, null);
 
-    User user = new User(username, email, password);
+    User user = new User(username, email, encodePassword);
     user.setProfile(emptyProfile);
     userRepository.save(user);
 
@@ -95,11 +98,12 @@ public class UserServiceImpl implements UserService {
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
     log.info("Update user password - start");
     String newPassword = request.password();
+    String encodePassword = passwordEncoder.encode(newPassword);
     User findUser = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
 
-    findUser.updatePassword(newPassword);
+    findUser.updatePassword(encodePassword);
     log.info("Update user password - end");
 
   }

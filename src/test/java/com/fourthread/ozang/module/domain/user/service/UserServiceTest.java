@@ -18,6 +18,7 @@ import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +48,9 @@ public class UserServiceTest {
 
   @Mock
   private ProfileMapper profileMapper;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @Nested
   @DisplayName("사용자 생성")
@@ -72,6 +77,16 @@ public class UserServiceTest {
         userService.createUser(request);
       }).isInstanceOf(UserException.class);
     }
+  }
+
+  @Test
+  @DisplayName("비밀번호 암호화 전과 후 비교하기")
+  void password_encode_success() {
+    String password = "test";
+
+    String encode = passwordEncoder.encode(password);
+
+    assertNotEquals(encode, password);
   }
 
 //  @Nested
