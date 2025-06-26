@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileMapper profileMapper;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
-  private AuthenticationManagerBuilder authenticationManagerBuilder;
+  private final AuthenticationManagerBuilder authenticationManagerBuilder;
 //  private final ProfileStorage profileStorage;
 
 

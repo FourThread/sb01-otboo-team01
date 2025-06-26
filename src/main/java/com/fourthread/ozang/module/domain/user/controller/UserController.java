@@ -1,9 +1,11 @@
-package com.fourthread.ozang.module.domain.user.controller.api;
+package com.fourthread.ozang.module.domain.user.controller;
 
 import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.security.dto.JwtToken;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.LoginRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;

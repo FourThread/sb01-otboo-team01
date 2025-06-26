@@ -80,6 +80,7 @@ public class SecurityConfig {
             .requestMatchers(StaticResources.SWAGGER_RESOURCES).permitAll()
             .requestMatchers(StaticResources.PUBLIC_RESOURCES).permitAll()
             .requestMatchers(HttpMethod.POST, ApiEndpoints.USERS).permitAll()
+            .requestMatchers(HttpMethod.POST, ApiEndpoints.AUTH_LOGIN).permitAll()
             .anyRequest().hasRole(Roles.USER)
         )
         .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
