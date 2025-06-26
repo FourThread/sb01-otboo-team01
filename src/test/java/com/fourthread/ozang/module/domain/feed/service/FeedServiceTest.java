@@ -4,15 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.WeatherRepository;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
@@ -220,5 +223,26 @@ class FeedServiceTest {
 
     assertThatThrownBy(() -> feedService.like(any()))
         .isInstanceOf(FeedNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("피드 댓글 등록")
+  void postComment() {
+
+    CommentCreateRequest commentCreateRequest = new CommentCreateRequest(feedId, userId, "댓글");
+
+    when(feedRepository.findById(feedId))
+        .thenReturn(Optional.of(feed));
+    when(userRepository.findById(userId))
+        .thenReturn(Optional.of(user));
+
+    feedService.postComment(commentCreateRequest);
+
+    ArgumentCaptor<FeedComment> captor = ArgumentCaptor.forClass(
+        FeedComment.class);
+    verify(feedCommentRepository, times(1)).save(captor.capture());
+
+    FeedComment comment = captor.getValue();
+    assertThat("댓글").isEqualTo(comment.getContent());
   }
 }
