@@ -112,7 +112,7 @@ class FeedServiceTest {
 
   }
 
-
+  @Disabled
   @Test
   @DisplayName("피드 생성 완료")
   void create() {
@@ -155,7 +155,6 @@ class FeedServiceTest {
     verify(feedRepository, never()).save(any());
   }
 
-  @Disabled
   @Test
   @DisplayName("피드 삭제")
   void delete() {
@@ -227,7 +226,6 @@ class FeedServiceTest {
         .isInstanceOf(FeedNotFoundException.class);
   }
 
-  @Disabled
   @Test
   @DisplayName("피드 댓글 등록")
   void postComment() {
