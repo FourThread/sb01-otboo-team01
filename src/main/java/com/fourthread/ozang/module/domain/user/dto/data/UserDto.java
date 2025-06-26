@@ -13,7 +13,7 @@ public record UserDto(
     String name,
     Role role,
     List<Items> linkedOAuthProviders,
-    boolean locked
+    Boolean locked
 ) {
 
 }

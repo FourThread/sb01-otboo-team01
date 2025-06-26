@@ -1,8 +1,10 @@
 //package com.fourthread.ozang.module.domain.user.repository;
 //
 //import com.fourthread.ozang.module.config.AppConfig;
+//import com.fourthread.ozang.module.config.QuerydslConfig;
 //import com.fourthread.ozang.module.domain.user.dto.type.Role;
 //import com.fourthread.ozang.module.domain.user.entity.User;
+//import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 //import java.util.Optional;
 //import static org.assertj.core.api.Assertions.*;
 //import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +18,7 @@
 //
 //@DataJpaTest
 //@ActiveProfiles("test")
-//@Import(AppConfig.class)
+//@Import({AppConfig.class, QuerydslConfig.class, UserMapper.class})
 //public class UserRepositoryTest {
 //
 //  @Autowired
@@ -66,7 +68,7 @@
 //      savedUser.changeLocked(true);
 //
 //      User updated = userRepository.findById(savedUser.getId()).orElseThrow();
-//      assertThat(updated.isLocked()).isEqualTo(true);
+//      assertThat(updated.getLocked()).isEqualTo(true);
 //    }
 //  }
 //}

@@ -1,9 +1,14 @@
 package com.fourthread.ozang.module.domain.user.service;
 
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,14 +18,17 @@ public interface UserService {
 
   UserDto createUser(UserCreateRequest request);
 
-  UserDto updateUserRole(UUID userId, Role newRole);
+  UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request);
 
-  void updateUserPassword(UUID userId,  String newPassword);
+  void updateUserPassword(UUID userId,  ChangePasswordRequest request);
 
   ProfileDto getUserProfile(UUID userId);
 
   ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request,
       Optional<MultipartFile> nullableProfile);
 
+  UUID changeLock(UUID userId, UserLockUpdateRequest request);
 
+  UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
+      SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked);
 }
