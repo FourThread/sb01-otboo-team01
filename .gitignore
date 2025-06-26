@@ -22,8 +22,6 @@ bin/
 *.iws
 *.iml
 *.ipr
-*.yml
-application.yml
 
 out/
 !**/src/main/**/out/
@@ -40,7 +38,5 @@ out/
 .vscode/
 
 ### 설정 파일 ###
-**/application*.yml
-
-### 환경변수 파일 ###
 .env
+/src/main/resources/static/
