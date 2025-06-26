@@ -6,18 +6,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class CoordinateConverter {
 
+    // 기상청 공식 격자 변환 파라미터 (람베르트 정각원추도법)
     private static final double RE = 6371.00877; // 지구 반경 (km)
     private static final double GRID = 5.0; // 격자 간격 (km)
     private static final double SLAT1 = 30.0; // 투영 위도1 (degree)
     private static final double SLAT2 = 60.0; // 투영 위도2 (degree)
     private static final double OLON = 126.0; // 기준점 경도 (degree)
     private static final double OLAT = 38.0; // 기준점 위도 (degree)
-    private static final double XO = 43; // 기준점 X좌표 (GRID)
-    private static final double YO = 136; // 기준점 Y좌표 (GRID)
+    private static final double XO = 210 / GRID; // 기준점 X좌표 (GRID)
+    private static final double YO = 675 / GRID; // 기준점 Y좌표 (GRID)
 
     public GridCoordinate convertToGrid(double lat, double lon) {
         double DEGRAD = Math.PI / 180.0;
-        double RADDEG = 180.0 / Math.PI;
 
         double re = RE / GRID;
         double slat1 = SLAT1 * DEGRAD;
