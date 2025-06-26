@@ -30,11 +30,14 @@ JWT 토큰 생성, 복호화, 검증 기능 구현
 @Slf4j
 @Component
 public class JwtTokenProvider {
-
-  private static final long ACCESS_TOKEN_EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24시간
-  private static final long REFRESH_TOKEN_EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24시간
   private static final String AUTHORITIES_KEY = "auth";
   private static final String GRANT_TYPE = "Bearer";
+
+  @Value("${jwt.access-token-expiration-ms}")
+  private long accessTokenExpirationMs;
+
+  @Value("${jwt.refresh-token-expiration-ms}")
+  private long refreshTokenExpirationMs;
 
   private final Key key;
 
@@ -67,7 +70,7 @@ public class JwtTokenProvider {
     return Jwts.builder()
         .setSubject(subject)
         .claim(AUTHORITIES_KEY, authorities)
-        .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRATION_MS))
+        .setExpiration(new Date(now + accessTokenExpirationMs))
         .signWith(key, SignatureAlgorithm.HS256)
         .compact();
   }
@@ -75,7 +78,7 @@ public class JwtTokenProvider {
   // Refresh Token 생성
   private String createRefreshToken(long now) {
     return Jwts.builder()
-        .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRATION_MS))
+        .setExpiration(new Date(now + refreshTokenExpirationMs))
         .signWith(key, SignatureAlgorithm.HS256)
         .compact();
   }
