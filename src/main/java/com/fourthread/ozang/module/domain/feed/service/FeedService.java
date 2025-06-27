@@ -23,7 +23,6 @@ import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -81,7 +80,6 @@ public class FeedService {
     }
 
     Integer pageSize = request.limit();
-    UUID idAfter = request.idAfter() == null ? null : UUID.fromString(request.idAfter());
     List<FeedDto> data = feedRepository.search(request);
     boolean hasNext = data.size() > pageSize;
 
@@ -92,14 +90,14 @@ public class FeedService {
 
     if (hasNext) {
       FeedDto lastFeed = pagedFeeds.get(pagedFeeds.size() - 1);
-      nextCursor = lastFeed.createdAt().atOffset(ZoneOffset.UTC).toString();
+      nextCursor = lastFeed.createdAt().toString();
       nextIdAfter = lastFeed.id();
     }
 
     Long totalCount = feedRepository.feedTotalCount(request);
 
     return new FeedData(
-        data,
+        pagedFeeds,
         nextCursor,
         nextIdAfter,
         hasNext,

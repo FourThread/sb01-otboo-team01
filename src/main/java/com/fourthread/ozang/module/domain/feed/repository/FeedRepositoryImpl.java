@@ -1,13 +1,18 @@
 package com.fourthread.ozang.module.domain.feed.repository;
 
+import static com.fourthread.ozang.module.domain.clothes.entity.QClothes.clothes;
+import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttribute.clothesAttribute;
+import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.clothesAttributeDefinition;
 import static com.fourthread.ozang.module.domain.feed.entity.QFeed.feed;
+import static com.fourthread.ozang.module.domain.feed.entity.QFeedClothes.feedClothes;
 import static com.fourthread.ozang.module.domain.user.entity.QUser.user;
 import static com.fourthread.ozang.module.domain.weather.entity.QWeather.weather;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.OotdDto;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
@@ -25,12 +30,26 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.validation.constraints.NotNull;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
+
+/**
+ * { "data": [ { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "createdAt":
+ * "2025-06-27T05:57:52.567Z", "updatedAt": "2025-06-27T05:57:52.567Z", "author": { "userId":
+ * "3fa85f64-5717-4562-b3fc-2c963f66afa6", "name": "string", "profileImageUrl": "string" },
+ * "weather": { "weatherId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "skyStatus": "CLEAR",
+ * "precipitation": { "type": "NONE", "amount": 0.1, "probability": 0.1 }, "temperature": {
+ * "current": 0.1, "comparedToDayBefore": 0.1, "min": 0.1, "max": 0.1 } }, "ootds": [ { "clothesId":
+ * "3fa85f64-5717-4562-b3fc-2c963f66afa6", "name": "string", "imageUrl": "string", "type": "TOP",
+ * "attributes": [ { "definitionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "definitionName":
+ * "string", "selectableValues": [ "string" ], "value": "string" } ] } ], "content": "string",
+ * "likeCount": 9007199254740991, "commentCount": 1073741824, "likedByMe": true } ], "nextCursor":
+ * "string", "nextIdAfter": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "hasNext": true, "totalCount":
+ * 9007199254740991, "sortBy": "string", "sortDirection": "ASCENDING" }
+ */
 
 @RequiredArgsConstructor
 public class FeedRepositoryImpl implements FeedRepositoryCustom {
@@ -44,8 +63,12 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
 
     return queryFactory
         .from(feed)
-        .leftJoin(feed.author, user).fetchJoin()
-        .leftJoin(feed.weather, weather).fetchJoin()
+        .leftJoin(feed.author, user)
+        .leftJoin(feed.weather, weather)
+        .leftJoin(feedClothes).on(feedClothes.feed.eq(feed))
+        .leftJoin(feedClothes.clothes, clothes)
+        .leftJoin(clothes.attributes, clothesAttribute)
+        .leftJoin(clothesAttribute.definition, clothesAttributeDefinition)
         .where(
             keywordLike(request.keywordLike()),
             skyStatusEqual(request.skyStatusEqual()),
@@ -65,8 +88,8 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
     return queryFactory
         .select(feed.count())
         .from(feed)
-        .leftJoin(feed.author, user).fetchJoin()
-        .leftJoin(feed.weather, weather).fetchJoin()
+        .leftJoin(feed.author, user)
+        .leftJoin(feed.weather, weather)
         .where(
             keywordLike(request.keywordLike()),
             skyStatusEqual(request.skyStatusEqual()),
@@ -77,12 +100,11 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   }
 
   private Predicate cursor(String cursor, String idAfter) {
-    if (cursor == null) {
+    if (!StringUtils.hasText(cursor)) {
       return null;
     }
 
-    Instant instant = Instant.parse(cursor);
-    LocalDateTime time = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    LocalDateTime time = LocalDateTime.parse(cursor);
     UUID preFeedId = UUID.fromString(idAfter);
 
     return feed.createdAt.lt(time).or(
@@ -92,20 +114,23 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   }
 
   private Predicate authorIdEqual(UUID authorId) {
-    return user.id.eq(authorId);
+    return authorId == null ? null : user.id.eq(authorId);
   }
 
   private Predicate precipitationTypeEqual(PrecipitationType precipitationType) {
-    return weather.precipitation.type.eq(precipitationType);
+    return (precipitationType == null) ? null : weather.precipitation.type.eq(precipitationType);
   }
 
   private Predicate skyStatusEqual(SkyStatus skyStatus) {
-    return weather.skyStatus.eq(skyStatus);
+    return (skyStatus == null) ? null : weather.skyStatus.eq(skyStatus);
   }
 
   private BooleanExpression keywordLike(String keywordLike) {
-    String keyword = "%" + keywordLike + "%";
+    if (!StringUtils.hasText(keywordLike)) {
+      return null;
+    }
 
+    String keyword = "%" + keywordLike + "%";
     return feed.content.likeIgnoreCase(keyword);
   }
 
@@ -118,8 +143,8 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         getWeatherSummaryDto(),
         getOotdDto(),
         feed.content,
-        feed.likeCount,
-        feed.commentCount,
+        numberTemplate(Long.class, "{0}", feed.likeCount),
+        numberTemplate(Integer.class, "{0}", feed.commentCount),
         Expressions.constant(true)
     );
   }
@@ -130,7 +155,20 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
 
   private QList getOotdDto() {
     return Projections.list(
-        Projections.constructor(OotdDto.class)
+        Projections.constructor(OotdDto.class,
+            clothes.id,
+            clothes.name,
+            clothes.name, // TODO: 옷 이미지 url
+            clothes.type,
+            Projections.list(
+                Projections.constructor(ClothesAttributeDto.class,
+                    clothesAttributeDefinition.id,
+                    clothesAttributeDefinition.name,
+                    clothesAttributeDefinition.selectableValues,
+                    clothesAttribute.value
+                )
+            )
+        )
     );
   }
 
