@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.security.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
+import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
@@ -58,9 +59,8 @@ public class SecurityConfig {
             session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtService, objectMapper),
-            JsonUsernamePasswordAuthenticationFilter.class)
-    ;
+        .addFilterBefore(new JwtAuthenticationFilter(objectMapper, jwtService),
+            JsonLoginFilter.class);
 
     return http.build();
   }
@@ -96,5 +96,4 @@ public class SecurityConfig {
         .implies(Role.USER.name())
         .build();
   }
-
 }
