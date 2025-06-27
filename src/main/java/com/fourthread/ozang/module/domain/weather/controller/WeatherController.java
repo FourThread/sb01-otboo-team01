@@ -31,7 +31,7 @@ public class WeatherController {
     /**
      * 날씨 정보 조회 API
      */
-    @GetMapping
+    @GetMapping("/today")
     public ResponseEntity<WeatherDto> getWeather(
         @RequestParam
         @NotNull(message = "경도는 필수입니다")
