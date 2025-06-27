@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.user;
+package com.fourthread.ozang.module.domain.security;
 
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

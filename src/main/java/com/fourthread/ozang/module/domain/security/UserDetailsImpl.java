@@ -1,31 +1,35 @@
-package com.fourthread.ozang.module.domain.security.user;
+package com.fourthread.ozang.module.domain.security;
 
+import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import java.util.Collection;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@Getter
 @RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-  private final User user;
+  private final UserDto userDto;
+  private final String password;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role().name()));
   }
 
   @Override
   public String getPassword() {
-    return user.getPassword();
+    return password;
   }
 
   @Override
   public String getUsername() {
-    return user.getEmail();
+    return userDto.email();
   }
 
   @Override
@@ -35,7 +39,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return !user.getLocked();
+    return !userDto.locked();
   }
 
   @Override
