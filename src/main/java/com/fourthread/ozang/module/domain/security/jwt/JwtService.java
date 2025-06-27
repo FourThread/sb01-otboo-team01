@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security.jwt;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
@@ -92,8 +93,8 @@ public class JwtService {
       Payload payload = jwsObject.getPayload();
       Map<String, Object> jsonObject = payload.toJSONObject();
       return new JwtDto(
-          objectMapper.convertValue(jsonObject.get("iat"), LocalDateTime.class),
-          objectMapper.convertValue(jsonObject.get("exp"), LocalDateTime.class),
+          objectMapper.convertValue(jsonObject.get("iat"), Instant.class),
+          objectMapper.convertValue(jsonObject.get("exp"), Instant.class),
           objectMapper.convertValue(jsonObject.get("userDto"), UserDto.class),
           token
       );
@@ -146,21 +147,19 @@ public class JwtService {
   }
 
   public List<JwtToken> getActiveJwtTokens() {
-    return jwtTokenRepository.findAllByExpirationTimeAfter(Instant.now());
+    return jwtTokenRepository.findAllByExpiryDateAfter(LocalDateTime.now());
   }
 
   private JwtDto generateJwtDto(UserDto userDto, long tokenValiditySeconds) {
-    LocalDateTime issueTime = LocalDateTime.now();
-    LocalDateTime expirationTime = issueTime.plus(Duration.ofSeconds(tokenValiditySeconds));
+    Instant issueTime = Instant.now();
+    Instant expirationTime = issueTime.plus(Duration.ofSeconds(tokenValiditySeconds));
 
-    Instant issueInstant = issueTime.atZone(ZoneId.of("UTC")).toInstant();
-    Instant expirationInstant = expirationTime.atZone(ZoneId.of("UTC")).toInstant();
-
+    Map<String, Object> userMap = objectMapper.convertValue(userDto, new TypeReference<>() {});
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
         .subject(userDto.email())
-        .claim("userDto", userDto)
-        .issueTime(Date.from(issueInstant))
-        .expirationTime(Date.from(expirationInstant))
+        .claim("userDto", userMap)
+        .issueTime(new Date(issueTime.toEpochMilli()))
+        .expirationTime(new Date(expirationTime.toEpochMilli()))
         .build();
 
     JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);

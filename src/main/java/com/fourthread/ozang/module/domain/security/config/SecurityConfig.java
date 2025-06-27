@@ -6,6 +6,7 @@ import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
+import com.fourthread.ozang.module.domain.security.jwt.JwtLogoutHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Slf4j
 @Configuration
@@ -47,6 +49,12 @@ public class SecurityConfig {
             .anyRequest().hasRole(Role.USER.name())
         )
         .csrf(csrf -> csrf.disable()
+        )
+        .logout(logout ->
+            logout
+                .logoutRequestMatcher(SecurityMatchers.LOGOUT)
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                .addLogoutHandler(new JwtLogoutHandler(jwtService))
         )
         .with(
             new JsonLoginFilter.Configurer(objectMapper),

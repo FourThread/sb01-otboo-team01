@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtBlacklist {
 
-  private final Map<String, LocalDateTime> blacklist = new ConcurrentHashMap<>();
+  private final Map<String, Instant> blacklist = new ConcurrentHashMap<>();
 
-  public void put(String accessToken, LocalDateTime expirationTime) {
+  public void put(String accessToken, Instant expirationTime) {
     blacklist.putIfAbsent(accessToken, expirationTime);
   }
 
@@ -23,6 +23,6 @@ public class JwtBlacklist {
   // 1시간마다 정리
   @Scheduled(fixedDelay = 60 * 60 * 1000)
   public void cleanUp() {
-    blacklist.values().removeIf(expirationTime -> expirationTime.isBefore(LocalDateTime.now()));
+    blacklist.values().removeIf(expirationTime -> expirationTime.isBefore(Instant.now()));
   }
 }
