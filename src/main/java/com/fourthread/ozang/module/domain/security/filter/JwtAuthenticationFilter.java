@@ -60,10 +60,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
   }
 
-  private void handleUnauthorized(HttpServletRequest request, HttpServletResponse response,) {
+  private void handleUnauthorized(HttpServletRequest request, HttpServletResponse response) {
     try {
       String token = resolveAccessToken(request).orElse("UNKNOWN");
-      jwtService.invalidateJwtSession(token);
+      jwtService.invalidateJwtToken(token);
 
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -79,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private boolean isPermitAll(HttpServletRequest request) {
-    return Arrays.stream(Arrays.stream(SecurityMatchers.PUBLIC_MATCHERS)
-        .anyMatch(requestMatcher -> requestMatcher.matches(request)));
+    return Arrays.stream(SecurityMatchers.PUBLIC_MATCHERS)
+        .anyMatch(requestMatcher -> requestMatcher.matches(request));
   }
 }

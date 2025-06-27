@@ -10,4 +10,7 @@ public record JwtDto(
     String token
 ) {
 
+  public boolean isExpired() {
+    return exp.isBefore(LocalDateTime.now());
+  }
 }
