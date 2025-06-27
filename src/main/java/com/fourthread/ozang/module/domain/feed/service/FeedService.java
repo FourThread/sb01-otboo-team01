@@ -4,9 +4,11 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_LIKE_N
 import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FOUND;
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
+import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
@@ -21,6 +23,8 @@ import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +67,46 @@ public class FeedService {
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user);
+  }
+
+  /**
+  * @methodName : retrieveFeed
+  * @date : 25. 6. 26. 오후 1:17
+  * @author : wongil
+  * @Description: 피드 목록 조회
+  **/
+  public FeedData retrieveFeed(FeedPaginationRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    Integer pageSize = request.limit();
+    UUID idAfter = request.idAfter() == null ? null : UUID.fromString(request.idAfter());
+    List<FeedDto> data = feedRepository.search(request);
+    boolean hasNext = data.size() > pageSize;
+
+    List<FeedDto> pagedFeeds = hasNext ? data.subList(0, pageSize) : data;
+
+    String nextCursor = null;
+    UUID nextIdAfter = null;
+
+    if (hasNext) {
+      FeedDto lastFeed = pagedFeeds.get(pagedFeeds.size() - 1);
+      nextCursor = lastFeed.createdAt().atOffset(ZoneOffset.UTC).toString();
+      nextIdAfter = lastFeed.id();
+    }
+
+    Long totalCount = feedRepository.feedTotalCount(request);
+
+    return new FeedData(
+        data,
+        nextCursor,
+        nextIdAfter,
+        hasNext,
+        totalCount,
+        request.sortBy(),
+        request.sortDirection()
+    );
   }
 
   /**
@@ -119,7 +163,7 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 좋아요 취소
   **/
-  public FeedDto doNotLike(UUID feedId) {
+  public FeedDto unLike(UUID feedId) {
 
     Feed feed = getFeed(feedId);
     FeedLike feedLike = getFeedLike(feed);
