@@ -50,6 +50,9 @@ public class SecurityConfig {
         )
         .csrf(csrf -> csrf.disable()
         )
+        .headers(headers -> headers
+            .frameOptions(frameOptions -> frameOptions.disable())
+        )
         .logout(logout ->
             logout
                 .logoutRequestMatcher(SecurityMatchers.LOGOUT)
