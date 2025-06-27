@@ -186,4 +186,60 @@ class WeatherTest {
             assertThat(weather.getTemperature().current()).isEqualTo(0.0);
         }
     }
+
+    @Nested
+    @DisplayName("WeatherLocation 테스트")
+    class WeatherLocationTest {
+
+        @Test
+        @DisplayName("WeatherAPILocation에서 WeatherLocation으로 변환")
+        void fromWeatherAPILocation() {
+            // When
+            WeatherLocation location = WeatherLocation.from(TEST_LOCATION);
+
+            // Then
+            assertThat(location.getLatitude()).isEqualTo(TEST_LOCATION.latitude());
+            assertThat(location.getLongitude()).isEqualTo(TEST_LOCATION.longitude());
+            assertThat(location.getX()).isEqualTo(TEST_LOCATION.x());
+            assertThat(location.getY()).isEqualTo(TEST_LOCATION.y());
+            assertThat(location.getLocationNames()).isEqualTo("서울특별시 중구");
+        }
+
+        @Test
+        @DisplayName("WeatherLocation에서 WeatherAPILocation으로 변환")
+        void toWeatherAPILocation() {
+            // Given
+            WeatherLocation location = WeatherLocation.from(TEST_LOCATION);
+
+            // When
+            WeatherAPILocation apiLocation = location.toApiLocation();
+
+            // Then
+            assertThat(apiLocation.latitude()).isEqualTo(TEST_LOCATION.latitude());
+            assertThat(apiLocation.longitude()).isEqualTo(TEST_LOCATION.longitude());
+            assertThat(apiLocation.x()).isEqualTo(TEST_LOCATION.x());
+            assertThat(apiLocation.y()).isEqualTo(TEST_LOCATION.y());
+            assertThat(apiLocation.locationNames()).containsExactly("서울특별시 중구");
+        }
+
+        @Test
+        @DisplayName("여러 위치명 처리")
+        void multipleLocationNames() {
+            // Given
+            WeatherAPILocation apiLocation = new WeatherAPILocation(
+                37.5665, 126.9780, 60, 127,
+                List.of("서울특별시", "중구", "명동")
+            );
+
+            // When
+            WeatherLocation location = WeatherLocation.from(apiLocation);
+            WeatherAPILocation converted = location.toApiLocation();
+
+            // Then
+            assertThat(location.getLocationNames()).isEqualTo("서울특별시,중구,명동");
+            assertThat(converted.locationNames()).containsExactly("서울특별시", "중구", "명동");
+        }
+
+    }
+
 }
