@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,16 @@ public class WeatherController {
         WeatherDto weatherData = weatherService.getWeatherForecast(longitude, latitude);
 
         return ResponseEntity.ok(weatherData);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<WeatherDto>> getFiveDayForecast(
+        @RequestParam @NotNull @Min(124) @Max(132) Double longitude,
+        @RequestParam @NotNull @Min(33)  @Max(43)  Double latitude
+    ) {
+        log.info("5일치 날씨 예보 요청 - 위도: {}, 경도: {}", latitude, longitude);
+        List<WeatherDto> list = weatherService.getFiveDayForecast(longitude, latitude);
+        return ResponseEntity.ok(list);
     }
 
     /**
