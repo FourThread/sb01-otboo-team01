@@ -1,5 +1,8 @@
 package com.fourthread.ozang.module.domain.weather.dto.type;
 
+/**
+ * 풍력(정성 정보)
+ */
 public enum WindStrength {
     WEAK("약함"),
     MODERATE("보통"),
