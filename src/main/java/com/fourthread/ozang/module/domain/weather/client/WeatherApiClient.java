@@ -54,6 +54,32 @@ public class WeatherApiClient {
             .orElseThrow(() -> new WeatherApiException("기상청 API 응답이 없습니다", "NO_CONTENT"));
     }
 
+    /**
+     * 단기예보 조회(getVilageFcst)
+     */
+    public WeatherApiResponse callVilageFcst(
+        GridCoordinate coord,
+        String baseDate,
+        String baseTime
+    ) {
+        return weatherWebClient.get()
+            .uri(b -> b.path("/getVilageFcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", coord.getX())
+                .queryParam("ny", coord.getY())
+                .build())
+            .retrieve()
+            .bodyToMono(WeatherApiResponse.class)
+            .timeout(Duration.ofSeconds(5))
+            .retryWhen(Retry.backoff(2, Duration.ofMillis(500)))
+            .block();
+    }
+
     // 초단기실황 조회 (필요시 사용)
     public WeatherApiResponse getWeatherNowcast(GridCoordinate coord) {
         LocalDateTime now = LocalDateTime.now();
