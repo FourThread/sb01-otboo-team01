@@ -1,7 +1,7 @@
 package com.fourthread.ozang.module.domain.feed.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.Weather;
+import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,6 +28,12 @@ public class Feed extends BaseUpdatableEntity {
   private String content;
   private AtomicInteger likeCount;
   private AtomicInteger commentCount;
+
+  public Feed updateFeed(String content) {
+    this.content = content;
+
+    return this;
+  }
 
   public int increaseLike() {
     return likeCount.incrementAndGet();

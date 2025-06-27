@@ -19,6 +19,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "users")
@@ -36,11 +37,12 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false)
   private Role role;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-  private boolean locked;
+  private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
 
   @ElementCollection(fetch = FetchType.LAZY)
+  @BatchSize(size = 50)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_oauth_providers", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "provider", length = 20)
@@ -68,7 +70,7 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
-  public void changeLocked(boolean locked) {
+  public void changeLocked(Boolean locked) {
     if (this.locked != locked) {
       this.locked = locked;
     }
