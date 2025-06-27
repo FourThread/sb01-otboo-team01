@@ -88,8 +88,8 @@ public class WeatherApiClient {
      */
     private LocalDateTime calculateBaseDateTime() {
         LocalDateTime now = LocalDateTime.now();
-        int[] hours = {2,5,8,11,14,17,20,23};
-        for (int base : hours) {
+        int[] baseHours = {23, 20, 17, 14, 11, 8, 5, 2};
+        for (int base : baseHours) {
             if (now.getHour() > base || (now.getHour()==base && now.getMinute()>=10)) {
                 return now.withHour(base).withMinute(0).withSecond(0).withNano(0);
             }
