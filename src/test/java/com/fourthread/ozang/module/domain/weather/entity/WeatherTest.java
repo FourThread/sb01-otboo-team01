@@ -4,8 +4,11 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
+import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
 import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
@@ -240,6 +243,72 @@ class WeatherTest {
             assertThat(converted.locationNames()).containsExactly("서울특별시", "중구", "명동");
         }
 
+    }
+
+    @Nested
+    @DisplayName("Embedded 클래스 DTO 변환 테스트")
+    class EmbeddedClassToDtoTest {
+
+        @Test
+        @DisplayName("PrecipitationInfo -> PrecipitationDto 변환")
+        void precipitationInfoToDto() {
+            // Given
+            PrecipitationInfo info = new PrecipitationInfo(
+                PrecipitationType.RAIN, 10.5, 80.0
+            );
+
+            // When
+            PrecipitationDto dto = info.toDto();
+
+            // Then
+            assertThat(dto.type()).isEqualTo(PrecipitationType.RAIN);
+            assertThat(dto.amount()).isEqualTo(10.5);
+            assertThat(dto.probability()).isEqualTo(80.0);
+        }
+
+        @Test
+        @DisplayName("TemperatureInfo -> TemperatureDto 변환")
+        void temperatureInfoToDto() {
+            // Given
+            TemperatureInfo info = new TemperatureInfo(20.0, 2.5, 15.0, 25.0);
+
+            // When
+            TemperatureDto dto = info.toDto();
+
+            // Then
+            assertThat(dto.current()).isEqualTo(20.0);
+            assertThat(dto.comparedToDayBefore()).isEqualTo(2.5);
+            assertThat(dto.min()).isEqualTo(15.0);
+            assertThat(dto.max()).isEqualTo(25.0);
+        }
+
+        @Test
+        @DisplayName("HumidityInfo -> HumidityDto 변환")
+        void humidityInfoToDto() {
+            // Given
+            HumidityInfo info = new HumidityInfo(65.0, 5.0);
+
+            // When
+            HumidityDto dto = info.toDto();
+
+            // Then
+            assertThat(dto.current()).isEqualTo(65.0);
+            assertThat(dto.comparedToDayBefore()).isEqualTo(5.0);
+        }
+
+        @Test
+        @DisplayName("WindInfo -> WindSpeedDto 변환")
+        void windInfoToDto() {
+            // Given
+            WindInfo info = new WindInfo(7.5, 180.0, 0.0, 7.5, WindStrength.MODERATE);
+
+            // When
+            WindSpeedDto dto = info.toDto();
+
+            // Then
+            assertThat(dto.speed()).isEqualTo(7.5);
+            assertThat(dto.asWord()).isEqualTo(WindStrength.MODERATE);
+        }
     }
 
 }
