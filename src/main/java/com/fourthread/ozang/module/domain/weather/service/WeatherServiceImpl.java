@@ -2,9 +2,16 @@ package com.fourthread.ozang.module.domain.weather.service;
 
 import com.fourthread.ozang.module.domain.weather.client.KakaoApiClient;
 import com.fourthread.ozang.module.domain.weather.client.WeatherApiClient;
+import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
+import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
+import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
+import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
 import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
+import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
+import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
+import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
 import com.fourthread.ozang.module.domain.weather.entity.GridCoordinate;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.exception.InvalidCoordinateException;
@@ -14,10 +21,18 @@ import com.fourthread.ozang.module.domain.weather.mapper.WeatherMapper;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import com.fourthread.ozang.module.domain.weather.util.CoordinateConverter;
 import java.security.MessageDigest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -136,6 +151,132 @@ public class WeatherServiceImpl implements WeatherService {
         }
     }
 
+    @Override
+    @Transactional
+    public List<WeatherDto> getFiveDayForecast(Double longitude, Double latitude) {
+        // 1. 유효성 검증
+        validateCoordinates(longitude, latitude);
+
+        // 2. 격자 좌표 변환
+        GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
+
+        // 3. base_date/base_time 계산
+        LocalDateTime nowKst = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        String baseDate = calculateBaseDate(nowKst);
+        String baseTime = calculateBaseTime(nowKst);
+        log.debug("기상청 단기예보 호출 기준시각 - date: {}, time: {}", baseDate, baseTime);
+
+        // 4. 기상청 단기예보 API 호출
+        WeatherApiResponse resp = weatherApiClient.callVilageFcst(
+            grid, baseDate, baseTime
+        );
+
+        // 5. 응답 검증
+        validateApiResponse(resp);
+
+        // 6. 위치명 조회
+        List<String> locationNames = kakaoApiClient.getLocationNames(latitude, longitude);
+
+        // 7.  단기예보 - 5일치 추출
+        return filterFiveDay(
+            resp.response().body().items().item(),
+            baseTime,
+            LocalDate.now(ZoneId.of("Asia/Seoul")),
+            new WeatherAPILocation(latitude, longitude, grid.getX(), grid.getY(), locationNames)
+        );
+    }
+
+    /// 5일치 예보 추출
+    private List<WeatherDto> filterFiveDay(
+        List<WeatherApiResponse.Item> items,
+        String baseTime,
+        LocalDate today,
+        WeatherAPILocation loc
+    ) {
+        int baseHour = Integer.parseInt(baseTime.substring(0,2));
+        boolean morning = Set.of(2,5,8,11,14).contains(baseHour);
+        boolean evening = Set.of(17,20,23).contains(baseHour);
+
+        Map<LocalDate, List<WeatherApiResponse.Item>> grouped = items.stream()
+            .filter(it -> {
+                LocalDate d = LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE);
+                int offset = (int) ChronoUnit.DAYS.between(today, d);
+                String t = it.fcstTime();
+                if (offset <= 3) return true;
+                if (offset == 4) return morning
+                    ? Set.of("0200","0500","0800","1100","1400").contains(t)
+                    : t.endsWith("00");
+                if (offset == 5 && evening) return Set.of("0200","0500","0800","1100","1400","1700","2000","2300").contains(t);
+                return false;
+            })
+            .collect(Collectors.groupingBy(
+                it -> LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE),
+                LinkedHashMap::new,
+                Collectors.toList()
+            ));
+
+        List<WeatherDto> result = new ArrayList<>();
+
+        for (Map.Entry<LocalDate, List<WeatherApiResponse.Item>> entry : grouped.entrySet()) {
+            LocalDate date = entry.getKey();
+            List<WeatherApiResponse.Item> dayItems = entry.getValue();
+
+            LocalDateTime forecastedAt = parseDateTime(dayItems.get(0).baseDate(), dayItems.get(0).baseTime());
+            String earliestTime = dayItems.stream()
+                .map(WeatherApiResponse.Item::fcstTime)
+                .min(String::compareTo).orElse("0000");
+            LocalDateTime forecastAt = LocalDateTime.of(
+                date.getYear(), date.getMonth(), date.getDayOfMonth(),
+                Integer.parseInt(earliestTime.substring(0,2)), 0
+            );
+
+            double minTemp = dayItems.stream()
+                .filter(i -> "T1H".equals(i.category()))
+                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
+                .min().orElse(0);
+            double maxTemp = dayItems.stream()
+                .filter(i -> "T1H".equals(i.category()))
+                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
+                .max().orElse(0);
+
+            // 강수확률 평균
+            double avgPop = dayItems.stream()
+                .filter(i -> "POP".equals(i.category()))
+                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
+                .average().orElse(0);
+
+            // 하늘상태(가장 빈도 높은 코드)
+            String skyCode = dayItems.stream()
+                .filter(i -> "SKY".equals(i.category()))
+                .collect(Collectors.groupingBy(WeatherApiResponse.Item::fcstValue, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey).orElse("1");
+
+            WeatherDto dto = new WeatherDto(
+                null,
+                forecastedAt,
+                forecastAt,
+                loc,
+                SkyStatus.fromCode(skyCode),
+                new PrecipitationDto(PrecipitationType.NONE, 0.0, avgPop),
+                new HumidityDto(0.0, 0.0),
+                new TemperatureDto(0.0, 0.0, minTemp, maxTemp),
+                new WindSpeedDto(0.0, WindStrength.WEAK)
+            );
+            result.add(dto);
+        }
+
+        return result;
+    }
+    private LocalDateTime parseDateTime(String date, String time) {
+        String t = time.length() < 4
+            ? String.format("%04d", Integer.parseInt(time))
+            : time;
+        String ymdhm = date + t.substring(0, 2) + "00";
+        return LocalDateTime.parse(ymdhm, DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+    }
+
     private void validateCoordinates(Double longitude, Double latitude) {
         if (longitude == null || latitude == null) {
             throw new InvalidCoordinateException("경도와 위도는 필수입니다.");
@@ -186,31 +327,32 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     /**
-     * 기상청 API용 base_time 계산 (정시 단위)
-     * 초단기실황 매시 30분에 생성(45분 이후에 호출)
+     * 단기예보용 base_date 계산 (KST 발표시 10분 이후부터 해당 시각)
      */
     private String calculateBaseDate(LocalDateTime now) {
-        LocalDateTime targetTime = now;
-
-        if (now.getMinute() < 45) {
-            targetTime = now.minusHours(1);
+        int[] hours = {23, 20, 17, 14, 11,  8, 5, 2};
+        for (int h : hours) {
+            LocalDateTime publish = now.withHour(h).withMinute(10).withSecond(0);
+            if (!now.isBefore(publish)) {
+                return publish.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            }
         }
-
-        return targetTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // 자정 직전 호출 시 전날 23시 기준
+        return now.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
     }
 
     /**
-     * 기사청 API용 base_time 계산 (정시 단위)
+     * 단기예보용 base_time 계산 ("HH00", 발표시각 10분 이후부터)
      */
     private String calculateBaseTime(LocalDateTime now) {
-        LocalDateTime targetTime = now;
-
-        // 현재 시간이 해당 시간의 40분 이전이면 이전 시간 데이터 사용
-        if (now.getMinute() < 45) {
-            targetTime = now.minusHours(1);
+        int[] hours = {23, 20, 17, 14, 11,  8, 5, 2};
+        for (int h : hours) {
+            LocalDateTime publish = now.withHour(h).withMinute(10).withSecond(0);
+            if (!now.isBefore(publish)) {
+                return String.format("%02d00", h);
+            }
         }
-
-        return String.format("%02d00", targetTime.getHour());
+        return "2300";
     }
 
     private String generateResponseHash(WeatherApiResponse response) {
