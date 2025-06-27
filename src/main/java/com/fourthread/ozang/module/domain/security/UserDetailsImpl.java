@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.security;
 
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.entity.User;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;

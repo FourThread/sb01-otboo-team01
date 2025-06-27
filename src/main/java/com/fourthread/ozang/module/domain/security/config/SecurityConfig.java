@@ -1,6 +1,11 @@
-package com.fourthread.ozang.module.domain.security;
+package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.security.CustomLoginFailureHandler;
+import com.fourthread.ozang.module.domain.security.SecurityMatchers;
+import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
+import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
+import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +37,7 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(
       HttpSecurity http, ObjectMapper objectMapper,
       DaoAuthenticationProvider daoAuthenticationProvider,
+      JwtService jwtService
       ) throws Exception {
     http
         .authenticationProvider(daoAuthenticationProvider)

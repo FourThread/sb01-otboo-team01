@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final ObjectMapper objectMapper;
+  private final JwtService jwtService;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
