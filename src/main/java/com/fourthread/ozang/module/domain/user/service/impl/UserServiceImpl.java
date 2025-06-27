@@ -2,12 +2,8 @@ package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
-import com.fourthread.ozang.module.domain.security.dto.JwtToken;
-import com.fourthread.ozang.module.domain.security.provider.JwtTokenProvider;
-import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
-import com.fourthread.ozang.module.domain.user.dto.request.LoginRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
@@ -23,16 +19,10 @@ import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManagerResolver;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,8 +38,6 @@ public class UserServiceImpl implements UserService {
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
   private final PasswordEncoder passwordEncoder;
-  private final JwtTokenProvider jwtTokenProvider;
-  private final AuthenticationManagerBuilder authenticationManagerBuilder;
 //  private final ProfileStorage profileStorage;
 
 
@@ -190,22 +178,5 @@ public class UserServiceImpl implements UserService {
         roleEqual,
         locked
     );
-  }
-
-  @Override
-  public JwtToken signIn(LoginRequest request) {
-    String email = request.email();
-    String password = request.password();
-    log.info("login 시도 - email : {}", email);
-    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-        email, password);
-
-    Authentication authentication = authenticationManagerBuilder.getObject()
-        .authenticate(authenticationToken);
-
-    String authenticatedEmail = ((UserDetails) authentication.getPrincipal()).getUsername();
-    log.info("인증 성공 - email: {}", authenticatedEmail);
-
-   return jwtTokenProvider.generateToken(authentication);
   }
 }

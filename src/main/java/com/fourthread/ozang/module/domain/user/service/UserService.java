@@ -33,6 +33,4 @@ public interface UserService {
 
   UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked);
-
-  JwtToken signIn(LoginRequest request);
 }

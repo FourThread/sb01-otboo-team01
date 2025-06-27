@@ -22,9 +22,10 @@ public class SecurityMatchers {
   public static final RequestMatcher REFRESH = new AntPathRequestMatcher(
       "/api/auth/refresh", HttpMethod.POST.name()
   );
+  public static final RequestMatcher H2_CONSOLE = new AntPathRequestMatcher(
+      "/h2-console/**");
 
   public static final RequestMatcher[] PUBLIC_MATCHERS = new RequestMatcher[]{
-      NON_API, SIGN_UP, LOGIN, LOGOUT, ME, REFRESH
+      NON_API, SIGN_UP, LOGIN, LOGOUT, ME, REFRESH, H2_CONSOLE
   };
-
 }
