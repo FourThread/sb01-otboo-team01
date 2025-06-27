@@ -11,6 +11,14 @@ public enum SkyStatus {
         this.description = description;
     }
 
+    public static SkyStatus fromCode(String code) {
+        return switch (code) {
+            case "3" -> MOSTLY_CLOUDY;
+            case "4" -> CLOUDY;
+            default -> CLEAR;
+        };
+    }
+
     public String getDescription() {
         return description;
     }
