@@ -1,8 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.entity;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
 import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
@@ -18,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -311,4 +308,51 @@ class WeatherTest {
         }
     }
 
+    @Nested
+    @DisplayName("Weather 엔티티 전체 DTO 변환 테스트")
+    class WeatherToDtoTest {
+
+        @Test
+        @DisplayName("Weather 엔티티의 모든 getter 메서드 테스트")
+        void allGetterMethods() {
+            // Given
+            Weather weather = Weather.create(NOW, NOW.plusHours(1), TEST_LOCATION, SkyStatus.CLEAR);
+            weather.updateWeatherData("TMP", "20.0");
+            weather.updateWeatherData("TMN", "15.0");
+            weather.updateWeatherData("TMX", "25.0");
+            weather.updateWeatherData("REH", "60.0");
+            weather.updateWeatherData("PTY", "1");
+            weather.updateWeatherData("POP", "30.0");
+            weather.updateWeatherData("PCP", "5.0");
+            weather.updateWeatherData("WSD", "5.5");
+
+            // When
+            WeatherAPILocation location = weather.getLocation();
+            PrecipitationDto precipitation = weather.getPrecipitation();
+            TemperatureDto temperature = weather.getTemperature();
+            HumidityDto humidity = weather.getHumidity();
+            WindSpeedDto windSpeed = weather.getWindSpeed();
+
+            // Then
+            assertThat(location).isNotNull();
+            assertThat(location.latitude()).isEqualTo(TEST_LOCATION.latitude());
+
+            assertThat(precipitation).isNotNull();
+            assertThat(precipitation.type()).isEqualTo(PrecipitationType.RAIN);
+            assertThat(precipitation.amount()).isEqualTo(5.0);
+            assertThat(precipitation.probability()).isEqualTo(30.0);
+
+            assertThat(temperature).isNotNull();
+            assertThat(temperature.current()).isEqualTo(20.0);
+            assertThat(temperature.min()).isEqualTo(15.0);
+            assertThat(temperature.max()).isEqualTo(25.0);
+
+            assertThat(humidity).isNotNull();
+            assertThat(humidity.current()).isEqualTo(60.0);
+
+            assertThat(windSpeed).isNotNull();
+            assertThat(windSpeed.speed()).isEqualTo(5.5);
+            assertThat(windSpeed.asWord()).isEqualTo(WindStrength.MODERATE);
+        }
+    }
 }
