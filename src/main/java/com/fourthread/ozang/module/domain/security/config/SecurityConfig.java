@@ -1,6 +1,8 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.security.CustomAccessDeniedHandler;
+import com.fourthread.ozang.module.domain.security.CustomAuthenticationEntryPoint;
 import com.fourthread.ozang.module.domain.security.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
@@ -40,7 +42,9 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(
       HttpSecurity http, ObjectMapper objectMapper,
       DaoAuthenticationProvider daoAuthenticationProvider,
-      JwtService jwtService
+      JwtService jwtService,
+      CustomAuthenticationEntryPoint authenticationEntryPoint,
+      CustomAccessDeniedHandler accessDeniedHandler
       ) throws Exception {
     http
         .authenticationProvider(daoAuthenticationProvider)
@@ -71,7 +75,10 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .addFilterBefore(new JwtAuthenticationFilter(objectMapper, jwtService),
-            JsonLoginFilter.class);
+            JsonLoginFilter.class)
+        .exceptionHandling(exceptionHandler ->
+            exceptionHandler.authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler));
 
     return http.build();
   }

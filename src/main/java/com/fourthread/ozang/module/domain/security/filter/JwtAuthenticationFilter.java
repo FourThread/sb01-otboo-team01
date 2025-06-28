@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,53 +30,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
-    if (isPermitAll(request)) {
-      filterChain.doFilter(request, response);
-      return;
+  protected void doFilterInternal(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain chain
+  ) throws IOException, ServletException {
+    Optional<String> optionalAccessToken = resolveAccessToken(request);
+    if (optionalAccessToken.isPresent() && !isPermitAll(request)) {
+      String accessToken = optionalAccessToken.get();
+      if (jwtService.validate(accessToken)) {
+        UserDto userDto = jwtService.parse(accessToken).userDto();
+        UserDetailsImpl userDetails = new UserDetailsImpl(userDto, null);
+        UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        chain.doFilter(request, response);
+
+      } else {
+        jwtService.invalidateJwtToken(accessToken);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ErrorResponse errorResponse = new ErrorResponse("Invalid token", null, null);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+      }
+    } else {
+      chain.doFilter(request, response);
     }
   }
 
   private Optional<String> resolveAccessToken(HttpServletRequest request) {
     String prefix = "Bearer ";
     return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
-        .filter(header -> header.startsWith(prefix))
-        .map(header -> header.substring(prefix.length()));
-  }
-
-  private void authenticate(String token, HttpServletRequest request, HttpServletResponse response, FilterChain chain) {
-    try {
-      UserDto userDto = jwtService.parse(token).userDto();
-      UserDetailsImpl userDetails = new UserDetailsImpl(userDto, null);
-      UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-      chain.doFilter(request, response);
-
-    } catch (Exception e) {
-      log.warn("Authentication failed during token parsing: {}", e.getMessage());
-      handleUnauthorized(request, response);
-    }
-  }
-
-  private void handleUnauthorized(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      String token = resolveAccessToken(request).orElse("UNKNOWN");
-      jwtService.invalidateJwtToken(token);
-
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.setCharacterEncoding("UTF-8");
-
-      ErrorResponse errorResponse = new ErrorResponse("Invalid token", "accessToken : {}" + token,
-          null);
-
-      response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-    } catch (IOException e) {
-      log.error("Failed to write!");
-    }
+        .map(value -> {
+          if (value.startsWith(prefix)) {
+            return value.substring(prefix.length());
+          } else {
+            return null;
+          }
+        });
   }
 
   private boolean isPermitAll(HttpServletRequest request) {
