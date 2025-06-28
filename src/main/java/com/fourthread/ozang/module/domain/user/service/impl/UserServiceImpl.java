@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,6 +149,7 @@ public class UserServiceImpl implements UserService {
     return profileMapper.toDto(findProfile);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @Transactional
   @Override
   public UUID changeLock(UUID userId, UserLockUpdateRequest request) {
@@ -161,6 +163,7 @@ public class UserServiceImpl implements UserService {
     return findUser.getId();
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @Transactional(readOnly = true)
   @Override
   public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
