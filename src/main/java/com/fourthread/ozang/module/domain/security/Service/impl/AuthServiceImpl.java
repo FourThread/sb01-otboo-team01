@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-  @Value("${admin.username")
+  @Value("${admin.username}")
   private String username;
-  @Value("${admin.password")
+  @Value("${admin.password}")
   private String password;
-  @Value("${admin.email")
+  @Value("${admin.email}")
   private String email;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
