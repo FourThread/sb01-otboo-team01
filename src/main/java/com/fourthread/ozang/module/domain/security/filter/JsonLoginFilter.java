@@ -2,7 +2,6 @@ package com.fourthread.ozang.module.domain.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
-import com.fourthread.ozang.module.domain.security.handler.CustomLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.user.dto.request.LoginRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +65,6 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     filter.setRequiresAuthenticationRequestMatcher(SecurityMatchers.LOGIN);
     filter.setAuthenticationManager(authenticationManager);
-    filter.setAuthenticationSuccessHandler(new CustomLoginSuccessHandler(objectMapper));
     filter.setAuthenticationFailureHandler(new CustomLoginFailureHandler(objectMapper));
     filter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
     filter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);

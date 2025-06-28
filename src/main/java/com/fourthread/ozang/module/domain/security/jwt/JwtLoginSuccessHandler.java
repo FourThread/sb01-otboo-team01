@@ -25,7 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication) throws IOException, ServletException {
 
     UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
-    log.info("[JwtLoginSuccessHandler] 로그인 성공 - 사용자: {}, IP: {}", principal.getUserDto().email(), request.getRemoteAddr());
+    log.info("[JwtLoginSuccessHandler] 로그인 성공 - 사용자: {}", principal.getUserDto().email());
     log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
     jwtService.invalidateJwtTokenByEmail(principal.getUserDto().email());
 

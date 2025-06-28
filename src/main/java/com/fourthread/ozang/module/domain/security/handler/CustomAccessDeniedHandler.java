@@ -14,7 +14,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
       throws IOException {
-    log.warn("권한이 없는 사용자가 접근을 시도했습니다! URI: {}, IP: {}, Message: {}", request.getRequestURL(), request.getRemoteAddr(), accessDeniedException.getMessage());
+    log.warn("권한이 없는 사용자가 접근을 시도했습니다! URI: {}, Message: {}", request.getRequestURL(), accessDeniedException.getMessage());
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     response.setContentType("application/json");
     response.getWriter().write("{\"error\": \"Forbidden\"}");
