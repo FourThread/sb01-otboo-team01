@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+// Client가 HTTP 요청을 받을 때마다 인증 처리를 진행합니다
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,25 +36,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain chain
   ) throws IOException, ServletException {
+    log.info("[JwtAuthenticationFilter] 필터를 호출합니다 - URI: {}", request.getRequestURI());
     Optional<String> optionalAccessToken = resolveAccessToken(request);
     if (optionalAccessToken.isPresent() && !isPermitAll(request)) {
       String accessToken = optionalAccessToken.get();
+      log.info("[JwtAuthenticationFilter] {} URI에서 AccessToken을 확인했습니다", request.getRequestURI());
       if (jwtService.validate(accessToken)) {
         UserDto userDto = jwtService.parse(accessToken).userDto();
+        log.info("[JwtAuthenticationFilter] 토큰이 유효합니다 - 사용자 : {}, 요청 URI : {}", userDto.email(), request.getRequestURI());
         UserDetailsImpl userDetails = new UserDetailsImpl(userDto, null);
-        UsernamePasswordAuthenticationToken auth =
+        UsernamePasswordAuthenticationToken authenticationToken =
             new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        log.info("[JwtAuthFilter] SecurityContext에 인증 완료 - 사용자: {}", userDto.email());
 
         chain.doFilter(request, response);
 
       } else {
+        log.warn("[JwtAuthFilter] 유효하지 않은 토큰 - 무효화 시도 - URI: {}", request.getRequestURI());
         jwtService.invalidateJwtToken(accessToken);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        ErrorResponse errorResponse = new ErrorResponse("Invalid token", null, null);
+        ErrorDetails errorDetails = new ErrorDetails(
+            "Authorization",
+            "만료되었거나 서명이 올바르지 않은 JWT입니다"
+        );
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            "InvalidTokenException",
+            "유효하지 않은 토큰입니다.",
+            errorDetails
+        );
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
       }
