@@ -16,7 +16,7 @@ public class AdminInit implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    log.info("Admin User created!");
+    log.info("초기 실행 시 어드민 유저를 생성합니다!");
     authService.initAdmin();
   }
 }
