@@ -6,7 +6,6 @@ import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHan
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
-import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLogoutHandler;
@@ -16,6 +15,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -51,7 +51,13 @@ public class SecurityConfig {
     http
         .authenticationProvider(daoAuthenticationProvider)
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers(SecurityMatchers.PUBLIC_MATCHERS).permitAll()
+            .requestMatchers(request -> !request.getRequestURI().startsWith("/api/")).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.SIGN_UP).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGIN).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
+            .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
         .csrf(csrf -> csrf.disable()
@@ -61,7 +67,7 @@ public class SecurityConfig {
         )
         .logout(logout ->
             logout
-                .logoutRequestMatcher(SecurityMatchers.LOGOUT)
+                .logoutUrl(SecurityMatchers.LOGOUT)
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
                 .addLogoutHandler(new JwtLogoutHandler(jwtService))
         )

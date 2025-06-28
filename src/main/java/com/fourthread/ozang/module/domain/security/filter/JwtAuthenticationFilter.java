@@ -12,15 +12,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.PathContainer;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 // Client가 HTTP 요청을 받을 때마다 인증 처리를 진행합니다
 @Slf4j
@@ -33,8 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(
       HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain chain
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain chain
   ) throws IOException, ServletException {
     log.info("[JwtAuthenticationFilter] 필터를 호출합니다 - URI: {}", request.getRequestURI());
     Optional<String> optionalAccessToken = resolveAccessToken(request);
@@ -90,7 +94,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private boolean isPermitAll(HttpServletRequest request) {
-    return Arrays.stream(SecurityMatchers.PUBLIC_MATCHERS)
-        .anyMatch(requestMatcher -> requestMatcher.matches(request));
+    String path = request.getRequestURI();
+    String method = request.getMethod();
+
+    for (String pattern : PUBLIC_PATTERNS) {
+      PathPattern pathPattern = patternParser.parse(pattern);
+
+      if (pattern.equals(SecurityMatchers.LOGIN) && !HttpMethod.POST.matches(method)) continue;
+      if (pattern.equals(SecurityMatchers.LOGOUT) && !HttpMethod.POST.matches(method)) continue;
+      if (pattern.equals(SecurityMatchers.SIGN_UP) && !HttpMethod.POST.matches(method)) continue;
+      if (pattern.equals(SecurityMatchers.REFRESH) && !HttpMethod.POST.matches(method)) continue;
+      if (pattern.equals(SecurityMatchers.ME) && !HttpMethod.GET.matches(method)) continue;
+
+      if (pathPattern.matches(PathContainer.parsePath(path))) {
+        return true;
+      }
+    }
+    return false;
   }
+
+  private static final String[] PUBLIC_PATTERNS = {
+      SecurityMatchers.LOGIN,
+      SecurityMatchers.LOGOUT,
+      SecurityMatchers.H2_CONSOLE,
+      SecurityMatchers.ME,
+      SecurityMatchers.SIGN_UP,
+      SecurityMatchers.REFRESH
+  };
+
+  private static final PathPatternParser patternParser = new PathPatternParser();
 }

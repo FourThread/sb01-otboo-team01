@@ -20,8 +20,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,7 +63,9 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     JsonLoginFilter filter = new JsonLoginFilter(objectMapper);
 
-    filter.setRequiresAuthenticationRequestMatcher(SecurityMatchers.LOGIN);
+    PathPatternRequestMatcher matcher = PathPatternRequestMatcher.withDefaults()
+        .matcher(HttpMethod.POST, SecurityMatchers.LOGIN);
+    filter.setRequiresAuthenticationRequestMatcher(matcher);
     filter.setAuthenticationManager(authenticationManager);
     filter.setAuthenticationFailureHandler(new CustomLoginFailureHandler(objectMapper));
     filter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
@@ -75,17 +77,18 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
       AbstractAuthenticationFilterConfigurer<HttpSecurity, Configurer, JsonLoginFilter> {
 
     public Configurer(ObjectMapper objectMapper) {
-      super(new JsonLoginFilter(objectMapper), SecurityMatchers.LOGIN_URL);
+      super(new JsonLoginFilter(objectMapper), SecurityMatchers.LOGIN);
     }
 
     @Override
     protected RequestMatcher createLoginProcessingUrlMatcher(String loginProcessingUrl) {
-      return new AntPathRequestMatcher(loginProcessingUrl, HttpMethod.POST.name());
+      return PathPatternRequestMatcher.withDefaults()
+          .matcher(HttpMethod.POST, loginProcessingUrl);
     }
 
     @Override
     public void init(HttpSecurity http) throws Exception {
-      loginProcessingUrl(SecurityMatchers.LOGIN_URL);
+      loginProcessingUrl(SecurityMatchers.LOGIN);
     }
   }
 }
