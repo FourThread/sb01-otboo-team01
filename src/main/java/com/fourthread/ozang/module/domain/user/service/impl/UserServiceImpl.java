@@ -45,17 +45,19 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @Override
   public UserDto createUser(UserCreateRequest request) {
-    log.debug("Create user start : {}", request);
+    log.info("[UserService] 사용자를 생성합니다");
 
     String username = request.name();
     String email = request.email();
 
     if (userRepository.existsByName(username)) {
+      log.info("[UserService] 이미 해당 사용자 이름이 존재합니다");
       throw new UserException(ErrorCode.USERNAME_ALREADY_EXISTS, username,
           this.getClass().getSimpleName());
     }
 
     if (userRepository.existsByEmail(email)) {
+      log.info("[UserService] 이미 해당 이메일이 사용 중입니다");
       throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS, email,
           this.getClass().getSimpleName());
     }
@@ -71,8 +73,7 @@ public class UserServiceImpl implements UserService {
     user.setProfile(emptyProfile);
     userRepository.save(user);
 
-    log.debug("Create user : id={}, username = {}", user.getId(), username);
-
+    log.info("[UserService] 사용자 생성이 완료되었습니다");;
     return userMapper.toDto(user);
   }
 
@@ -80,14 +81,14 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request) {
     Role newRole = request.role();
-    log.debug("Update user role start : {}", newRole);
+    log.info("사용자 Role를 업데이트 합니다 : {}", newRole);
     User findUser = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
 
     findUser.updateRole(newRole);
 
-    log.debug("Update user role end : username = {}", findUser.getName());
+    log.info("{} 사용자 Role 업데이트를 완료했습니다", findUser.getName());
 
     return userMapper.toDto(findUser);
   }
@@ -95,7 +96,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @Override
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
-    log.info("Update user password - start");
+    log.info("[UserService] 비밀번호를 업데이트 합니다");
     String newPassword = request.password();
     String encodePassword = passwordEncoder.encode(newPassword);
     User findUser = userRepository.findById(userId)
@@ -103,13 +104,14 @@ public class UserServiceImpl implements UserService {
             this.getClass().getSimpleName()));
 
     findUser.updatePassword(encodePassword);
-    log.info("Update user password - end");
+    log.info("비밀번호 변경을 완료했습니다");
 
   }
 
   @Transactional(readOnly = true)
   @Override
   public ProfileDto getUserProfile(UUID userId) {
+    log.info("[UserService] 프로필 단건 조회를 합니다");
     Profile profile = profileRepository.findByUserId(userId)
         .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
@@ -125,6 +127,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ProfileDto updateUserProfile(UUID userId, ProfileUpdateRequest request,
       Optional<MultipartFile> nullableProfile) {
+    log.info("[UserService] 사용자 프로필을 업데이트 합니다");
     Profile findProfile = profileRepository.findByUserId(userId)
         .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
@@ -146,6 +149,8 @@ public class UserServiceImpl implements UserService {
         profileImageUrl
     );
 
+    log.info("[UserService] 사용자 프로필 업데이트를 완료했습니다");
+
     return profileMapper.toDto(findProfile);
   }
 
@@ -158,6 +163,8 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
 
+    log.info("[UserService] 사용자 계정 잠금 상태를 변경합니다 : before {} -> after {}", findUser.getLocked(),
+        request.locked());
     findUser.changeLocked(locked);
 
     return findUser.getId();
@@ -168,6 +175,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked) {
+    log.info("[UserService] 사용자 목록을 조회합니다");
     if (!"createdAt".equals(sortBy)) {
       throw new IllegalArgumentException("현재는 createdAt 기준 정렬만 지원합니다");
     }

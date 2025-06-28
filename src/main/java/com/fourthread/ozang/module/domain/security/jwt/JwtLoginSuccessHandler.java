@@ -8,10 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -23,8 +25,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication) throws IOException, ServletException {
 
     UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
+    log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
     jwtService.invalidateJwtTokenByEmail(principal.getUserDto().email());
+
     JwtToken jwtSession = jwtService.registerJwtToken(principal.getUserDto());
+    log.info("[JwtLoginSuccessHandler] 새로운 Access Token을 발급합니다");
 
     String refreshToken = jwtSession.getRefreshToken();
     Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);

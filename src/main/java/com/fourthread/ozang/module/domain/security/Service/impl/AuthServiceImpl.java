@@ -22,11 +22,11 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
   @Value("${admin.username")
-  private String username = "admin";
+  private String username;
   @Value("${admin.password")
-  private String password = "Admin1234!!";
+  private String password;
   @Value("${admin.email")
-  private String email = "admin@admin.com";
+  private String email;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
@@ -34,15 +34,14 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public UserDto initAdmin() {
     if (userRepository.existsByEmail(email) || userRepository.existsByName(username)) {
-      log.warn("Already admin exists!");
+      log.debug("이미 어드민 유저가 존재합니다!");
       return null;
     }
     String encodedPassword = passwordEncoder.encode(password);
     User admin = new User(username, email, encodedPassword, Role.ADMIN);
 
-    log.debug("Create admin start");
+    log.debug("새로운 어드민 유저를 생성합니다");
 
-    // 빈 프로필 생성하기
     Profile emptyProfile = new Profile(username, null, null,
         null, null, null);
 
