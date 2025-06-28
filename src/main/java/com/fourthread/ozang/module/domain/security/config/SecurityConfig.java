@@ -1,9 +1,9 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.CustomAccessDeniedHandler;
-import com.fourthread.ozang.module.domain.security.CustomAuthenticationEntryPoint;
-import com.fourthread.ozang.module.domain.security.CustomLoginFailureHandler;
+import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
+import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
+import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
