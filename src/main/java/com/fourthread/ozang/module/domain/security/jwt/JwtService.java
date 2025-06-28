@@ -52,39 +52,45 @@ public class JwtService {
 
   @Transactional
   public JwtToken registerJwtToken(UserDto userDto) {
+    log.info("[JwtService] 토큰 발급 요청 사용자 : {}", userDto.email());
     JwtDto accessJwtDto = generateJwtDto(userDto, accessTokenValiditySeconds);
     JwtDto refreshJwtDto = generateJwtDto(userDto, refreshTokenValiditySeconds);
 
     JwtToken JwtToken = new JwtToken(userDto.email(), accessJwtDto.token(),
         refreshJwtDto.token(), accessJwtDto.exp());
     jwtTokenRepository.save(JwtToken);
+    log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}", accessJwtDto.exp());
 
     return JwtToken;
   }
 
   public boolean validate(String token) {
-    boolean verified;
-
     try {
-      JWSVerifier verifier = new MACVerifier(secret);
       JWSObject jwsObject = JWSObject.parse(token);
-      verified = jwsObject.verify(verifier);
+      JWSVerifier verifier = new MACVerifier(secret);
 
-      if (verified) {
-        JwtDto JwtDto = parse(token);
-        verified = !JwtDto.isExpired();
+      if (!jwsObject.verify(verifier)) {
+        log.warn("[JwtService] JWT 서명 검증 실패");
+        return false;
       }
 
-      if (verified) {
-        verified = !jwtBlacklist.contains(token);
+      JwtDto jwtDto = parse(token);
+      if (jwtDto.isExpired()) {
+        log.warn("[JwtService]  JWT 만료 - 만료 시간: {}", jwtDto.exp());
+        return false;
       }
+
+      if (jwtBlacklist.contains(token)) {
+        log.warn("[JwtService] 블랙리스트 토큰 접근 차단");
+        return false;
+      }
+
+      return true;
 
     } catch (JOSEException | ParseException e) {
-      log.error(e.getMessage());
-      verified = false;
+      log.error("[JwtService] JWT 파싱 또는 검증 예외: {}", e.getMessage(), e);
+      return false;
     }
-
-    return verified;
   }
 
   public JwtDto parse(String token) {
@@ -107,13 +113,16 @@ public class JwtService {
 
   @Transactional
   public JwtToken refreshJwtToken(String refreshToken) {
+    log.info("[JwtService] RefreshToken 갱신 요청");
     if (!validate(refreshToken)) {
+      log.info("[JwtService] 유효하지 않는 RefreshToken");
       throw new SecurityException("Refresh token invalid");
     }
     JwtToken session = jwtTokenRepository.findByRefreshToken(refreshToken)
         .orElseThrow(() -> new SecurityException("Token not found"));
 
     UUID userId = parse(refreshToken).userDto().id();
+    log.info("[JwtService] 사용자 ID : {} - Access Token 재발급", userId);
     UserDto userDto = userRepository.findById(userId)
         .map(userMapper::toDto)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, null, null));
@@ -126,6 +135,7 @@ public class JwtService {
         accessJwtDto.exp()
     );
 
+    log.info("[JwtService] 토큰 갱신 완료 - 만료 : {}", accessJwtDto.exp());
     return session;
   }
 
@@ -153,6 +163,7 @@ public class JwtService {
   private JwtDto generateJwtDto(UserDto userDto, long tokenValiditySeconds) {
     Instant issueTime = Instant.now();
     Instant expirationTime = issueTime.plus(Duration.ofSeconds(tokenValiditySeconds));
+    log.info("[JwtService] Jwt 생성 중 - 이메일 : {}, 만료 시간 : {}", userDto.email(), expirationTime);
 
     Map<String, Object> userMap = objectMapper.convertValue(userDto, new TypeReference<>() {});
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
@@ -168,7 +179,7 @@ public class JwtService {
     try {
       signedJWT.sign(new MACSigner(secret));
     } catch (JOSEException e) {
-      log.error(e.getMessage());
+      log.error("[JwtService] Jwt 서명 실패 : {}", e.getMessage());
       throw new SecurityException("Invalid Token");
     }
 
@@ -177,8 +188,10 @@ public class JwtService {
 
   private void invalidate(JwtToken session) {
     jwtTokenRepository.delete(session);
+    log.info("[JwtService] 토큰 삭제 -> 이메일 : {}", session.getEmail());
     if (!session.isExpired()) {
       jwtBlacklist.put(session.getAccessToken(), session.getExpiryDate());
+      log.info("[JwtService] 블랙 리스트 등록 - 만료 시간 : {}", session.getExpiryDate());
     }
   }
 }

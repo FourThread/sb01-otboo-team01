@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -23,6 +24,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -33,19 +35,23 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
       HttpServletResponse response) throws AuthenticationException {
 
     if (!request.getMethod().equals("POST")) {
+      log.warn("[JsonLoginFilter] 지원하지 않는 메서드 요청 : {}", request.getMethod());
       throw new AuthenticationServiceException("지원하지 않는 메서드입니다! : " + request.getMethod());
     }
 
     try {
       LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(),
           LoginRequest.class);
+      log.info("[JsonLoginFilter] 로그인을 시도합니다 email: {}", loginRequest.email());
 
       UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
 
       setDetails(request, token);
+      log.info("[JsonLoginFilter] 인증 매니저를 통해 인증 시도 완료");
       return this.getAuthenticationManager().authenticate(token);
 
     } catch (IOException e) {
+      log.error("[JsonLoginFilter] Request Body Parsing failed : {}", e.getMessage());
       throw new AuthenticationServiceException("요청 내용을 확인하지 못했습니다 : " + e.getMessage());
     }
   }
