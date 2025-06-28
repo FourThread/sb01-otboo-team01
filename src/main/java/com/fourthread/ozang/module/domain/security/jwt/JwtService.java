@@ -39,9 +39,9 @@ public class JwtService {
 
   @Value("${jwt.secret}")
   private String secret;
-  @Value("${jwt.access-token-expiration-ms}")
+  @Value("${jwt.access-token-expiration-seconds}")
   private long accessTokenValiditySeconds;
-  @Value("${jwt.refresh-token-expiration-ms}")
+  @Value("${jwt.refresh-token-expiration-seconds}")
   private long refreshTokenValiditySeconds;
 
   private final JwtTokenRepository jwtTokenRepository;
@@ -59,7 +59,7 @@ public class JwtService {
     JwtToken JwtToken = new JwtToken(userDto.email(), accessJwtDto.token(),
         refreshJwtDto.token(), accessJwtDto.exp());
     jwtTokenRepository.save(JwtToken);
-    log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}", accessJwtDto.exp());
+    log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return JwtToken;
   }
@@ -126,8 +126,13 @@ public class JwtService {
     UserDto userDto = userRepository.findById(userId)
         .map(userMapper::toDto)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, null, null));
+    log.info("[JwtService] AccessToken 생성 요청");
     JwtDto accessJwtDto = generateJwtDto(userDto, accessTokenValiditySeconds);
+    log.info("[JwtService] RefreshToken 생성 요청");
     JwtDto refreshJwtDto = generateJwtDto(userDto, refreshTokenValiditySeconds);
+
+    log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}",
+        accessJwtDto.exp(), refreshJwtDto.exp());
 
     session.update(
         accessJwtDto.token(),
@@ -163,7 +168,6 @@ public class JwtService {
   private JwtDto generateJwtDto(UserDto userDto, long tokenValiditySeconds) {
     Instant issueTime = Instant.now();
     Instant expirationTime = issueTime.plus(Duration.ofSeconds(tokenValiditySeconds));
-    log.info("[JwtService] Jwt 생성 중 - 이메일 : {}, 만료 시간 : {}", userDto.email(), expirationTime);
 
     Map<String, Object> userMap = objectMapper.convertValue(userDto, new TypeReference<>() {});
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()

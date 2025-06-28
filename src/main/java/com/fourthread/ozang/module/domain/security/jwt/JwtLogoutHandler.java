@@ -37,13 +37,13 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private Optional<String> resolveRefreshToken(HttpServletRequest request) {
     return Arrays.stream(request.getCookies())
-        .filter(cookie -> cookie.getName().equals("refresh-token"))
+        .filter(cookie -> cookie.getName().equals("refresh_token"))
         .findFirst()
         .map(Cookie::getValue);
   }
 
   private void invalidateRefreshTokenCookie(HttpServletResponse response) {
-    Cookie refreshTokenCookie = new Cookie("refresh-token", "");
+    Cookie refreshTokenCookie = new Cookie("refresh_token", "");
     refreshTokenCookie.setMaxAge(0);
     refreshTokenCookie.setHttpOnly(true);
     response.addCookie(refreshTokenCookie);

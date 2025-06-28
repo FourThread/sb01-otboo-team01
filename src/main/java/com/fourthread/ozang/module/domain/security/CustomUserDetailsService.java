@@ -22,16 +22,18 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Transactional(readOnly = true)
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    log.debug("[CustomUserDetailsService] 이메일을 통해서 사용자를 조회합니다");
+    log.info("[DaoAuthenticationProvider] -> [UserDetailsService]를 내부적으로 호출합니다");
+    log.info("[UserDetailsService] 이메일을 통해서 사용자를 조회합니다");
     return userRepository.findByEmail(email)
         .map(user -> {
-          log.info("[CustomUserDetailsService] {} 사용자를 발견했습니다", email);
+          log.info("[UserDetailsService] {} 사용자를 발견했습니다", email);
           UserDto userDto = userMapper.toDto(user);
           String password = user.getPassword();
+          log.info("[UserDetailsService] UserDetails 객체를 반환합니다");
           return new UserDetailsImpl(userDto, password);
         })
         .orElseThrow(() -> {
-          log.warn("[CustomUserDetailsService] {} 사용자를 찾을 수 없습니다", email);
+          log.warn("[UserDetailsService] {} 사용자를 찾을 수 없습니다", email);
           return new UsernameNotFoundException("User not found by email: " + email);
         });
   }

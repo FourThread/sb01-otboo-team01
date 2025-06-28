@@ -24,19 +24,21 @@ public class AuthController {
 
   @GetMapping("/me")
   public ResponseEntity<String> me(
-      @CookieValue(value = "refresh-token") String refreshToken) {
+      @CookieValue(value = "refresh_token") String refreshToken) {
     JwtToken jwtToken = jwtService.getJwtToken(refreshToken);
     return ResponseEntity.status(HttpStatus.OK).body(jwtToken.getAccessToken());
   }
 
   @PostMapping("/refresh")
   public ResponseEntity<String> refresh(
-      @CookieValue(value = "refresh-token") String refreshToken,
+      @CookieValue(value = "refresh_token") String refreshToken,
       HttpServletResponse response
   ) {
+    log.info("[AuthController] Refresh 토큰 요청 수신");
     JwtToken jwtSession = jwtService.refreshJwtToken(refreshToken);
 
-    Cookie refreshTokenCookie = new Cookie("refresh-token",
+    log.info("[AutnController] AccessToken 재발급 완료! - 사용자 : {}, 만료 시간 : {}", jwtSession.getEmail(), jwtSession.getExpiryDate());
+    Cookie refreshTokenCookie = new Cookie("refresh_token",
         jwtSession.getRefreshToken());
     refreshTokenCookie.setHttpOnly(true);
     response.addCookie(refreshTokenCookie);

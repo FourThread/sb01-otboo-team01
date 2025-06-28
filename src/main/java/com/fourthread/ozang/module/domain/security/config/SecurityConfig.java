@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Slf4j
@@ -64,7 +66,7 @@ public class SecurityConfig {
                 .addLogoutHandler(new JwtLogoutHandler(jwtService))
         )
         .with(
-            new JsonLoginFilter.Configurer(objectMapper),
+            new Configurer(objectMapper),
             configurer ->
                 configurer
                     .successHandler(new JwtLoginSuccessHandler(objectMapper, jwtService))
@@ -75,7 +77,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .addFilterBefore(new JwtAuthenticationFilter(objectMapper, jwtService),
-            JsonLoginFilter.class)
+            UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(exceptionHandler ->
             exceptionHandler.authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler));
