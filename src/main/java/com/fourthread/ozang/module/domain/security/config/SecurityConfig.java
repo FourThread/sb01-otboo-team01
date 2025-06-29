@@ -43,13 +43,13 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http, ObjectMapper objectMapper,
-      DaoAuthenticationProvider daoAuthenticationProvider,
       JwtService jwtService,
       CustomAuthenticationEntryPoint authenticationEntryPoint,
-      CustomAccessDeniedHandler accessDeniedHandler
+      CustomAccessDeniedHandler accessDeniedHandler,
+      AuthenticationManager authenticationManager
       ) throws Exception {
     http
-        .authenticationProvider(daoAuthenticationProvider)
+        .authenticationManager(authenticationManager)
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(request -> !request.getRequestURI().startsWith("/api/")).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.SIGN_UP).permitAll()
@@ -102,8 +102,7 @@ public class SecurityConfig {
       PasswordEncoder passwordEncoder,
       RoleHierarchy roleHierarchy
   ) {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService);
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder);
     provider.setAuthoritiesMapper(new RoleHierarchyAuthoritiesMapper(roleHierarchy));
     return provider;
