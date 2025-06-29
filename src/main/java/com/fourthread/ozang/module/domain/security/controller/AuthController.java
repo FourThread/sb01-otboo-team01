@@ -22,6 +22,7 @@ public class AuthController {
 
   private final JwtService jwtService;
 
+  // 리프레시 토큰을 이용해서 엑세스 토큰을 조회
   @GetMapping("/me")
   public ResponseEntity<String> me(
       @CookieValue(value = "refresh_token") String refreshToken) {
@@ -29,6 +30,7 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.OK).body(jwtToken.getAccessToken());
   }
 
+  // 리프레시 토큰을 이용해서 리프레시 토큰과 엑세스 토큰을 재발급 받는다
   @PostMapping("/refresh")
   public ResponseEntity<String> refresh(
       @CookieValue(value = "refresh_token") String refreshToken,

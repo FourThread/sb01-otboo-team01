@@ -157,6 +157,7 @@ public class JwtService {
   }
 
   public JwtToken getJwtToken(String refreshToken) {
+    log.info("[JwtService] refresh token을 이용해서 access token을 조회합니다");
     return jwtTokenRepository.findByRefreshToken(refreshToken)
         .orElseThrow(() -> new SecurityException("Token not Found"));
   }
