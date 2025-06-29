@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.user.dto.request.LoginRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +17,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractAu
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
@@ -57,8 +54,7 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
 
   public static JsonLoginFilter createDefault(
       ObjectMapper objectMapper,
-      AuthenticationManager authenticationManager,
-      SessionAuthenticationStrategy sessionAuthenticationStrategy
+      AuthenticationManager authenticationManager
   ) {
 
     JsonLoginFilter filter = new JsonLoginFilter(objectMapper);
@@ -67,9 +63,6 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
         .matcher(HttpMethod.POST, SecurityMatchers.LOGIN);
     filter.setRequiresAuthenticationRequestMatcher(matcher);
     filter.setAuthenticationManager(authenticationManager);
-    filter.setAuthenticationFailureHandler(new CustomLoginFailureHandler(objectMapper));
-    filter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-    filter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
     return filter;
   }
 

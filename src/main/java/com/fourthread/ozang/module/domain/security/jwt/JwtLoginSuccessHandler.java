@@ -35,13 +35,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     String refreshToken = jwtSession.getRefreshToken();
     Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
     refreshTokenCookie.setHttpOnly(true);
-    response.addCookie(refreshTokenCookie);
+    response.addCookie(refreshTokenCookie); // refresh token은 쿠키에 저장해서 반환
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(jwtSession.getAccessToken()));
+    response.getWriter().write(objectMapper.writeValueAsString(jwtSession.getAccessToken())); // Access Token은 응답 Body에 담아서 반환
 
   }
 }
