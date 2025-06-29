@@ -79,8 +79,7 @@ dependencies {
     // Environment Variables
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1'
-
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
