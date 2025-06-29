@@ -38,7 +38,7 @@ public class SecurityTest {
   private AuthenticationManager authenticationManager;
 
   @Test
-  @DisplayName("인증된 사용자 없이 엔드포인트를 호출할 수 없습니다")
+  @DisplayName("[인증 실페] 인증된 사용자 없이 엔드포인트를 호출할 수 없습니다 - 401 Unauthorized 에러 발생")
   void getHelloWorld_unauthenticated() throws Exception {
     mvc.perform(get("/api/test/hello"))
         .andExpect(status().isUnauthorized());
@@ -46,7 +46,7 @@ public class SecurityTest {
 
   @Test
   @WithMockUser
-  @DisplayName("모의 인증된 사용자 인증 시 엔드포인트 호출이 가능합니다.")
+  @DisplayName("[인증 성공] 모의 인증된 사용자 인증 시 엔드포인트 호출이 가능합니다.")
   void getHelloWorld_authenticated() throws Exception {
     mvc.perform(get("/api/test/hello"))
         .andExpect(content().string("Hello World!"))
@@ -55,7 +55,7 @@ public class SecurityTest {
 
   @Test
   @WithMockUser(username = "admin", roles = "ADMIN")
-  @DisplayName("ADMIN 권한은 계정 잠금 상태를 변경할 수 있다.")
+  @DisplayName("[인가 성공] ADMIN 권한은 계정 잠금 상태를 변경할 수 있다.")
   void changeLock_withAdminRole_success() throws Exception {
     User user = new User("test", "test@test.com", "Testtest1234!!", Role.USER);
     userRepository.save(user);
@@ -74,7 +74,7 @@ public class SecurityTest {
 
   @Test
   @WithMockUser(username = "user", roles = "USER")
-  @DisplayName("USER 권한으로 계정 잠금 상태 변경 시 403 Forbidden이 발생한다.")
+  @DisplayName("[인가 실패] USER 권한으로 계정 잠금 상태 변경 시 403 Forbidden이 발생한다.")
   void changeLock_withUserRole_forbidden() throws Exception {
     User user = new User("test", "test@test.com", "Testtest1234!!", Role.USER);
     userRepository.save(user);
