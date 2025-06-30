@@ -55,8 +55,8 @@ kakao:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS}
-  refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION_SECONDS}
+  access-token-expiration-seconds: 600
+  refresh-token-expiration-seconds: 86400
 
 admin:
   username: ${ADMIN_USERNAME}
