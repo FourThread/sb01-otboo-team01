@@ -43,7 +43,7 @@ public class ClothesController {
                 .body(response);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{clothesId}")
     public ResponseEntity<Void> delete(@PathVariable UUID clothesId) {
         clothesService.delete(clothesId);
         return ResponseEntity
