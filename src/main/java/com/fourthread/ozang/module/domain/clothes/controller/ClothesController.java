@@ -32,7 +32,6 @@ public class ClothesController {
                 .body(response);
     }
 
-
     @PatchMapping(value = "/{clothesId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClothesDto> update(
             @PathVariable UUID clothesId,
@@ -42,5 +41,13 @@ public class ClothesController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> delete(@PathVariable UUID clothesId) {
+        clothesService.delete(clothesId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }
