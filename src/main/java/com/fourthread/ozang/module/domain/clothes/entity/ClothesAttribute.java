@@ -22,11 +22,11 @@ public class ClothesAttribute extends BaseEntity {
     private ClothesAttributeDefinition definition;
 
     @Column(nullable = false)
-    private String value;
+    private String attributeValue; //value 예약어라서 수정
 
     public ClothesAttribute(ClothesAttributeDefinition definition, String value) {
         this.definition = definition;
-        this.value = value;
+        this.attributeValue = value;
     }
 
     protected void assignClothes(Clothes clothes) {

@@ -22,7 +22,7 @@ public class ClothesController {
 
     private final ClothesService clothesService;
 
-    @PostMapping(value = "/api/clothes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClothesDto> create(
             @RequestPart("request") @Validated ClothesCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {

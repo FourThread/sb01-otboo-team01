@@ -30,7 +30,7 @@ public class ClothesMapper {
                 def.getId(),
                 def.getName(),
                 def.getSelectableValues(),
-                attr.getValue()
+                attr.getAttributeValue()
         );
     }
 }
