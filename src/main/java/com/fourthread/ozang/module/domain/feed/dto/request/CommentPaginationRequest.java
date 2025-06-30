@@ -5,13 +5,17 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record CommentPaginationRequest (
+public record CommentPaginationRequest(
 
-  String cursor,
-  UUID idAfter,
+    @NotNull
+    UUID feedId,
 
-  @NotNull
-  Integer limit
+    String cursor,
+    UUID idAfter,
 
-)
-{}
+    @NotNull
+    Integer limit
+
+) {
+
+}

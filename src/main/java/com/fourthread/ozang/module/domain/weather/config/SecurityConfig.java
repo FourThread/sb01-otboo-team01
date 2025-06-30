@@ -14,18 +14,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .authorizeHttpRequests(auth -> auth
-                // 날씨 API는 인증 없이 접근 허용
-                .requestMatchers("/api/weathers/**").permitAll()
-                .requestMatchers("/test/weathers/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()  // H2 콘솔도 허용
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger도 허용
-                // 나머지는 인증 필요
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/weathers/**")  // 날씨 API는 CSRF 비활성화
-                .ignoringRequestMatchers("/h2-console/**")    // H2 콘솔 CSRF 비활성화
-            )
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())
             .build();
     }
 }

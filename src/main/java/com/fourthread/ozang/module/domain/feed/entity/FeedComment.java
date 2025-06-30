@@ -2,7 +2,7 @@ package com.fourthread.ozang.module.domain.feed.entity;
 
 import static org.hibernate.annotations.OnDeleteAction.CASCADE;
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.module.domain.BaseEntity;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.OnDelete;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class FeedComment extends BaseUpdatableEntity {
+public class FeedComment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = CASCADE)
