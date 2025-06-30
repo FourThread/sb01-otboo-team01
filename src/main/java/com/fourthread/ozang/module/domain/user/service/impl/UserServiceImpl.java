@@ -19,7 +19,9 @@ import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.service.MailService;
 import com.fourthread.ozang.module.domain.user.service.UserService;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileRepository profileRepository;
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
+  private final MailService mailService;
 //  private final ProfileStorage profileStorage;
 
 
@@ -157,6 +160,21 @@ public class UserServiceImpl implements UserService {
     findUser.changeLocked(locked);
 
     return findUser.getId();
+  }
+
+  @Transactional
+  @Override
+  public void resetPassword(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND, email, this.getClass().getSimpleName()));
+
+    String tempPassword = mailService.sendResetPasswordEmail(user.getEmail());
+
+    // PasswordEncoder로 인코딩하기!!
+    user.setPassword(tempPassword);
+    user.setTempPasswordIssuedAt(LocalDateTime.now());
+
+    userRepository.save(user);
   }
 
   @Transactional(readOnly = true)

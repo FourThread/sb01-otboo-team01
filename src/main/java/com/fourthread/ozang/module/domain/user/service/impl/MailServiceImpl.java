@@ -3,11 +3,14 @@ package com.fourthread.ozang.module.domain.user.service.impl;
 import com.fourthread.ozang.module.domain.user.service.MailService;
 import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
@@ -32,17 +35,20 @@ public class MailServiceImpl implements MailService {
         감사합니다.
         """.formatted(tempPassword);
 
-    sendMail(email, TITLE, content);
+    sendMail(email, content);
     return tempPassword;
   }
 
-  @Override
-  public void sendMail(String toMail, String title, String content) {
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(toMail);
-    message.setSubject(title);
-    message.setText(content);
-    mailSender.send(message);
+  private void sendMail(String toMail, String content) {
+    try {
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(toMail);
+      message.setSubject(TITLE);
+      message.setText(content);
+      mailSender.send(message);
+    } catch (MailException e) {
+      log.error("메일 전송 실패 - 대상: {}, 제목: {}, 사유: {}", toMail, TITLE, e.getMessage());
+    }
   }
 
   // 10자리 난수 + 영문 조합 -> 임시 비밀번호 생성함

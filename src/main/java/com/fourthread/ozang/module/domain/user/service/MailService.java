@@ -4,6 +4,4 @@ public interface MailService {
 
   String sendResetPasswordEmail(String email);
 
-  void sendMail(String toMail, String title, String content);
-
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -33,6 +34,7 @@ public class User extends BaseUpdatableEntity {
   private String name;
   @Column(length = 100, nullable = false, unique = true)
   private String email;
+  @Setter
   @Column(length = 100, nullable = false)
   private String password;
   @Enumerated(EnumType.STRING)
@@ -42,6 +44,7 @@ public class User extends BaseUpdatableEntity {
   private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
+  @Setter
   private LocalDateTime tempPasswordIssuedAt;
 
   @ElementCollection(fetch = FetchType.LAZY)

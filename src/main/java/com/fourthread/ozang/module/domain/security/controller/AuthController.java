@@ -23,6 +23,7 @@ public class AuthController {
   public ResponseEntity<Void> resetPassword(
       @RequestBody @Valid ResetPasswordRequest request
   ) {
-
+    userService.resetPassword(request.email());
+    return ResponseEntity.noContent().build();
   }
 }
