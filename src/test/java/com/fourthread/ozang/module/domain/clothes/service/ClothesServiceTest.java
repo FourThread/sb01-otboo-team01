@@ -198,5 +198,30 @@ class ClothesServiceTest {
         then(definitionRepository).should(never()).findById(any());
     }
 
+    @DisplayName("의상을 삭제할 수 있다.")
+    @Test
+    void clothes_delete() {
+        //given
+        given(clothesRepository.findById(clothesId)).willReturn(Optional.of(existingClothes));
+
+        //when
+        clothesService.delete(clothesId);
+
+        //then
+        then(clothesRepository).should().delete(existingClothes);
+    }
+
+    @DisplayName("존재하지 않은 옷 id로 삭제를 할 수 없다.")
+    @Test
+    void test() {
+        //given
+        UUID invalidId = UUID.randomUUID();
+        given(clothesRepository.findById(invalidId)).willReturn(Optional.empty());
+
+        //when then
+        assertThatThrownBy(() -> clothesService.delete(invalidId))
+                .isInstanceOf(IllegalArgumentException.class);
+        then(clothesRepository).should(never()).delete(any());
+    }
 
 }
