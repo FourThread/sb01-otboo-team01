@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.feed.dto.request;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ public record FeedPaginationRequest(
     Integer limit,
 
     @NotNull
-    String sortBy,
+    SortBy sortBy,
 
     @NotNull
     SortDirection sortDirection,

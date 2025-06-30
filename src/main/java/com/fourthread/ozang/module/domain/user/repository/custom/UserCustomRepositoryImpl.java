@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.repository.custom;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
@@ -9,6 +10,7 @@ import com.fourthread.ozang.module.domain.user.entity.QUser;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,7 +18,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import com.querydsl.core.types.Order;
 
 @RequiredArgsConstructor
 public class UserCustomRepositoryImpl implements UserCustomRepository {
@@ -96,7 +97,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
         nextIdAfter,
         hasNext,
         totalCount,
-        "createdAt",
+        SortBy.createdAt,
         sortDirection
     );
   }

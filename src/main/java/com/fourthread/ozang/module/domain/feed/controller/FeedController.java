@@ -3,9 +3,11 @@ package com.fourthread.ozang.module.domain.feed.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.service.FeedService;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +15,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +42,17 @@ public class FeedController {
   @PostMapping
   public FeedDto createFeed(@Validated @RequestBody FeedCreateRequest request) {
     return feedService.registerFeed(request);
+  }
+
+  /**
+  * @methodName : findAllFeed
+  * @date : 2025-06-26 오후 1:57
+  * @author : wongil
+  * @Description: 피드 조회
+  **/
+  @GetMapping
+  public FeedData findAllFeed(@Validated @ModelAttribute FeedPaginationRequest request) {
+    return feedService.retrieveFeed(request);
   }
 
   /**
@@ -83,7 +98,7 @@ public class FeedController {
   **/
   @DeleteMapping("/{feedId}/like")
   public FeedDto undoLike(@PathVariable UUID feedId) {
-    return feedService.doNotLike(feedId);
+    return feedService.unLike(feedId);
   }
 
   /**
