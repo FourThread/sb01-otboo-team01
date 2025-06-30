@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 public class UserServiceIntegrationTest {
@@ -33,6 +33,9 @@ public class UserServiceIntegrationTest {
   @Autowired
   private ProfileRepository profileRepository;
 
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+
   private UserDto savedUser;
 
   @BeforeEach
@@ -41,6 +44,7 @@ public class UserServiceIntegrationTest {
     savedUser = userService.createUser(request);
   }
 
+  @Transactional
   @Nested
   @DisplayName("사용자 생성")
   class CreateUser {
@@ -64,10 +68,11 @@ public class UserServiceIntegrationTest {
 
       // Profile이 실제 DB에 존재하는지 확인
       long profileCount = profileRepository.count();
-      assertThat(profileCount).isEqualTo(2);
+      assertThat(profileCount).isEqualTo(3);
     }
   }
 
+  @Transactional
   @Nested
   @DisplayName("사용자 정보 업데이트")
   class UpdateUser {
@@ -87,14 +92,17 @@ public class UserServiceIntegrationTest {
     @DisplayName("사용자 비밀번호를 변경합니다")
     void updateUser_success_password_changed() {
       ChangePasswordRequest request = new ChangePasswordRequest("newPassword!!");
+
       userService.updateUserPassword(savedUser.id(), request);
+
       User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
 
-      assertThat(findUser.getPassword()).isEqualTo("newPassword!!");
+      assertThat(passwordEncoder.matches("newPassword!!", findUser.getPassword())).isTrue();
     }
   }
 
+  @Transactional
   @Nested
   @DisplayName("프로필 조회하기")
   class GetProfile {

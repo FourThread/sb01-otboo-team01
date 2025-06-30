@@ -13,6 +13,11 @@ jobs:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
       KAKAO_API_KEY: ${{ secrets.KAKAO_API_KEY }}
       WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+      JWT_SECRET : ${{secrets.JWT_SECRET}}
+      ADMIN_USERNAME : ${{secrets.ADMIN_USERNAME}}
+      ADMIN_PASSWORD : ${{secrets.ADMIN_PASSWORD}}
+      ADMIN_EMAIL : ${{secrets.ADMIN_EMAIL}}
+
 
     steps:
       - name: Checkout code

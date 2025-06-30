@@ -3,6 +3,7 @@ package com.fourthread.ozang.module.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -12,6 +13,9 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
+    if (e instanceof AccessDeniedException) {
+      throw (AccessDeniedException) e;
+    }
     log.error("Unhandled exception occurred", e);
 
     ErrorDetails details = new ErrorDetails(
