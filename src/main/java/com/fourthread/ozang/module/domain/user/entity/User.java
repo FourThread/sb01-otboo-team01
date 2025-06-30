@@ -14,6 +14,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -40,6 +42,7 @@ public class User extends BaseUpdatableEntity {
   private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
+  private LocalDateTime tempPasswordIssuedAt;
 
   @ElementCollection(fetch = FetchType.LAZY)
   @BatchSize(size = 50)
@@ -81,5 +84,15 @@ public class User extends BaseUpdatableEntity {
     if (profile != null) {
       profile.setUser(this);
     }
+  }
+
+  // 임시 비밀번호가 만료되었는지 확인
+  public boolean tempPasswordExpired(Duration duration) {
+    return tempPasswordIssuedAt != null && tempPasswordIssuedAt.isBefore(LocalDateTime.now().minus(duration));
+  }
+
+  // 임시 비밀번호를 사용 중인지 판별
+  public boolean isUsingTempPassword() {
+    return tempPasswordIssuedAt != null;
   }
 }
