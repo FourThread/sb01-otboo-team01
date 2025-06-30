@@ -25,12 +25,13 @@ public class ClothesService {
     @Transactional
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
 
-        Clothes clothes = new Clothes(
-                request.ownerId(),
-                request.name(),
-                request.type(),
-                null //TODO 이미지 저장
-        );
+        //TODO 이미지 저장
+
+        Clothes clothes = Clothes.builder()
+                .ownerId(request.ownerId())
+                .name(request.name())
+                .type(request.type())
+                .build();
 
         for (ClothesAttributeDto attrDto : request.attributes()) {
             ClothesAttributeDefinition definition = definitionRepository.findById(attrDto.definitionId())

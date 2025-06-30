@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Builder
 @Entity
 @Getter
 @AllArgsConstructor
@@ -30,14 +31,16 @@ public class Clothes extends BaseUpdatableEntity {
     @Enumerated(EnumType.STRING)
     private ClothesType type;
 
+    @Column(length = 2048)
+    private String imageUrl;
+
     //옷 객체 저장할때, ClothesAttribute 같이 저장
     //close 객체 삭제시 -> 이 리스트에 있는 ClothesAttribute 같이 삭제됨
+    @Builder.Default
     @OneToMany(mappedBy = "clothes", cascade = CascadeType.ALL)
     private List<ClothesAttribute> attributes = new ArrayList<>();
 
 
-
-    //생성자에서 호출하자
     public void addAttribute(ClothesAttribute clothesAttribute) {
         attributes.add(clothesAttribute);
         clothesAttribute.assignClothes(this);
