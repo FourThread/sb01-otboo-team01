@@ -2,14 +2,21 @@ package com.fourthread.ozang.module.domain.feed.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
@@ -153,6 +160,35 @@ class FeedServiceTest {
         .isInstanceOf(RuntimeException.class);
 
     verify(feedRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("피드 목록 조회 - 커서 없음")
+  void retrieveFeedNoNext() {
+    FeedPaginationRequest request = mock(FeedPaginationRequest.class);
+    when(request.limit()).thenReturn(2);
+    when(request.sortBy()).thenReturn("createdAt");
+    when(request.sortDirection()).thenReturn(SortDirection.ASCENDING);
+
+    FeedDto dto1 = mock(FeedDto.class);
+    FeedDto dto2 = mock(FeedDto.class);
+    List<FeedDto> data = List.of(dto1, dto2);
+
+    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+
+    FeedData result = feedService.retrieveFeed(request);
+
+    assertFalse(result.hasNext());
+    assertEquals(data, result.data());
+    assertNull(result.nextCursor());
+    assertNull(result.nextIdAfter());
+    assertEquals(2L, result.totalCount());
+    assertEquals("createdAt", result.sortBy());
+    assertEquals(SortDirection.ASCENDING, result.sortDirection());
+
+    verify(feedRepository).search(request);
+    verify(feedRepository).feedTotalCount(request);
   }
 
   @Test
