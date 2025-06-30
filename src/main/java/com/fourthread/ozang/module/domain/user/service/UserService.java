@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.service;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -29,6 +30,6 @@ public interface UserService {
 
   UUID changeLock(UUID userId, UserLockUpdateRequest request);
 
-  UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
+  UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, SortBy sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked);
 }

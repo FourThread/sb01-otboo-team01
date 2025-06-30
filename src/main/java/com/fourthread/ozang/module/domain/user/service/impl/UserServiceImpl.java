@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
-import com.fourthread.ozang.module.domain.storage.ProfileStorage;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
@@ -20,7 +20,6 @@ import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -161,9 +160,9 @@ public class UserServiceImpl implements UserService {
 
   @Transactional(readOnly = true)
   @Override
-  public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, String sortBy,
+  public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, SortBy sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked) {
-    if (!"createdAt".equals(sortBy)) {
+    if (!SortBy.createdAt.equals(sortBy)) {
       throw new IllegalArgumentException("현재는 createdAt 기준 정렬만 지원합니다");
     }
 

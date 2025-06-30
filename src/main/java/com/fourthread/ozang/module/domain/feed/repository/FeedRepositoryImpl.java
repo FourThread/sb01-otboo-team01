@@ -13,7 +13,8 @@ import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
 import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
@@ -36,25 +37,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-/**
- * { "data": [ { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "createdAt":
- * "2025-06-27T05:57:52.567Z", "updatedAt": "2025-06-27T05:57:52.567Z", "author": { "userId":
- * "3fa85f64-5717-4562-b3fc-2c963f66afa6", "name": "string", "profileImageUrl": "string" },
- * "weather": { "weatherId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "skyStatus": "CLEAR",
- * "precipitation": { "type": "NONE", "amount": 0.1, "probability": 0.1 }, "temperature": {
- * "current": 0.1, "comparedToDayBefore": 0.1, "min": 0.1, "max": 0.1 } }, "ootds": [ { "clothesId":
- * "3fa85f64-5717-4562-b3fc-2c963f66afa6", "name": "string", "imageUrl": "string", "type": "TOP",
- * "attributes": [ { "definitionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "definitionName":
- * "string", "selectableValues": [ "string" ], "value": "string" } ] } ], "content": "string",
- * "likeCount": 9007199254740991, "commentCount": 1073741824, "likedByMe": true } ], "nextCursor":
- * "string", "nextIdAfter": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "hasNext": true, "totalCount":
- * 9007199254740991, "sortBy": "string", "sortDirection": "ASCENDING" }
- */
-
 @RequiredArgsConstructor
 public class FeedRepositoryImpl implements FeedRepositoryCustom {
-
-  private final static String ORDER_BY_CREATED_AT = "createdAt";
 
   private final JPAQueryFactory queryFactory;
 
@@ -207,7 +191,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   }
 
   private OrderSpecifier<?> order(
-      @NotNull String sortBy,
+      @NotNull SortBy sortBy,
       @NotNull SortDirection sortDirection
   ) {
 
@@ -233,7 +217,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
     return sortDirection == SortDirection.ASCENDING;
   }
 
-  private boolean isSortByCreatedAt(String sortBy) {
-    return sortBy.equals(ORDER_BY_CREATED_AT);
+  private boolean isSortByCreatedAt(SortBy sortBy) {
+    return sortBy.equals(SortBy.createdAt);
   }
 }

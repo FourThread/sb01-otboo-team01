@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.feed.dto;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ public record FeedData (
     UUID nextIdAfter,
     boolean hasNext,
     Long totalCount,
-    String sortBy,
+    SortBy sortBy,
     SortDirection sortDirection
 
 ) {
