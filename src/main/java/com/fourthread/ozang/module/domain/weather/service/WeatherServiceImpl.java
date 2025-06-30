@@ -142,7 +142,7 @@ public class WeatherServiceImpl implements WeatherService {
 
             return savedWeather;
 
-        } catch (WeatherApiException | WeatherDataFetchException e) {
+        } catch (WeatherApiException | WeatherDataFetchException | InvalidCoordinateException e) {
             log.error("날씨 데이터 조회 실패", e);
             throw e;
         } catch (Exception e) {
