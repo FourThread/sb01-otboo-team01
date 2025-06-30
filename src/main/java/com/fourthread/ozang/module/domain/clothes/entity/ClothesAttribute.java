@@ -24,6 +24,11 @@ public class ClothesAttribute extends BaseEntity {
     @Column(nullable = false)
     private String value;
 
+    public ClothesAttribute(ClothesAttributeDefinition definition, String value) {
+        this.definition = definition;
+        this.value = value;
+    }
+
     protected void assignClothes(Clothes clothes) {
         this.clothes = clothes;
     }

@@ -3,10 +3,7 @@ package com.fourthread.ozang.module.domain.clothes.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +38,7 @@ public class Clothes extends BaseUpdatableEntity {
 
 
     //생성자에서 호출하자
-    private void addAttributes(ClothesAttribute clothesAttribute) {
+    public void addAttribute(ClothesAttribute clothesAttribute) {
         attributes.add(clothesAttribute);
         clothesAttribute.assignClothes(this);
     }
