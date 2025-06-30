@@ -92,7 +92,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
     // Email
-    implementation 'org.springframework.boot:spring-boot-starter-email'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // TestContainers (필요시 주석 해제)
     // testImplementation 'org.testcontainers:junit-jupiter'
