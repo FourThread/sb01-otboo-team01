@@ -3,9 +3,11 @@ package com.fourthread.ozang.module.domain.feed.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
@@ -112,6 +114,18 @@ public class FeedController {
       @Validated @RequestBody CommentCreateRequest request) {
 
     return feedService.postComment(request);
+  }
+
+  /**
+  * @methodName : searchComment
+  * @date : 2025-06-30 오전 11:24
+  * @author : wongil
+  * @Description: 피드 댓글 조회
+  **/
+  @GetMapping("/{feedId}/comments")
+  public FeedCommentData searchComment(@Validated @ModelAttribute CommentPaginationRequest request) {
+
+    return feedService.retrieveComment(request);
   }
 
 }
