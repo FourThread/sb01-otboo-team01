@@ -91,6 +91,9 @@ dependencies {
     //S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
+    // Email
+    implementation 'org.springframework.boot:spring-boot-starter-email'
+
     // TestContainers (필요시 주석 해제)
     // testImplementation 'org.testcontainers:junit-jupiter'
     // testImplementation 'org.testcontainers:postgresql'
