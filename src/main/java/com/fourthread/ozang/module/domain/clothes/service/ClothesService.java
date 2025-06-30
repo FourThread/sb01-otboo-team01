@@ -67,4 +67,10 @@ public class ClothesService {
             clothes.addAttribute(attribute);
         }
     }
+
+    public void delete(UUID clothesId) {
+        Clothes clothes = clothesRepository.findById(clothesId)
+                .orElseThrow(() -> new IllegalArgumentException("의상 정보를 찾을 수 없습니다."));
+        clothesRepository.delete(clothes);
+    }
 }
