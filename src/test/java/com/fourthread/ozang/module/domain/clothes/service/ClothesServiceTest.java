@@ -2,9 +2,7 @@ package com.fourthread.ozang.module.domain.clothes.service;
 
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.*;
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
@@ -20,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,9 +26,11 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClothesServiceTest {
@@ -213,7 +214,7 @@ class ClothesServiceTest {
 
     @DisplayName("존재하지 않은 옷 id로 삭제를 할 수 없다.")
     @Test
-    void test() {
+    void delete_fail_clothes_not_found() {
         //given
         UUID invalidId = UUID.randomUUID();
         given(clothesRepository.findById(invalidId)).willReturn(Optional.empty());
@@ -222,6 +223,60 @@ class ClothesServiceTest {
         assertThatThrownBy(() -> clothesService.delete(invalidId))
                 .isInstanceOf(IllegalArgumentException.class);
         then(clothesRepository).should(never()).delete(any());
+    }
+
+    @DisplayName("의상 목록을 커서 기반으로 조회할 수 있다.")
+    @Test
+    void findAll_shouldReturnSinglePage_whenDataExists() {
+        //given
+        String sortBy = "CREATED_AT";
+        String sortDirection = "DESCENDING";
+        String cursor = "2025-07-01T10:00:00";
+        UUID idAfter = null;
+        int limit = 10;
+
+        Clothes clothes = Clothes.builder()
+                .ownerId(ownerId)
+                .name("테스트 옷")
+                .type(ClothesType.TOP)
+                .build();
+        ReflectionTestUtils.setField(clothes, "id", clothesId);
+        ReflectionTestUtils.setField(clothes, "createdAt", LocalDateTime.parse("2025-07-01T09:00:00"));
+
+        when(clothesRepository.findAllByCondition(
+                eq(ownerId), eq(cursor), eq(idAfter), eq(limit + 1), eq(ClothesType.TOP), eq(sortBy), eq(SortDirection.DESCENDING)
+        )).thenReturn(List.of(clothes));
+
+        when(clothesRepository.countByOwnerAndType(ownerId, ClothesType.TOP)).thenReturn(1);
+        when(clothesMapper.toDto(clothes)).thenReturn(clothesDto);
+
+        //when
+        ClothesDtoCursorResponse response = clothesService.findAll(
+                ownerId, cursor, idAfter, limit, ClothesType.TOP, sortBy, sortDirection
+        );
+
+        //then
+        assertThat(response.data()).hasSize(1);
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.totalCount()).isEqualTo(1);
+        assertThat(response.sortBy()).isEqualTo("CREATED_AT");
+        assertThat(response.sortDirection()).isEqualTo("DESCENDING");
+    }
+
+    @DisplayName("지원하지 않는 정렬 조건으로 의상 목록 조회를 할 수 없다.")
+    @Test
+    void findAll_shouldThrowException_whenSortByIsInvalid() {
+        //given
+        String invalidSortBy = "INVALID_FIELD";
+        String sortDirection = "ASCENDING";
+        String cursor = null;
+        UUID idAfter = null;
+        int limit = 10;
+
+        //when then
+        assertThatThrownBy(() -> clothesService.findAll(
+                ownerId, cursor, idAfter, limit, ClothesType.TOP, invalidSortBy, sortDirection
+        )).isInstanceOf(IllegalArgumentException.class);
     }
 
 }

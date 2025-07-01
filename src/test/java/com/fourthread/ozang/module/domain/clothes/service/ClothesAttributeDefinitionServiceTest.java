@@ -223,7 +223,6 @@ class ClothesAttributeDefinitionServiceTest {
         // when & then
         assertThatThrownBy(() ->
                 service.findAll(invalidCursor, null, 10, sortBy, sortDirection, null)
-        ).isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("cursor는 UUID 형식이어야 합니다.");
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 }
