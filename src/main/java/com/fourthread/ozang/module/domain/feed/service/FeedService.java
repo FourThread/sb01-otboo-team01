@@ -4,9 +4,12 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_LIKE_N
 import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FOUND;
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
+import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
+import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
@@ -195,6 +198,41 @@ public class FeedService {
     feedCommentRepository.save(comment);
 
     return feedMapper.toDto(feed, user);
+  }
+
+  /**
+  * @methodName : retrieveComment
+  * @date : 2025-06-30 오전 11:15
+  * @author : wongil
+  * @Description: 피드 댓글 조회
+  **/
+  @Transactional(readOnly = true)
+  public FeedCommentData retrieveComment(CommentPaginationRequest request) {
+
+    Integer pageSize = request.limit();
+    List<FeedCommentDto> data = feedCommentRepository.searchComment(request);
+    boolean hasNext = data.size() > pageSize;
+
+    List<FeedCommentDto> feedComments = hasNext ? data.subList(0, pageSize) : data;
+
+    String nextCursor = null;
+    UUID nextIdAfter = null;
+
+    if (hasNext) {
+      FeedCommentDto lastComment = feedComments.get(feedComments.size() - 1);
+      nextCursor = lastComment.createdAt().toString();
+      nextIdAfter = lastComment.id();
+    }
+
+    Long totalCount = feedCommentRepository.commentTotalCount(request);
+
+    return new FeedCommentData(
+        feedComments,
+        nextCursor,
+        nextIdAfter,
+        hasNext,
+        totalCount
+    );
   }
 
   private FeedLike getFeedLike(Feed feed) {

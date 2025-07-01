@@ -13,11 +13,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
+import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
@@ -122,7 +125,6 @@ class FeedServiceTest {
         .commentCount(0)
         .likedByMe(false)
         .build();
-
   }
 
   @Disabled
@@ -334,5 +336,64 @@ class FeedServiceTest {
 
     FeedComment comment = captor.getValue();
     assertThat("댓글").isEqualTo(comment.getContent());
+  }
+
+  @Test
+  @DisplayName("댓글 목록 조회 - 커서 없음")
+  void retrieveCommentNoNext() {
+    CommentPaginationRequest req = mock(CommentPaginationRequest.class);
+    when(req.limit()).thenReturn(2);
+    when(req.cursor()).thenReturn(null);
+    when(req.idAfter()).thenReturn(null);
+    when(req.feedId()).thenReturn(UUID.randomUUID());
+
+    FeedCommentDto dto1 = new FeedCommentDto(UUID.randomUUID(), LocalDateTime.now(), feed.getId(), null, "test");
+    FeedCommentDto dto2 = new FeedCommentDto(UUID.randomUUID(), LocalDateTime.now(), feed.getId(), null, "test2");
+    List<FeedCommentDto> list = List.of(dto1, dto2);
+
+    when(feedCommentRepository.searchComment(req)).thenReturn(list);
+    when(feedCommentRepository.commentTotalCount(req)).thenReturn(2L);
+
+    FeedCommentData result = feedService.retrieveComment(req);
+
+    assertFalse(result.hasNext());
+    assertEquals(list, result.data());
+    assertNull(result.nextCursor());
+    assertNull(result.nextIdAfter());
+    assertEquals(2L, result.totalCount());
+
+    verify(feedCommentRepository).searchComment(req);
+    verify(feedCommentRepository).commentTotalCount(req);
+  }
+
+  @Test
+  @DisplayName("댓글 목록 조회 - 커서 있음, 페이징 다음 페이지 존재")
+  void retrieveCommentWithNext() {
+    CommentPaginationRequest req = mock(CommentPaginationRequest.class);
+    when(req.limit()).thenReturn(2);
+    when(req.cursor()).thenReturn("2025-06-30T10:00:00");
+    UUID afterId = UUID.randomUUID();
+    when(req.idAfter()).thenReturn(afterId);
+    when(req.feedId()).thenReturn(UUID.randomUUID());
+
+    LocalDateTime base = LocalDateTime.parse("2025-06-30T10:00:00");
+    FeedCommentDto dto1 = new FeedCommentDto(UUID.randomUUID(), LocalDateTime.now(), feed.getId(), null, "test1");
+    FeedCommentDto dto2 = new FeedCommentDto(UUID.randomUUID(), LocalDateTime.now(), feed.getId(), null, "test2");
+    FeedCommentDto dto3 = new FeedCommentDto(UUID.randomUUID(), LocalDateTime.now(), feed.getId(), null, "test3");
+    List<FeedCommentDto> list = List.of(dto1, dto2, dto3);
+
+    when(feedCommentRepository.searchComment(req)).thenReturn(list);
+    when(feedCommentRepository.commentTotalCount(req)).thenReturn(5L);
+
+    FeedCommentData result = feedService.retrieveComment(req);
+
+    assertTrue(result.hasNext());
+    assertEquals(2, result.data().size());
+    assertEquals(dto2.createdAt().toString(), result.nextCursor());
+    assertEquals(dto2.id(), result.nextIdAfter());
+    assertEquals(5L, result.totalCount());
+
+    verify(feedCommentRepository).searchComment(req);
+    verify(feedCommentRepository).commentTotalCount(req);
   }
 }
