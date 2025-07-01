@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.repository;
+package com.fourthread.ozang.module.domain.clothes.repository.query;
 
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
@@ -15,7 +15,7 @@ import java.util.UUID;
 import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.*;
 
 @RequiredArgsConstructor
-public class ClothesAttributeDefinitionRepositoryImpl implements ClothesAttributeDefinitionRepositoryCustom{
+public class ClothesAttributeDefinitionRepositoryImpl implements ClothesAttributeDefinitionRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
