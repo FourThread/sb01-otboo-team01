@@ -95,6 +95,14 @@ dependencies {
     //S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
+    testImplementation 'org.springframework.security:spring-security-test'
+
+
     // TestContainers (필요시 주석 해제)
     // testImplementation 'org.testcontainers:junit-jupiter'
     // testImplementation 'org.testcontainers:postgresql'

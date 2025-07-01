@@ -1,33 +1,23 @@
 package com.fourthread.ozang.module.domain.user.service;
 
 import com.fourthread.ozang.module.domain.storage.ProfileStorage;
-import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
-import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
-import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.service.impl.UserServiceImpl;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.*;
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -46,6 +36,9 @@ public class UserServiceTest {
 
   @Mock
   private ProfileMapper profileMapper;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @Nested
   @DisplayName("사용자 생성")
@@ -72,6 +65,16 @@ public class UserServiceTest {
         userService.createUser(request);
       }).isInstanceOf(UserException.class);
     }
+  }
+
+  @Test
+  @DisplayName("비밀번호 암호화 전과 후 비교하기")
+  void password_encode_success() {
+    String password = "test";
+
+    String encode = passwordEncoder.encode(password);
+
+    assertNotEquals(encode, password);
   }
 
 //  @Nested

@@ -57,6 +57,14 @@ public class User extends BaseUpdatableEntity {
     this.locked = false;
   }
 
+  public User(String name, String email, String password, Role role) {
+    this.name = name;
+    this.email = email;
+    this.password = password;
+    this.role = role;
+    this.locked = false;
+  }
+
   // 권한 수정
   public void updateRole(Role role) {
     if (this.role != role) {
