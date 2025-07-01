@@ -220,4 +220,5 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   private boolean isSortByCreatedAt(SortBy sortBy) {
     return sortBy.equals(SortBy.createdAt);
   }
+
 }
