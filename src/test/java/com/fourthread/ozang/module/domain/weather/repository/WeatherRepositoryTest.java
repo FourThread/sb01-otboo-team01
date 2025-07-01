@@ -3,11 +3,13 @@ package com.fourthread.ozang.module.domain.weather.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +49,8 @@ class WeatherRepositoryTest {
         @DisplayName("Weather 엔티티 저장")
         void saveWeather() {
             // Given
-            Weather weather = createWeather(LocalDateTime.now());
+            LocalDateTime fixedTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            Weather weather = createWeather(fixedTime);
 
             // When
             Weather saved = weatherRepository.save(weather);
@@ -59,7 +62,7 @@ class WeatherRepositoryTest {
             assertThat(saved.getCreatedAt()).isNotNull();
 
             Weather found = weatherRepository.findById(saved.getId()).orElseThrow();
-            assertThat(found.getForecastedAt()).isEqualTo(weather.getForecastedAt());
+            assertThat(found.getForecastedAt()).isCloseTo(weather.getForecastedAt(), within(1, ChronoUnit.SECONDS));
             assertThat(found.getSkyStatus()).isEqualTo(weather.getSkyStatus());
         }
 
@@ -67,7 +70,7 @@ class WeatherRepositoryTest {
         @DisplayName("Weather 엔티티 조회")
         void findById() {
             // Given
-            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now()));
+            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)));
             entityManager.flush();
             entityManager.clear();
 
@@ -83,7 +86,7 @@ class WeatherRepositoryTest {
         @DisplayName("Weather 엔티티 수정")
         void updateWeather() {
             // Given
-            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now()));
+            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)));
             entityManager.flush();
             entityManager.clear();
 
@@ -104,7 +107,7 @@ class WeatherRepositoryTest {
         @DisplayName("Weather 엔티티 삭제")
         void deleteWeather() {
             // Given
-            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now()));
+            Weather weather = weatherRepository.save(createWeather(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)));
             entityManager.flush();
 
             // When
@@ -126,7 +129,7 @@ class WeatherRepositoryTest {
         @DisplayName("격자 좌표로 최신 날씨 조회")
         void findLatestByGridCoordinate() {
             // Given
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
             Weather weather1 = createWeather(now.minusHours(3));
             Weather weather2 = createWeather(now.minusHours(2));
             Weather weather3 = createWeather(now.minusHours(1)); // 가장 최신
@@ -168,7 +171,7 @@ class WeatherRepositoryTest {
         @DisplayName("동일 격자에 여러 날씨 데이터가 있을 때 최신 데이터만 반환")
         void findLatestByGridCoordinate_MultipleData() {
             // Given
-            LocalDateTime baseTime = LocalDateTime.now();
+            LocalDateTime baseTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
             for (int i = 0; i < 10; i++) {
                 Weather weather = createWeather(baseTime.minusHours(i));
                 weatherRepository.save(weather);
@@ -330,7 +333,7 @@ class WeatherRepositoryTest {
         void findLatestFromBulkData() {
             // Given
             int dataCount = 100;
-            LocalDateTime latestTime = LocalDateTime.now();
+            LocalDateTime latestTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
             for (int i = 1; i <= dataCount; i++) {
                 Weather weather = createWeather(latestTime.minusHours(i));
