@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
@@ -28,7 +29,7 @@ public class AsyncMailSender {
       maxAttempts = RETRY_MAX_ATTEMPTS,
       backoff = @Backoff(delay = 1000)
   )
-  public void send(String toMail, String content) {
+  public CompletableFuture<Void> send(String toMail, String content) {
     RetryContext context = RetrySynchronizationManager.getContext();
     int retryCount = context != null ? context.getRetryCount() : 0;
     log.info("[AsyncMailSender] 메일 전송: {}, 시도: {}/{}", toMail, retryCount + 1, RETRY_MAX_ATTEMPTS);
@@ -38,6 +39,8 @@ public class AsyncMailSender {
     message.setSubject(TITLE);
     message.setText(content);
     mailSender.send(message);
+
+    return CompletableFuture.completedFuture(null);
   }
 
   @Recover
