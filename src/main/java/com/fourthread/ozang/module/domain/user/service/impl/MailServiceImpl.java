@@ -13,10 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 
-  private final JavaMailSender mailSender;
   private final AsyncMailSender asyncMailSender;
-  private static final String TITLE = "[O-ZANG] 비밀번호 재설정 안내";
-  private static final int RETRY_MAX_ATTEMPTS = 3;
 
   @Transactional
   @Override
