@@ -142,7 +142,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         Projections.constructor(OotdDto.class,
             clothes.id,
             clothes.name,
-            clothes.name, // TODO: 옷 이미지 url
+            clothes.imageUrl,
             clothes.type,
             Projections.list(
                 Projections.constructor(ClothesAttributeDto.class,

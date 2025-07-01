@@ -3,7 +3,12 @@ package com.fourthread.ozang.module.domain.feed.service;
 import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_LIKE_NOT_FOUND;
 import static com.fourthread.ozang.module.common.exception.ErrorCode.FEED_NOT_FOUND;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
+import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
@@ -19,12 +24,15 @@ import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
 import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
+import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
 import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import java.util.List;
 import java.util.UUID;
@@ -43,8 +51,10 @@ public class FeedService {
   private final FeedRepository feedRepository;
   private final FeedLikeRepository feedLikeRepository;
   private final FeedCommentRepository feedCommentRepository;
+  private final FeedClothesRepository feedClothesRepository;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
+  private final ClothesRepository clothesRepository;
   private final FeedMapper feedMapper;
 
   /**
@@ -59,17 +69,23 @@ public class FeedService {
       throw new IllegalArgumentException();
     }
 
-    User user = getUser(request.authorId()); // TODO: 커스텀 예외로 변경
-    Weather weather = weatherRepository.findById(request.weatherId())
-        .orElseThrow(() -> new RuntimeException()); // TODO: 커스텀 예외로 변경
+    User user = getUser(request.authorId());
+    Weather weather = getWeather(request.weatherId());
+    List<OotdDto> ootds = getOotds(request);
 
-    Feed feed = Feed.builder().author(user).weather(weather).content(request.content())
-        .likeCount(new AtomicInteger(0)).commentCount(new AtomicInteger(0)).build();
+    Feed feed = Feed.builder()
+        .author(user)
+        .weather(weather)
+        .content(request.content())
+        .likeCount(new AtomicInteger(0))
+        .commentCount(new AtomicInteger(0))
+        .build();
     feedRepository.save(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
-    return feedMapper.toDto(feed, user);
+    return feedMapper.toDto(feed, user, weather, ootds);
   }
+
 
   /**
   * @methodName : retrieveFeed
@@ -116,13 +132,12 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 삭제
   **/
-  public FeedDto delete(UUID feedId) {
+  public void delete(UUID feedId) {
     Feed feed = getFeed(feedId);
 
     feedLikeRepository.deleteAllByFeed_Id(feedId);
     feedRepository.delete(feed);
 
-    return feedMapper.toDto(feed, feed.getAuthor());
   }
 
   /**
@@ -138,7 +153,7 @@ public class FeedService {
 
     Feed updatedFeed = getFeed(feedId).updateFeed(request.content());
 
-    return feedMapper.toDto(updatedFeed, updatedFeed.getAuthor());
+    return feedMapper.toDto(updatedFeed, updatedFeed.getAuthor(), updatedFeed.getWeather(), getOotdsByFeed(updatedFeed));
   }
 
   /**
@@ -150,12 +165,11 @@ public class FeedService {
   public FeedDto like(UUID feedId) {
 
     Feed feed = getFeed(feedId);
+    feed.increaseLike();
     FeedLike feedLike = new FeedLike(feed, feed.getAuthor());
     feedLikeRepository.save(feedLike);
 
-    feed.increaseLike();
-
-    return feedMapper.toDto(feed, feed.getAuthor());
+    return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }
 
   /**
@@ -167,12 +181,11 @@ public class FeedService {
   public FeedDto unLike(UUID feedId) {
 
     Feed feed = getFeed(feedId);
-    FeedLike feedLike = getFeedLike(feed);
-
-    feedLikeRepository.delete(feedLike);
     feed.decreaseLike();
+    FeedLike feedLike = getFeedLike(feed);
+    feedLikeRepository.delete(feedLike);
 
-    return feedMapper.toDto(feed, feed.getAuthor());
+    return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }
 
   /**
@@ -197,7 +210,7 @@ public class FeedService {
 
     feedCommentRepository.save(comment);
 
-    return feedMapper.toDto(feed, user);
+    return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed));
   }
 
   /**
@@ -252,6 +265,49 @@ public class FeedService {
 
   private User getUser(UUID userId) {
     return userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException());
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, ErrorCode.USER_NOT_FOUND.getMessage(), this.getClass().getSimpleName()));
+  }
+
+  private List<OotdDto> getOotds(FeedCreateRequest request) {
+    return clothesRepository.findByIdIn(request.clothesIds()).stream()
+        .map(clothes ->
+            new OotdDto(
+                clothes.getId(),
+                clothes.getName(),
+                clothes.getImageUrl(),
+                clothes.getType(),
+                getClothesAttributeWithDefDtos(clothes)
+            ))
+        .toList();
+  }
+
+  private List<ClothesAttributeWithDefDto> getClothesAttributeWithDefDtos(Clothes clothes) {
+    return clothes.getAttributes().stream()
+        .map(attribute ->
+            new ClothesAttributeWithDefDto(
+                attribute.getDefinition().getId(),
+                attribute.getDefinition().getName(),
+                attribute.getDefinition().getSelectableValues(),
+                attribute.getAttributeValue()
+            ))
+        .toList();
+  }
+
+  private Weather getWeather(UUID weatherId) {
+    return weatherRepository.findById(weatherId)
+        .orElseThrow(WeatherNotFoundException::new);
+  }
+
+  private List<OotdDto> getOotdsByFeed(Feed updatedFeed) {
+    return feedClothesRepository.findAll().stream()
+        .filter(feedClothes -> feedClothes.getFeed().getId().equals(updatedFeed.getId()))
+        .map(feedClothes -> new OotdDto(
+            feedClothes.getClothes().getId(),
+            feedClothes.getClothes().getName(),
+            feedClothes.getClothes().getImageUrl(),
+            feedClothes.getClothes().getType(),
+            getClothesAttributeWithDefDtos(feedClothes.getClothes())
+        ))
+        .toList();
   }
 }

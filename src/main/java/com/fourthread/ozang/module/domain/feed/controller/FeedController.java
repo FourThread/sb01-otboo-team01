@@ -65,8 +65,8 @@ public class FeedController {
    **/
   @ResponseStatus(NO_CONTENT)
   @DeleteMapping("/{feedId}")
-  public FeedDto deleteFeed(@PathVariable @NotNull UUID feedId) {
-    return feedService.delete(feedId);
+  public void deleteFeed(@PathVariable @NotNull UUID feedId) {
+    feedService.delete(feedId);
   }
 
   /**
