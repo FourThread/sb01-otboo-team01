@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.retry.RetryContext;
@@ -26,14 +27,12 @@ public class AsyncMailSender {
   @Async
   @Retryable(
       retryFor = MailException.class,
-      maxAttempts = RETRY_MAX_ATTEMPTS,
       backoff = @Backoff(delay = 1000)
   )
   public CompletableFuture<Void> send(String toMail, String content) {
     RetryContext context = RetrySynchronizationManager.getContext();
     int retryCount = context != null ? context.getRetryCount() : 0;
-    log.info("[AsyncMailSender] 메일 전송: {}, 시도: {}/{}", toMail, retryCount + 1, RETRY_MAX_ATTEMPTS);
-
+    log.info("[RetryMailSender] 메일 전송: {}, 시도: {}/{}", toMail, retryCount + 1, RETRY_MAX_ATTEMPTS);
     SimpleMailMessage message = new SimpleMailMessage();
     message.setTo(toMail);
     message.setSubject(TITLE);
