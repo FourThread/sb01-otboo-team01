@@ -1,6 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.dto;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.OotdDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import java.time.LocalDateTime;
