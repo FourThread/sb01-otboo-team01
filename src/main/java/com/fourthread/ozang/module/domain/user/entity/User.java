@@ -44,7 +44,7 @@ public class User extends BaseUpdatableEntity {
   private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
-  @Setter
+  @Setter @Getter
   private LocalDateTime tempPasswordIssuedAt;
 
   @ElementCollection(fetch = FetchType.LAZY)
@@ -95,15 +95,5 @@ public class User extends BaseUpdatableEntity {
     if (profile != null) {
       profile.setUser(this);
     }
-  }
-
-  // 임시 비밀번호가 만료되었는지 확인
-  public boolean tempPasswordExpired(Duration duration) {
-    return tempPasswordIssuedAt != null && tempPasswordIssuedAt.isBefore(LocalDateTime.now().minus(duration));
-  }
-
-  // 임시 비밀번호를 사용 중인지 판별
-  public boolean isUsingTempPassword() {
-    return tempPasswordIssuedAt != null;
   }
 }

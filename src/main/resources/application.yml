@@ -73,3 +73,7 @@ admin:
   username: ${ADMIN_USERNAME}
   password: ${ADMIN_PASSWORD}
   email: ${ADMIN_EMAIL}
+
+security:
+  temp-password:
+    expiration-hours: 1
