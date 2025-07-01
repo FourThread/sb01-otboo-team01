@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface ClothesAttributeDefinitionRepository extends JpaRepository<ClothesAttributeDefinition, UUID> {
+public interface ClothesAttributeDefinitionRepository extends JpaRepository<ClothesAttributeDefinition, UUID>, ClothesAttributeDefinitionRepositoryCustom {
 
     boolean existsByName(String name);
 

@@ -3,6 +3,9 @@ package com.fourthread.ozang.module.domain.clothes.service;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
+import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
@@ -168,5 +171,59 @@ class ClothesAttributeDefinitionServiceTest {
         assertThatThrownBy(() -> service.delete(id))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(repository, never()).delete(any());
+    }
+
+    @DisplayName("속성 정의 목록을 커서 기반으로 조회한다.")
+    @Test
+    void findAll_success() {
+        //given
+        String cursor = null;
+        UUID idAfter = null;
+        int limit = 1;
+        String sortBy = "name";
+        String sortDirection = "ASCENDING";
+        String keywordLike = null;
+
+        //limit + 1개 -> hasNext = true
+        ClothesAttributeDefinition another = new ClothesAttributeDefinition("촉감", List.of("부드러움"));
+        ReflectionTestUtils.setField(another, "id", UUID.randomUUID());
+
+        List<ClothesAttributeDefinition> entities = List.of(clothesAttributeDefinition, another);
+
+        given(repository.findAllByCondition(
+                cursor, idAfter, limit + 1,
+                SortBy.NAME, SortDirection.ASCENDING, keywordLike
+        )).willReturn(entities);
+
+        given(repository.countByCondition(keywordLike)).willReturn(2);
+
+        //when
+        CursorPageResponseClothesAttributeDefDto result = service.findAll(
+                cursor, idAfter, limit, sortBy, sortDirection, keywordLike
+        );
+
+        //then
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.data()).hasSize(1); //limit = 1 이므로 1개만 반환
+        assertThat(result.data().get(0)).isEqualTo(clothesAttributeDefDto);
+        assertThat(result.totalCount()).isEqualTo(2);
+        assertThat(result.nextCursor()).isEqualTo(clothesAttributeDefinition.getName());
+        assertThat(result.sortBy()).isEqualTo("NAME");
+        assertThat(result.sortDirection()).isEqualTo("ASCENDING");
+    }
+
+    @DisplayName("sortBy가 ID일 때, cursor가 UUID가 아니면 예외를 던진다.")
+    @Test
+    void findAll_fail_whenCursorIsNotUUID_withSortById() {
+        // given
+        String invalidCursor = "not-a-uuid";
+        String sortBy = "id";
+        String sortDirection = "ASCENDING";
+
+        // when & then
+        assertThatThrownBy(() ->
+                service.findAll(invalidCursor, null, 10, sortBy, sortDirection, null)
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cursor는 UUID 형식이어야 합니다.");
     }
 }
