@@ -149,7 +149,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
                     clothesAttributeDefinition.id,
                     clothesAttributeDefinition.name,
                     clothesAttributeDefinition.selectableValues,
-                    clothesAttribute.value
+                    clothesAttribute.attributeValue
                 )
             )
         )
