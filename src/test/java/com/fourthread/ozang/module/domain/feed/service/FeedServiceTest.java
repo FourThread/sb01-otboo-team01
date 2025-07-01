@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -16,7 +17,8 @@ import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
@@ -57,6 +59,7 @@ import org.mockito.quality.Strictness;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class FeedServiceTest {
 
   @Mock
@@ -169,11 +172,17 @@ class FeedServiceTest {
   }
 
   @Test
+  @DisplayName("피드 목록 조회 실패 - request가 잘못 들어옴")
+  void retrieveFeedNullRequest() {
+    assertThrows(IllegalArgumentException.class, () -> feedService.retrieveFeed(null));
+  }
+
+  @Test
   @DisplayName("피드 목록 조회 - 커서 없음")
   void retrieveFeedNoNext() {
     FeedPaginationRequest request = mock(FeedPaginationRequest.class);
     when(request.limit()).thenReturn(2);
-    when(request.sortBy()).thenReturn("createdAt");
+    when(request.sortBy()).thenReturn(SortBy.createdAt);
     when(request.sortDirection()).thenReturn(SortDirection.ASCENDING);
 
     FeedDto dto1 = mock(FeedDto.class);
@@ -190,8 +199,49 @@ class FeedServiceTest {
     assertNull(result.nextCursor());
     assertNull(result.nextIdAfter());
     assertEquals(2L, result.totalCount());
-    assertEquals("createdAt", result.sortBy());
+    assertEquals(SortBy.createdAt, result.sortBy());
     assertEquals(SortDirection.ASCENDING, result.sortDirection());
+
+    verify(feedRepository).search(request);
+    verify(feedRepository).feedTotalCount(request);
+  }
+
+  @Test
+  @DisplayName("피드 목록 조회 - 커서 존재")
+  void retrieveFeedHasNext() {
+    // 준비
+    FeedPaginationRequest request = mock(FeedPaginationRequest.class);
+    when(request.limit()).thenReturn(1);
+    when(request.sortBy()).thenReturn(SortBy.createdAt);
+    when(request.sortDirection()).thenReturn(SortDirection.DESCENDING);
+
+    // 두 개 이상의 복제 가능한 FeedDto 생성
+    UUID id1 = UUID.randomUUID();
+    LocalDateTime ts1 = LocalDateTime.now();
+
+    FeedDto dto1 = mock(FeedDto.class);
+    FeedDto dto2 = mock(FeedDto.class);
+    when(dto1.id()).thenReturn(id1);
+    when(dto1.createdAt()).thenReturn(ts1);
+    // dto2 데이터는 실제로 페이징에 사용되지 않으므로 액세서만 더미로 설정
+    when(dto2.id()).thenReturn(UUID.randomUUID());
+    when(dto2.createdAt()).thenReturn(ts1.plusMinutes(1));
+
+    List<FeedDto> data = List.of(dto1, dto2);
+    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+
+    // 실행
+    FeedData result = feedService.retrieveFeed(request);
+
+    // 검증
+    assertTrue(result.hasNext());
+    assertEquals(List.of(dto1), result.data());
+    assertEquals(ts1.toString(), result.nextCursor());
+    assertEquals(id1, result.nextIdAfter());
+    assertEquals(2L, result.totalCount());
+    assertEquals(SortBy.createdAt, result.sortBy());
+    assertEquals(SortDirection.DESCENDING, result.sortDirection());
 
     verify(feedRepository).search(request);
     verify(feedRepository).feedTotalCount(request);
