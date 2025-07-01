@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.controller.api;
 
-import com.fourthread.ozang.module.domain.feed.dto.dummy.SortDirection;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -43,7 +44,7 @@ public class UserController {
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) UUID idAfter,
       @RequestParam int limit,
-      @RequestParam String sortBy,
+      @RequestParam SortBy sortBy,
       @RequestParam SortDirection sortDirection,
       @RequestParam(required = false) String emailLike,
       @RequestParam(required = false) Role roleEqual,
