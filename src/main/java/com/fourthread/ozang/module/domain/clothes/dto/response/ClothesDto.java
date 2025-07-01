@@ -11,6 +11,6 @@ public record ClothesDto(
         String name,
         String imageUrl,
         ClothesType type,
-        List<ClothesAttributeDto> attributes
+        List<ClothesAttributeWithDefDto> attributes
 ) {
 }
