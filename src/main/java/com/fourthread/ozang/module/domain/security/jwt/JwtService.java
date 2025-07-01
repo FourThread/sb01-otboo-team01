@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;

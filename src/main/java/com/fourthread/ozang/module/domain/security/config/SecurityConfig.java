@@ -1,6 +1,8 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.oauth.handle.OAuth2SuccessHandler;
+import com.fourthread.ozang.module.domain.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
@@ -11,6 +13,7 @@ import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLogoutHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -46,10 +49,12 @@ public class SecurityConfig {
       JwtService jwtService,
       CustomAuthenticationEntryPoint authenticationEntryPoint,
       CustomAccessDeniedHandler accessDeniedHandler,
-      AuthenticationManager authenticationManager
+//      AuthenticationManager authenticationManager,
+      CustomOAuth2UserService customOAuth2UserService,
+      OAuth2SuccessHandler oAuth2SuccessHandler
       ) throws Exception {
     http
-        .authenticationManager(authenticationManager)
+//        .authenticationManager(authenticationManager)
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(request -> !request.getRequestURI().startsWith("/api/")).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.SIGN_UP).permitAll()
@@ -57,7 +62,9 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESETPASSWORD).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
+            .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
         .csrf(csrf -> csrf.disable()
@@ -86,7 +93,19 @@ public class SecurityConfig {
             UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(exceptionHandler ->
             exceptionHandler.authenticationEntryPoint(authenticationEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler));
+                .accessDeniedHandler(accessDeniedHandler))
+        .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo
+                .userService(customOAuth2UserService)
+            )
+            .successHandler(oAuth2SuccessHandler)
+            .failureHandler((request, response, exception) -> {
+              log.error("[OAuth2Login] 로그인 실패", exception);
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              response.setContentType("application/json");
+              response.getWriter()
+                  .write("{\"message\": \"OAuth2 로그인 실패: " + exception.getMessage() + "\"}");
+            }));
 
     return http.build();
   }
