@@ -4,8 +4,6 @@ import com.fourthread.ozang.module.domain.user.service.MailService;
 import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,43 +14,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class MailServiceImpl implements MailService {
 
   private final JavaMailSender mailSender;
+  private final AsyncMailSender asyncMailSender;
   private static final String TITLE = "[O-ZANG] 비밀번호 재설정 안내";
+  private static final int RETRY_MAX_ATTEMPTS = 3;
 
   @Transactional
   @Override
-  public String sendResetPasswordEmail(String email) {
-    String tempPassword = generateTempPassword();
+  public void sendResetPasswordEmail(String email, String tempPassword) {
     String content = """
         안녕하세요, O-ZANG입니다.
-
+        
         요청하신 임시 비밀번호는 아래와 같습니다:
-
+        
         ▶ 임시 비밀번호: %s
-
+        
         본 임시 비밀번호는 발급 시점부터 1시간 동안만 유효합니다.
         로그인 후 반드시 비밀번호를 변경해주세요.
-
+        
         감사합니다.
         """.formatted(tempPassword);
 
-    sendMail(email, content);
-    return tempPassword;
-  }
-
-  private void sendMail(String toMail, String content) {
-    try {
-      SimpleMailMessage message = new SimpleMailMessage();
-      message.setTo(toMail);
-      message.setSubject(TITLE);
-      message.setText(content);
-      mailSender.send(message);
-    } catch (MailException e) {
-      log.error("메일 전송 실패 - 대상: {}, 제목: {}, 사유: {}", toMail, TITLE, e.getMessage());
-    }
+    asyncMailSender.send(email, content);
   }
 
   // 10자리 난수 + 영문 조합 -> 임시 비밀번호 생성함
-  private String generateTempPassword() {
+  @Override
+  public String generateTempPassword() {
     int length = 10;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
     SecureRandom random = new SecureRandom();
