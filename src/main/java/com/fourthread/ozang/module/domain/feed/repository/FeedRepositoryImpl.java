@@ -58,7 +58,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             skyStatusEqual(request.skyStatusEqual()),
             precipitationTypeEqual(request.precipitationTypeEqual()),
             authorIdEqual(request.authorIdEqual()),
-            cursor(request.cursor(), request.idAfter())
+            cursor(request)
         )
         .orderBy(order(request.sortBy(), request.sortDirection()))
         .limit(pagingLimit(request.limit()) + 1)
@@ -83,7 +83,13 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         .fetchOne();
   }
 
-  private Predicate cursor(String cursor, String idAfter) {
+  private Predicate cursor(FeedPaginationRequest request) {
+    return request.sortDirection() == SortDirection.DESCENDING
+        ? desPaging(request.cursor(), request.idAfter())
+        : ascPaging(request.cursor(), request.idAfter());
+  }
+
+  private Predicate desPaging(String cursor, String idAfter) {
     if (!StringUtils.hasText(cursor)) {
       return null;
     }
@@ -94,6 +100,20 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
     return feed.createdAt.lt(time).or(
         feed.createdAt.eq(time)
             .and(feed.id.lt(preFeedId))
+    );
+  }
+
+  private Predicate ascPaging(String cursor, String idAfter) {
+    if (!StringUtils.hasText(cursor)) {
+      return null;
+    }
+
+    LocalDateTime time = LocalDateTime.parse(cursor);
+    UUID preFeedId = UUID.fromString(idAfter);
+
+    return feed.createdAt.gt(time).or(
+        feed.createdAt.eq(time)
+            .and(feed.id.gt(preFeedId))
     );
   }
 
@@ -147,8 +167,6 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             Projections.list(
                 Projections.constructor(ClothesAttributeDto.class,
                     clothesAttributeDefinition.id,
-                    clothesAttributeDefinition.name,
-                    clothesAttributeDefinition.selectableValues,
                     clothesAttribute.attributeValue
                 )
             )
