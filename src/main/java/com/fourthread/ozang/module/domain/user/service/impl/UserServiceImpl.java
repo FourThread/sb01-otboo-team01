@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService {
 
     String tempPassword = mailService.sendResetPasswordEmail(user.getEmail());
 
-    // PasswordEncoder로 인코딩하기!!
+    // PasswordEncoder로 인코딩하기!! 
     user.setPassword(tempPassword);
     user.setTempPasswordIssuedAt(LocalDateTime.now());
 
