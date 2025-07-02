@@ -30,6 +30,8 @@ public interface UserService {
 
   UUID changeLock(UUID userId, UserLockUpdateRequest request);
 
+  void resetPassword(String email);
+
   UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, SortBy sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked);
 }

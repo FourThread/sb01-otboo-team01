@@ -4,6 +4,9 @@ import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import com.fourthread.ozang.module.domain.user.dto.request.ResetPasswordRequest;
+import com.fourthread.ozang.module.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final JwtService jwtService;
+  private final UserService userService;
 
   // 리프레시 토큰을 이용해서 엑세스 토큰을 조회
   @GetMapping("/me")
@@ -48,5 +53,13 @@ public class AuthController {
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(jwtSession.getAccessToken());
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(
+      @RequestBody @Valid ResetPasswordRequest request
+  ) {
+    userService.resetPassword(request.email());
+    return ResponseEntity.noContent().build();
   }
 }

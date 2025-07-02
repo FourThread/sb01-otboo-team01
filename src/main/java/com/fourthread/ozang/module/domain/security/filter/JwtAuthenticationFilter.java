@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
+import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import jakarta.servlet.FilterChain;
@@ -46,15 +47,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String accessToken = optionalAccessToken.get();
       log.info("[JwtAuthenticationFilter] {} URI에서 AccessToken을 확인했습니다", request.getRequestURI());
       if (jwtService.validate(accessToken)) {
-        UserDto userDto = jwtService.parse(accessToken).userDto();
-        log.info("[JwtAuthenticationFilter] 토큰이 유효합니다 - 사용자 : {}, 요청 URI : {}", userDto.email(), request.getRequestURI());
-        UserDetailsImpl userDetails = new UserDetailsImpl(userDto, null);
+        JwtPayloadDto payloadDto = jwtService.parse(accessToken).payloadDto();
+        log.info("[JwtAuthenticationFilter] 토큰이 유효합니다 - 사용자 : {}, 요청 URI : {}", payloadDto.email(), request.getRequestURI());
+        UserDetailsImpl userDetails = new UserDetailsImpl(payloadDto, null);
         UsernamePasswordAuthenticationToken authenticationToken =
             new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        log.info("[JwtAuthenticationFilter] SecurityContext에 인증 완료 - 사용자: {}", userDto.email());
+        log.info("[JwtAuthenticationFilter] SecurityContext에 인증 완료 - 사용자: {}", payloadDto.email());
 
         chain.doFilter(request, response);
 

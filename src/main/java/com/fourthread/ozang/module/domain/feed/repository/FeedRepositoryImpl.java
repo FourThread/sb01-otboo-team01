@@ -10,12 +10,12 @@ import static com.fourthread.ozang.module.domain.weather.entity.QWeather.weather
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
 import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
@@ -58,7 +58,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             skyStatusEqual(request.skyStatusEqual()),
             precipitationTypeEqual(request.precipitationTypeEqual()),
             authorIdEqual(request.authorIdEqual()),
-            cursor(request.cursor(), request.idAfter())
+            cursor(request)
         )
         .orderBy(order(request.sortBy(), request.sortDirection()))
         .limit(pagingLimit(request.limit()) + 1)
@@ -83,7 +83,13 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         .fetchOne();
   }
 
-  private Predicate cursor(String cursor, String idAfter) {
+  private Predicate cursor(FeedPaginationRequest request) {
+    return request.sortDirection() == SortDirection.DESCENDING
+        ? desPaging(request.cursor(), request.idAfter())
+        : ascPaging(request.cursor(), request.idAfter());
+  }
+
+  private Predicate desPaging(String cursor, String idAfter) {
     if (!StringUtils.hasText(cursor)) {
       return null;
     }
@@ -94,6 +100,20 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
     return feed.createdAt.lt(time).or(
         feed.createdAt.eq(time)
             .and(feed.id.lt(preFeedId))
+    );
+  }
+
+  private Predicate ascPaging(String cursor, String idAfter) {
+    if (!StringUtils.hasText(cursor)) {
+      return null;
+    }
+
+    LocalDateTime time = LocalDateTime.parse(cursor);
+    UUID preFeedId = UUID.fromString(idAfter);
+
+    return feed.createdAt.gt(time).or(
+        feed.createdAt.eq(time)
+            .and(feed.id.gt(preFeedId))
     );
   }
 
@@ -142,10 +162,10 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         Projections.constructor(OotdDto.class,
             clothes.id,
             clothes.name,
-            clothes.name, // TODO: 옷 이미지 url
+            clothes.imageUrl,
             clothes.type,
             Projections.list(
-                Projections.constructor(ClothesAttributeDto.class,
+                Projections.constructor(ClothesAttributeWithDefDto.class,
                     clothesAttributeDefinition.id,
                     clothesAttributeDefinition.name,
                     clothesAttributeDefinition.selectableValues,
@@ -220,4 +240,5 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   private boolean isSortByCreatedAt(SortBy sortBy) {
     return sortBy.equals(SortBy.createdAt);
   }
+
 }

@@ -19,8 +19,9 @@ import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.service.MailService;
 import com.fourthread.ozang.module.domain.user.service.UserService;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
   private final UserMapper userMapper;
   private final ProfileMapper profileMapper;
   private final PasswordEncoder passwordEncoder;
+  private final MailService mailService;
 //  private final ProfileStorage profileStorage;
 
 
@@ -172,8 +174,22 @@ public class UserServiceImpl implements UserService {
     return findUser.getId();
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @Transactional(readOnly = true)
+  @Override
+  public void resetPassword(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND, email, this.getClass().getSimpleName()));
+
+    String tempPassword = mailService.generateTempPassword();
+
+    String encodePass = passwordEncoder.encode(tempPassword);
+    user.setPassword(encodePass);
+    user.setTempPasswordIssuedAt(LocalDateTime.now());
+
+    userRepository.save(user);
+
+    mailService.sendResetPasswordEmail(user.getEmail(), tempPassword);
+  }
+
   @Override
   public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, SortBy sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked) {
