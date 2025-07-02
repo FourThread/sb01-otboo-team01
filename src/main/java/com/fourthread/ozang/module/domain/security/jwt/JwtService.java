@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -18,6 +18,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.jsonwebtoken.Jwt;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,12 +53,12 @@ public class JwtService {
   private final JwtBlacklist jwtBlacklist;
 
   @Transactional
-  public JwtToken registerJwtToken(UserDto userDto) {
-    log.info("[JwtService] 토큰 발급 요청 사용자 : {}", userDto.email());
-    JwtDto accessJwtDto = generateJwtDto(userDto, accessTokenValiditySeconds);
-    JwtDto refreshJwtDto = generateJwtDto(userDto, refreshTokenValiditySeconds);
+  public JwtToken registerJwtToken(JwtPayloadDto payloadDto) {
+    log.info("[JwtService] 토큰 발급 요청 사용자 : {}", payloadDto.email());
+    JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
+    JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
-    JwtToken JwtToken = new JwtToken(userDto.email(), accessJwtDto.token(),
+    JwtToken JwtToken = new JwtToken(payloadDto.email(), accessJwtDto.token(),
         refreshJwtDto.token(), accessJwtDto.exp());
     jwtTokenRepository.save(JwtToken);
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
@@ -99,10 +100,20 @@ public class JwtService {
       JWSObject jwsObject = JWSObject.parse(token);
       Payload payload = jwsObject.getPayload();
       Map<String, Object> jsonObject = payload.toJSONObject();
+
+      UUID userId = UUID.fromString((String) jsonObject.get("userId"));
+      String email = (String) jsonObject.get("email");
+      String name = (String) jsonObject.get("name");
+      Role role = Role.valueOf((String) jsonObject.get("role"));
+
+      Instant issueTime = objectMapper.convertValue(jsonObject.get("iat"), Instant.class);
+      Instant expirationTime = objectMapper.convertValue(jsonObject.get("exp"), Instant.class);
+
+      JwtPayloadDto payloadDto = new JwtPayloadDto(userId, email, name, role);
       return new JwtDto(
-          objectMapper.convertValue(jsonObject.get("iat"), Instant.class),
-          objectMapper.convertValue(jsonObject.get("exp"), Instant.class),
-          objectMapper.convertValue(jsonObject.get("userDto"), UserDto.class),
+          issueTime,
+          expirationTime,
+          payloadDto,
           token
       );
     } catch (ParseException e) {
@@ -122,15 +133,16 @@ public class JwtService {
     JwtToken session = jwtTokenRepository.findByRefreshToken(refreshToken)
         .orElseThrow(() -> new SecurityException("Token not found"));
 
-    UUID userId = parse(refreshToken).userDto().id();
+    UUID userId = parse(refreshToken).payloadDto().userId();
     log.info("[JwtService] 사용자 ID : {} - Access Token 재발급", userId);
     UserDto userDto = userRepository.findById(userId)
         .map(userMapper::toDto)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, null, null));
+    JwtPayloadDto payloadDto = UserDto.toJwtPayloadDto(userDto);
     log.info("[JwtService] AccessToken 생성 요청");
-    JwtDto accessJwtDto = generateJwtDto(userDto, accessTokenValiditySeconds);
+    JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     log.info("[JwtService] RefreshToken 생성 요청");
-    JwtDto refreshJwtDto = generateJwtDto(userDto, refreshTokenValiditySeconds);
+    JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}",
         accessJwtDto.exp(), refreshJwtDto.exp());
@@ -167,14 +179,16 @@ public class JwtService {
     return jwtTokenRepository.findAllByExpiryDateAfter(LocalDateTime.now());
   }
 
-  private JwtDto generateJwtDto(UserDto userDto, long tokenValiditySeconds) {
+  private JwtDto generateJwtDto(JwtPayloadDto payloadDto, long tokenValiditySeconds) {
     Instant issueTime = Instant.now();
     Instant expirationTime = issueTime.plus(Duration.ofSeconds(tokenValiditySeconds));
 
-    Map<String, Object> userMap = objectMapper.convertValue(userDto, new TypeReference<>() {});
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-        .subject(userDto.email())
-        .claim("userDto", userMap)
+        .subject(payloadDto.email())
+        .claim("userId", payloadDto.userId().toString())
+        .claim("email", payloadDto.email())
+        .claim("name", payloadDto.name())
+        .claim("role", payloadDto.role().name())
         .issueTime(new Date(issueTime.toEpochMilli()))
         .expirationTime(new Date(expirationTime.toEpochMilli()))
         .build();
@@ -189,7 +203,7 @@ public class JwtService {
       throw new SecurityException("Invalid Token");
     }
 
-    return new JwtDto(issueTime, expirationTime, userDto, signedJWT.serialize());
+    return new JwtDto(issueTime, expirationTime, payloadDto, signedJWT.serialize());
   }
 
   private void invalidate(JwtToken session) {

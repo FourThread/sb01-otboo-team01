@@ -14,11 +14,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -31,7 +34,8 @@ public class User extends BaseUpdatableEntity {
   private String name;
   @Column(length = 100, nullable = false, unique = true)
   private String email;
-  @Column(length = 100)
+  @Setter
+  @Column(length = 100, nullable = false)
   private String password;
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -40,6 +44,8 @@ public class User extends BaseUpdatableEntity {
   private Boolean locked;
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Profile profile;
+  @Setter @Getter
+  private LocalDateTime tempPasswordIssuedAt;
 
   @ElementCollection(fetch = FetchType.LAZY)
   @BatchSize(size = 50)
