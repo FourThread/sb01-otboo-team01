@@ -25,11 +25,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication) throws IOException, ServletException {
 
     UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
-    log.info("[JwtLoginSuccessHandler] 로그인 성공 - 사용자: {}", principal.getUserDto().email());
+    log.info("[JwtLoginSuccessHandler] 로그인 성공 - 사용자: {}", principal.getPayloadDto().email());
     log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
-    jwtService.invalidateJwtTokenByEmail(principal.getUserDto().email());
+    jwtService.invalidateJwtTokenByEmail(principal.getPayloadDto().email());
 
-    JwtToken jwtSession = jwtService.registerJwtToken(principal.getUserDto());
+    JwtToken jwtSession = jwtService.registerJwtToken(principal.getPayloadDto());
     log.info("[JwtLoginSuccessHandler] 새로운 Access Token을 발급합니다");
 
     String refreshToken = jwtSession.getRefreshToken();

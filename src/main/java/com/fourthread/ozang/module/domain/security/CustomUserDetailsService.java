@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security;
 
+import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -39,9 +40,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new CredentialsExpiredException("임시 비밀번호 유효시간이 만료되었습니다.");
           }
           UserDto userDto = userMapper.toDto(user);
+          JwtPayloadDto payloadDto = UserDto.toJwtPayloadDto(userDto);
           String password = user.getPassword();
           log.info("[UserDetailsService] UserDetails 객체를 반환합니다");
-          return new UserDetailsImpl(userDto, password);
+          return new UserDetailsImpl(payloadDto, password);
         })
         .orElseThrow(() -> {
           log.warn("[UserDetailsService] {} 사용자를 찾을 수 없습니다", email);

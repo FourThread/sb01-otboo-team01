@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security;
 
+import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import java.util.Collection;
 import java.util.List;
@@ -13,12 +14,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 @RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-  private final UserDto userDto;
+  private final JwtPayloadDto payloadDto;
   private final String password;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role().name()));
+    return List.of(new SimpleGrantedAuthority("ROLE_" + payloadDto.role().name()));
   }
 
   @Override
@@ -28,7 +29,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public String getUsername() {
-    return userDto.email();
+    return payloadDto.email();
   }
 
   @Override
@@ -38,7 +39,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return !userDto.locked();
+    return UserDetails.super.isAccountNonLocked();
   }
 
   @Override
