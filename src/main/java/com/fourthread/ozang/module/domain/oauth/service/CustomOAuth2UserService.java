@@ -6,6 +6,7 @@ import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -28,30 +29,41 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
     OAuth2User oauth2User = new DefaultOAuth2UserService().loadUser(userRequest);
     String provider = userRequest.getClientRegistration().getRegistrationId();
-    String email = oauth2User.getAttribute("email");
-    String name = oauth2User.getAttribute("name");
 
+    // 사용자 정보 추출
+    String email;
+    String name;
 
-    // DB에 사용자 저장 or 갱신
-    User user = userRepository.findByEmail(email)
-        .map(existingUser -> {
-          if (!existingUser.getLinkedOAuthProviders().contains(Items.valueOf(provider.toUpperCase()))) {
-            existingUser.getLinkedOAuthProviders().add(Items.valueOf(provider.toUpperCase()));
-          }
-          return existingUser;
-        })
-        .orElseGet(() -> {
-          Profile proflie = new Profile(name, null, null, null, null, null);
-          User newUser = new User(
-              name,
-              email,
-              null,
-              Role.USER
-          );
-          newUser.setProfile(proflie);
-          newUser.getLinkedOAuthProviders().add(Items.valueOf(provider.toUpperCase()));
-          return userRepository.save(newUser);
-        });
+    if ("google".equals(provider)) {
+      email = oauth2User.getAttribute("email");
+      name = oauth2User.getAttribute("name");
+    } else if ("kakao".equals(provider)) {
+      Map<String, Object> kakaoAccount = oauth2User.getAttribute("kakao_account");
+      Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+      email = (String) kakaoAccount.get("email");
+      name = (String) profile.get("nickname");
+    } else {
+      throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+    }
+
+    if (email == null) {
+      throw new OAuth2AuthenticationException("Email is missing from OAuth2 response");
+    }
+
+    // 사용자 조회 또는 생성
+    User user = userRepository.findByEmail(email).orElse(null);
+
+    if (user == null) {
+      Profile profileEntity = new Profile(name, null, null, null, null, null);
+      user = new User(name, email, null, Role.USER);
+      user.setProfile(profileEntity);
+      user.getLinkedOAuthProviders().add(Items.valueOf(provider.toUpperCase()));
+      userRepository.save(user);
+    } else {
+      if (!user.getLinkedOAuthProviders().contains(Items.valueOf(provider.toUpperCase()))) {
+        user.getLinkedOAuthProviders().add(Items.valueOf(provider.toUpperCase()));
+      }
+    }
 
     return new DefaultOAuth2User(
         List.of(new SimpleGrantedAuthority("ROLE_USER")),
@@ -60,4 +72,3 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     );
   }
 }
-
