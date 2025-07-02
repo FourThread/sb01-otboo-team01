@@ -7,6 +7,7 @@ import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageRespons
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +93,7 @@ class ClothesAttributeDefinitionServiceTest {
 
         // when then
         assertThatThrownBy(() -> service.create(request))
-                .isInstanceOf(IllegalArgumentException.class); //TODO 추후 예외 수정
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
         then(repository).should(never()).save(any());
     }
 
@@ -125,7 +126,7 @@ class ClothesAttributeDefinitionServiceTest {
 
         //when then
         assertThatThrownBy(() -> service.update(id, request))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
     }
 
     @DisplayName("이미 존재하는 속성 정의 이름으로 수정할 수 없다.")
@@ -140,7 +141,7 @@ class ClothesAttributeDefinitionServiceTest {
 
         //when then
         assertThatThrownBy(() -> service.update(id, request))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
     }
 
     @DisplayName("의상 속성 정의를 삭제할 수 있다.")
@@ -169,7 +170,7 @@ class ClothesAttributeDefinitionServiceTest {
 
         //when then
         assertThatThrownBy(() -> service.delete(id))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
         verify(repository, never()).delete(any());
     }
 
