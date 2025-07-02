@@ -49,12 +49,10 @@ public class SecurityConfig {
       JwtService jwtService,
       CustomAuthenticationEntryPoint authenticationEntryPoint,
       CustomAccessDeniedHandler accessDeniedHandler,
-//      AuthenticationManager authenticationManager,
       CustomOAuth2UserService customOAuth2UserService,
       OAuth2SuccessHandler oAuth2SuccessHandler
       ) throws Exception {
     http
-//        .authenticationManager(authenticationManager)
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(request -> !request.getRequestURI().startsWith("/api/")).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.SIGN_UP).permitAll()
@@ -67,8 +65,7 @@ public class SecurityConfig {
             .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
-        .csrf(csrf -> csrf.disable()
-        )
+        .csrf(csrf -> csrf.disable())
         .headers(headers -> headers
             .frameOptions(frameOptions -> frameOptions.disable())
         )
@@ -99,13 +96,7 @@ public class SecurityConfig {
                 .userService(customOAuth2UserService)
             )
             .successHandler(oAuth2SuccessHandler)
-            .failureHandler((request, response, exception) -> {
-              log.error("[OAuth2Login] 로그인 실패", exception);
-              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-              response.setContentType("application/json");
-              response.getWriter()
-                  .write("{\"message\": \"OAuth2 로그인 실패: " + exception.getMessage() + "\"}");
-            }));
+        );
 
     return http.build();
   }

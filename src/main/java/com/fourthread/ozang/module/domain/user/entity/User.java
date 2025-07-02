@@ -96,4 +96,11 @@ public class User extends BaseUpdatableEntity {
       profile.setUser(this);
     }
   }
+
+  // OAuth 제공자 추가
+  public void addOAuthProvider(Items provider) {
+    if (!this.linkedOAuthProviders.contains(provider)) {
+      this.linkedOAuthProviders.add(provider);
+    }
+  }
 }
