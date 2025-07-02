@@ -28,6 +28,7 @@ import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
+import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
@@ -75,6 +76,9 @@ class FeedServiceTest {
 
   @Mock
   private FeedCommentRepository feedCommentRepository;
+
+  @Mock
+  private FeedClothesRepository feedClothesRepository;
 
   @Mock
   private FeedMapper feedMapper;
@@ -136,7 +140,7 @@ class FeedServiceTest {
         .thenReturn(Optional.of(user));
     when(weatherRepository.findById(request.weatherId()))
         .thenReturn(Optional.of((Weather) new Object()));
-    when(feedMapper.toDto(any(), any()))
+    when(feedMapper.toDto(any(), any(), any(), any()))
         .thenReturn(expectedFeedDto);
 
     FeedDto feedDto = feedService.registerFeed(request);
@@ -250,15 +254,12 @@ class FeedServiceTest {
   @DisplayName("피드 삭제")
   void delete() {
 
-    when(feedMapper.toDto(feed, feed.getAuthor()))
+    when(feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), null))
         .thenReturn(expectedFeedDto);
     when(feedRepository.findById(feedId))
         .thenReturn(Optional.of(feed));
 
-    FeedDto delete = feedService.delete(feedId);
-
-    assertThat(delete).isNotNull();
-    assertThat(delete.content()).isEqualTo("created");
+    feedService.delete(feedId);
 
     verify(feedRepository).delete(any());
     verify(feedLikeRepository).deleteAllByFeed_Id(feedId);
@@ -282,7 +283,7 @@ class FeedServiceTest {
     FeedUpdateRequest newContent = new FeedUpdateRequest("new content");
 
     ArgumentCaptor<Feed> captor = ArgumentCaptor.forClass(Feed.class);
-    when(feedMapper.toDto(captor.capture(), any(User.class)))
+    when(feedMapper.toDto(captor.capture(), any(User.class), any(), any()))
         .thenReturn(expectedFeedDto);
     when(feedRepository.findById(any()))
         .thenReturn(Optional.of(feed));
