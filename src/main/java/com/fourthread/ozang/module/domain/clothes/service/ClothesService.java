@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.clothes.service;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.response.*;
@@ -7,6 +8,8 @@ import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
@@ -18,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+
 @Service
 @RequiredArgsConstructor
 public class ClothesService {
@@ -28,6 +33,8 @@ public class ClothesService {
 
     @Transactional
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
+
+        //TODO ownerId 존재 검증
 
         //TODO 이미지 저장
 
@@ -46,7 +53,7 @@ public class ClothesService {
     @Transactional
     public ClothesDto update(UUID clothesId, ClothesUpdateRequest request, MultipartFile imageFile) {
         Clothes clothes = clothesRepository.findById(clothesId)
-                .orElseThrow(() -> new IllegalArgumentException("의상 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
 
         clothes.updateNameAndType(request.name(), request.type());
         clothes.clearAttributes();
@@ -62,7 +69,7 @@ public class ClothesService {
     private void addAttributesToClothes(Clothes clothes, List<ClothesAttributeDto> attributeDtos) {
         for (ClothesAttributeDto attrDto : attributeDtos) {
             ClothesAttributeDefinition def = definitionRepository.findById(attrDto.definitionId())
-                    .orElseThrow(() -> new IllegalArgumentException("정의 정보를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ClothesAttributeDefinitionException(CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND.getMessage()));
             ClothesAttribute attribute = new ClothesAttribute(def, attrDto.value());
             clothes.addAttribute(attribute);
         }
@@ -70,7 +77,7 @@ public class ClothesService {
 
     public void delete(UUID clothesId) {
         Clothes clothes = clothesRepository.findById(clothesId)
-                .orElseThrow(() -> new IllegalArgumentException("의상 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
         clothesRepository.delete(clothes);
     }
 
@@ -88,7 +95,6 @@ public class ClothesService {
         boolean hasNext = results.size() > limit;
         List<Clothes> pageContent = hasNext ? results.subList(0, limit) : results;
 
-        //커서 계산 (현재 페이지 마지막 항목 기준)
         UUID nextId = hasNext ? pageContent.get(pageContent.size() - 1).getId() : null;
         String nextCursor = hasNext ? getCursorValue(pageContent.get(pageContent.size() - 1), sortBy) : null;
 
