@@ -10,12 +10,12 @@ import static com.fourthread.ozang.module.domain.weather.entity.QWeather.weather
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
 import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
+import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
@@ -165,8 +165,10 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             clothes.imageUrl,
             clothes.type,
             Projections.list(
-                Projections.constructor(ClothesAttributeDto.class,
+                Projections.constructor(ClothesAttributeWithDefDto.class,
                     clothesAttributeDefinition.id,
+                    clothesAttributeDefinition.name,
+                    clothesAttributeDefinition.selectableValues,
                     clothesAttribute.attributeValue
                 )
             )
