@@ -6,6 +6,8 @@ import com.fourthread.ozang.module.domain.clothes.dto.response.*;
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
@@ -142,7 +144,7 @@ class ClothesServiceTest {
 
         //when then
         assertThatThrownBy(() -> clothesService.create(invalidRequest, null))
-                .isInstanceOf(IllegalArgumentException.class); //TODO 커스텀 예외처리
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
 
         then(clothesRepository).should(never()).save(any());
     }
@@ -179,7 +181,7 @@ class ClothesServiceTest {
 
         //when then
         assertThatThrownBy(() -> clothesService.update(clothesId, request, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesAttributeDefinitionException.class);
         then(clothesRepository).should(never()).save(any());
     }
 
@@ -195,7 +197,7 @@ class ClothesServiceTest {
 
         //when then
         assertThatThrownBy(() -> clothesService.update(clothesId, request, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesException.class);
         then(definitionRepository).should(never()).findById(any());
     }
 
@@ -221,7 +223,7 @@ class ClothesServiceTest {
 
         //when then
         assertThatThrownBy(() -> clothesService.delete(invalidId))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ClothesException.class);
         then(clothesRepository).should(never()).delete(any());
     }
 
