@@ -40,7 +40,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                       Authentication authentication) throws IOException, ServletException {
         
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        log.info("[OAuth2SuccessHandler] OAuth2 사용자 정보: {}", oAuth2User.getAttributes());
         
         String email = extractEmail(oAuth2User.getAttributes());
         log.info("[OAuth2SuccessHandler] 추출된 이메일: {}", email);

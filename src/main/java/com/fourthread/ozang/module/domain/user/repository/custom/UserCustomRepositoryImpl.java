@@ -1,10 +1,10 @@
 package com.fourthread.ozang.module.domain.user.repository.custom;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
 import com.fourthread.ozang.module.domain.user.entity.QProfile;
 import com.fourthread.ozang.module.domain.user.entity.QUser;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -50,14 +50,13 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
     }
 
     if (cursor != null && idAfter != null) {
-      LocalDateTime cursorValue = LocalDateTime.parse(cursor);
-      builder.and(applyCursorCondition(user, cursorValue, idAfter, sortDirection));
+      builder.and(applyCursorCondition(user, cursor, idAfter, sortDirection));
     }
 
     Order order = sortDirection == SortDirection.ASCENDING ? Order.ASC : Order.DESC;
     List<OrderSpecifier<?>> orderSpecifiers = List.of(
-        new OrderSpecifier<>(order, user.createdAt),
-        new OrderSpecifier<>(order, user.id)
+        new OrderSpecifier<>(order, user.email),
+        new OrderSpecifier<>(order, user.id) // Tie-breaker
     );
 
     List<User> users = queryFactory
@@ -81,7 +80,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
     UUID nextIdAfter = null;
     if (hasNext && !users.isEmpty()) {
       User last = users.get(users.size() - 1);
-      nextCursor = last.getCreatedAt().toString();
+      nextCursor = last.getEmail();
       nextIdAfter = last.getId();
     }
 
@@ -97,19 +96,19 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
         nextIdAfter,
         hasNext,
         totalCount,
-        SortBy.createdAt,
+        SortBy.EMAIL,
         sortDirection
     );
   }
 
-  private BooleanExpression applyCursorCondition(QUser user, LocalDateTime cursor, UUID idAfter,
-      SortDirection direction) {
+  private BooleanExpression applyCursorCondition(QUser user, String cursor, UUID idAfter, SortDirection direction) {
     if (direction == SortDirection.ASCENDING) {
-      return user.createdAt.gt(cursor)
-          .or(user.createdAt.eq(cursor).and(user.id.gt(idAfter)));
+      return user.email.gt(cursor)
+          .or(user.email.eq(cursor).and(user.id.gt(idAfter)));
     } else {
-      return user.createdAt.lt(cursor)
-          .or(user.createdAt.eq(cursor).and(user.id.lt(idAfter)));
+      return user.email.lt(cursor)
+          .or(user.email.eq(cursor).and(user.id.lt(idAfter)));
     }
   }
 }
+
