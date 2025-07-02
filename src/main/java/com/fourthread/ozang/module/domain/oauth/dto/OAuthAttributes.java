@@ -39,9 +39,12 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
-        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+        Object responseObj = attributes.get("response");
+        if (responseObj instanceof Map<?, ?> map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = (Map<String, Object>) map;
 
-        return OAuthAttributes.builder()
+            return OAuthAttributes.builder()
                 .registrationId("naver")
                 .name((String) response.get("name"))
                 .email((String) response.get("email"))
@@ -50,20 +53,33 @@ public class OAuthAttributes {
                 .nameAttributeKey(userNameAttributeName)
                 .role(Role.USER)
                 .build();
+        }
+
+        throw new IllegalArgumentException("Invalid response structure for Naver attributes.");
     }
 
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        Object accountObj = attributes.get("kakao_account");
+        if (accountObj instanceof Map<?, ?> accountRaw) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> kakaoAccount = (Map<String, Object>) accountRaw;
 
-        return OAuthAttributes.builder()
-                .registrationId("kakao")
-                .name((String) profile.get("nickname"))
-                .email((String) kakaoAccount.get("email"))
-                .picture((String) profile.get("profile_image_url"))
-                .attributes(attributes)
-                .nameAttributeKey(userNameAttributeName)
-                .role(Role.USER)
-                .build();
+            Object profileObj = kakaoAccount.get("profile");
+            if (profileObj instanceof Map<?, ?> profileRaw) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> profile = (Map<String, Object>) profileRaw;
+
+                return OAuthAttributes.builder()
+                    .registrationId("kakao")
+                    .name((String) profile.get("nickname"))
+                    .email((String) kakaoAccount.get("email"))
+                    .picture((String) profile.get("profile_image_url"))
+                    .attributes(attributes)
+                    .nameAttributeKey(userNameAttributeName)
+                    .role(Role.USER)
+                    .build();
+            }
+        }
+        throw new IllegalArgumentException("Invalid response structure for Kakao attributes.");
     }
 } 

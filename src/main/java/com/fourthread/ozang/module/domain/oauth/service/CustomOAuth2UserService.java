@@ -50,11 +50,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private User saveOrUpdate(OAuthAttributes attributes) {
         Optional<User> userOptional = userRepository.findByEmail(attributes.getEmail());
-        
+
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            // 기존 사용자 정보 업데이트 (필요시)
-            return user;
+            return userOptional.get();
         } else {
             // 새로운 사용자 생성
             User newUser = new User(attributes.getName(), attributes.getEmail(), "");
@@ -72,13 +70,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
     
     private Items getOAuthProviderFromRegistrationId(String registrationId) {
-        switch (registrationId.toLowerCase()) {
-            case "kakao":
-                return Items.KAKAO;
-            case "google":
-                return Items.GOOGLE;
-            default:
-                throw new IllegalArgumentException("지원하지 않는 OAuth 제공자: " + registrationId);
-        }
+        return switch (registrationId.toLowerCase()) {
+            case "kakao" -> Items.KAKAO;
+            case "google" -> Items.GOOGLE;
+            default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공자: " + registrationId);
+        };
     }
 } 

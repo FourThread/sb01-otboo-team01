@@ -42,7 +42,7 @@ public class User extends BaseUpdatableEntity {
   private Role role;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   private Boolean locked;
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private Profile profile;
   @Setter @Getter
   private LocalDateTime tempPasswordIssuedAt;
