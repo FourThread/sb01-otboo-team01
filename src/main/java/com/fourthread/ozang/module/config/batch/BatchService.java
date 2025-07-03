@@ -44,7 +44,7 @@ public class BatchService {
      * @return 삭제된 토큰 개수
      */
     public int cleanupExpiredTokens() {
-        log.info("JWT 토큰 정리 작업 위임");
+        log.info("JWT 토큰 정리 작업 호출");
         return jwtBatchService.cleanupExpiredTokens();
     }
 
