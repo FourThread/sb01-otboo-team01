@@ -14,6 +14,7 @@ public enum ErrorCode {
   USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS", "이미 사용 중인 사용자 이름입니다.", HttpStatus.CONFLICT),
   EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
   PROFILE_NOT_FOUND("PROFILE_NOT_FOUND", "프로필을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  TEMP_PASSWORD_EXPIRED("TEMP_PASSWORD_EXPIRED", "임시 비밀번호가 만료되었습니다.", HttpStatus.UNAUTHORIZED),
   
   // 피드 관련
   FEED_NOT_FOUND("Feed Not Found", "존재하지 않는 피드입니다", HttpStatus.NOT_FOUND),

@@ -59,7 +59,7 @@ public class JwtService {
     JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
     JwtToken JwtToken = new JwtToken(payloadDto.email(), accessJwtDto.token(),
-        refreshJwtDto.token(), accessJwtDto.exp());
+        refreshJwtDto.token(), refreshJwtDto.exp());
     jwtTokenRepository.save(JwtToken);
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
@@ -176,7 +176,7 @@ public class JwtService {
   }
 
   public List<JwtToken> getActiveJwtTokens() {
-    return jwtTokenRepository.findAllByExpiryDateAfter(LocalDateTime.now());
+    return jwtTokenRepository.findAllByExpiryDateAfter(Instant.now());
   }
 
   private JwtDto generateJwtDto(JwtPayloadDto payloadDto, long tokenValiditySeconds) {
