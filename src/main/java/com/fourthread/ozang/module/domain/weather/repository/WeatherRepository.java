@@ -17,9 +17,11 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
     //  격자 좌표 기반 조회
     @Query("SELECT w FROM Weather w WHERE " +
         "w.location.x = :x AND w.location.y = :y " +
-        "ORDER BY w.forecastedAt DESC")
+        "ORDER BY w.forecastedAt DESC "
+        + "LIMIT 1")
     Optional<Weather> findLatestByGridCoordinate(
         @Param("x") Integer x,
         @Param("y") Integer y
     );
+
 }
