@@ -42,8 +42,16 @@ weather:
     forecast:
       url: ${weather.api.base-url}/getVilageFst
 
-  # ??? API ??
 kakao:
   api:
     key: ${KAKAO_API_KEY}
     url: https://dapi.kakao.com
+
+batch:
+  weather:
+    retention-days: 1
+  scheduler:
+    weather-cleanup:
+      enabled: false
+    token-cleanup:
+      enabled: false
