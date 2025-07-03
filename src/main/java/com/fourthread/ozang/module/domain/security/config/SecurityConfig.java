@@ -33,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Slf4j
 @Configuration
@@ -56,11 +57,14 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGIN).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
-        .csrf(csrf -> csrf.disable()
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(SecurityMatchers.SIGN_UP, SecurityMatchers.LOGIN, SecurityMatchers.REFRESH)
         )
         .headers(headers -> headers
             .frameOptions(frameOptions -> frameOptions.disable())
