@@ -69,8 +69,7 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<CsrfTokenResponse> getCsrfToken(CsrfToken csrfToken, HttpServletResponse response) {
-    log.debug("CSRF Token object: {}", csrfToken);
-    log.debug("CSRF Token value: {}", csrfToken != null ? csrfToken.getToken() : "null");
+    log.debug("[CSRF] CsrfToken 토큰을 발급합니다.");
     ResponseCookie cookie = ResponseCookie.from("XSRF-TOKEN", csrfToken.getToken())
         .httpOnly(false)
         .path("/")
