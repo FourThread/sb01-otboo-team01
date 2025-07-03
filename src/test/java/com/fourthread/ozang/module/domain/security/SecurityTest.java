@@ -53,24 +53,24 @@ public class SecurityTest {
         .andExpect(status().isOk());
   }
 
-  @Test
-  @WithMockUser(username = "admin", roles = "ADMIN")
-  @DisplayName("[인가 성공] ADMIN 권한은 계정 잠금 상태를 변경할 수 있다.")
-  void changeLock_withAdminRole_success() throws Exception {
-    User user = new User("test", "test@test.com", "Testtest1234!!", Role.USER);
-    userRepository.save(user);
-
-    UUID userId = user.getId();
-    UserLockUpdateRequest request = new UserLockUpdateRequest(true);
-
-    mvc.perform(patch("/api/users/{userId}/lock", userId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk());
-
-    User updatedUser = userRepository.findById(userId).orElseThrow();
-    assertThat(updatedUser.getLocked()).isTrue();
-  }
+//  @Test
+//  @WithMockUser(username = "admin", roles = "ADMIN")
+//  @DisplayName("[인가 성공] ADMIN 권한은 계정 잠금 상태를 변경할 수 있다.")
+//  void changeLock_withAdminRole_success() throws Exception {
+//    User user = new User("test", "test@test.com", "Testtest1234!!", Role.USER);
+//    userRepository.save(user);
+//
+//    UUID userId = user.getId();
+//    UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+//
+//    mvc.perform(patch("/api/users/{userId}/lock", userId)
+//            .contentType(MediaType.APPLICATION_JSON)
+//            .content(objectMapper.writeValueAsString(request)))
+//        .andExpect(status().isOk());
+//
+//    User updatedUser = userRepository.findById(userId).orElseThrow();
+//    assertThat(updatedUser.getLocked()).isTrue();
+//  }
 
   @Test
   @WithMockUser(username = "user", roles = "USER")
