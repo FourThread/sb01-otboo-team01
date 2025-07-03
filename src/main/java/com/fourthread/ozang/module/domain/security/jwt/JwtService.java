@@ -158,25 +158,21 @@ public class JwtService {
   }
 
   @Transactional
-  public void invalidateJwtToken(String refreshToken) {
+  public void invalidateRefreshToken(String refreshToken) {
     jwtTokenRepository.findByRefreshToken(refreshToken)
-        .ifPresent(this::invalidate);
+        .ifPresent(this::invalidateSession);
   }
 
   @Transactional
   public void invalidateJwtTokenByEmail(String email) {
     jwtTokenRepository.findByEmail(email)
-        .ifPresent(this::invalidate);
+        .ifPresent(this::invalidateSession);
   }
 
   public JwtToken getJwtToken(String refreshToken) {
     log.info("[JwtService] refresh token을 이용해서 access token을 조회합니다");
     return jwtTokenRepository.findByRefreshToken(refreshToken)
         .orElseThrow(() -> new SecurityException("Token not Found"));
-  }
-
-  public List<JwtToken> getActiveJwtTokens() {
-    return jwtTokenRepository.findAllByExpiryDateAfter(Instant.now());
   }
 
   private JwtDto generateJwtDto(JwtPayloadDto payloadDto, long tokenValiditySeconds) {
@@ -206,12 +202,21 @@ public class JwtService {
     return new JwtDto(issueTime, expirationTime, payloadDto, signedJWT.serialize());
   }
 
-  private void invalidate(JwtToken session) {
-    jwtTokenRepository.delete(session);
-    log.info("[JwtService] 토큰 삭제 -> 이메일 : {}", session.getEmail());
+  private void invalidateSession(JwtToken session) {
+    // AccessToken이 아직 유효하다면 블랙리스트에 등록
     if (!session.isExpired()) {
       jwtBlacklist.put(session.getAccessToken(), session.getExpiryDate());
-      log.info("[JwtService] 블랙 리스트 등록 - 만료 시간 : {}", session.getExpiryDate());
+      log.info("[JwtService] AccessToken 블랙리스트 등록 - 만료 시간: {}", session.getExpiryDate());
     }
+
+    // DB에서 세션 삭제
+    jwtTokenRepository.delete(session);
+    log.info("[JwtService] 세션 삭제 - 이메일: {}", session.getEmail());
+  }
+
+  public void invalidateAccessToken(String accessToken) {
+    JwtDto jwtDto = parse(accessToken);
+    jwtBlacklist.put(accessToken, jwtDto.exp());
+    log.info("[JwtService] AccessToken 블랙리스트 등록 - 만료 시간 : {}", jwtDto.exp());
   }
 }

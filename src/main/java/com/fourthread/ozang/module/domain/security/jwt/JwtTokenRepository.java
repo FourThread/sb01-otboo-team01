@@ -11,6 +11,4 @@ public interface JwtTokenRepository extends JpaRepository<JwtToken, Long> {
   Optional<JwtToken> findByRefreshToken(String refreshToken);
 
   Optional<JwtToken> findByEmail(String email);
-
-  List<JwtToken> findAllByExpiryDateAfter(Instant after);
 }

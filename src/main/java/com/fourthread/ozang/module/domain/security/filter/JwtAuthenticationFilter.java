@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       } else {
         log.warn("[JwtAuthFilter] 유효하지 않은 토큰 - 무효화 시도 - URI: {}", request.getRequestURI());
-        jwtService.invalidateJwtToken(accessToken);
+        jwtService.invalidateAccessToken(accessToken);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ErrorDetails errorDetails = new ErrorDetails(
