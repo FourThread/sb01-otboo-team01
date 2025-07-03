@@ -82,10 +82,4 @@ public class AuthController {
         new CsrfTokenResponse(csrfToken.getHeaderName(), csrfToken.getToken(), csrfToken.getParameterName())
     );
   }
-
-  public record CsrfTokenResponse(
-      String headerName,
-      String token,
-      String parameterName
-  ) {}
 }
