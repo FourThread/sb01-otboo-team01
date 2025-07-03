@@ -69,14 +69,14 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<CsrfTokenResponse> getCsrfToken(CsrfToken csrfToken, HttpServletResponse response) {
+    log.debug("CSRF Token object: {}", csrfToken);
+    log.debug("CSRF Token value: {}", csrfToken != null ? csrfToken.getToken() : "null");
     ResponseCookie cookie = ResponseCookie.from("XSRF-TOKEN", csrfToken.getToken())
         .httpOnly(false)
         .path("/")
         .secure(false)
         .sameSite("Lax")
         .build();
-
-    response.addHeader("Set-Cookie", cookie.toString());
 
     return ResponseEntity.ok(
         new CsrfTokenResponse(csrfToken.getHeaderName(), csrfToken.getToken(), csrfToken.getParameterName())

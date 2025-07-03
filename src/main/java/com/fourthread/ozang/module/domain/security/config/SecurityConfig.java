@@ -64,7 +64,7 @@ public class SecurityConfig {
         )
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .ignoringRequestMatchers(SecurityMatchers.SIGN_UP, SecurityMatchers.LOGIN, SecurityMatchers.REFRESH)
+            .ignoringRequestMatchers(SecurityMatchers.SIGN_UP, SecurityMatchers.LOGIN, SecurityMatchers.REFRESH, SecurityMatchers.LOGOUT)
         )
         .headers(headers -> headers
             .frameOptions(frameOptions -> frameOptions.disable())
