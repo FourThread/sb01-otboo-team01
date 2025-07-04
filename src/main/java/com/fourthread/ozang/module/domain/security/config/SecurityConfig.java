@@ -1,6 +1,9 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.oauth.handle.OAuth2FailureHandler;
+import com.fourthread.ozang.module.domain.oauth.handle.OAuth2SuccessHandler;
+import com.fourthread.ozang.module.domain.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
@@ -49,19 +52,22 @@ public class SecurityConfig {
       JwtService jwtService,
       CustomAuthenticationEntryPoint authenticationEntryPoint,
       CustomAccessDeniedHandler accessDeniedHandler,
-      AuthenticationManager authenticationManager
+      CustomOAuth2UserService customOAuth2UserService,
+      OAuth2SuccessHandler oAuth2SuccessHandler,
+      OAuth2FailureHandler oAuth2FailureHandler
       ) throws Exception {
     http
-        .authenticationManager(authenticationManager)
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(request -> !request.getRequestURI().startsWith("/api/")).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.SIGN_UP).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGIN).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
-            .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESETPASSWORD).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
+            .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
         .csrf(csrf -> csrf
@@ -93,7 +99,14 @@ public class SecurityConfig {
             UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(exceptionHandler ->
             exceptionHandler.authenticationEntryPoint(authenticationEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler));
+                .accessDeniedHandler(accessDeniedHandler))
+        .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo
+                .userService(customOAuth2UserService)
+            )
+            .successHandler(oAuth2SuccessHandler)
+            .failureHandler(oAuth2FailureHandler)
+        );
 
     return http.build();
   }

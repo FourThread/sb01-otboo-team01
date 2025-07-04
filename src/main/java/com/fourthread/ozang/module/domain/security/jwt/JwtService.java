@@ -135,10 +135,9 @@ public class JwtService {
 
     UUID userId = parse(refreshToken).payloadDto().userId();
     log.info("[JwtService] 사용자 ID : {} - Access Token 재발급", userId);
-    UserDto userDto = userRepository.findById(userId)
-        .map(userMapper::toDto)
+    JwtPayloadDto payloadDto = userRepository.findById(userId)
+        .map(JwtPayloadDto::toJwtPayloadDto)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, null, null));
-    JwtPayloadDto payloadDto = UserDto.toJwtPayloadDto(userDto);
     log.info("[JwtService] AccessToken 생성 요청");
     JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     log.info("[JwtService] RefreshToken 생성 요청");

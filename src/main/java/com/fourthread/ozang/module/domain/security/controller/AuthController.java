@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.security.controller;
 
-import com.fourthread.ozang.module.domain.security.CsrfTokenResponse;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
 import jakarta.servlet.http.Cookie;
