@@ -7,11 +7,15 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class RedisDao {
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final ValueOperations<String, Object> valueOperations;
+
+  public RedisDao(RedisTemplate<String, Object> redisTemplate) {
+    this.redisTemplate = redisTemplate;
+    this.valueOperations = redisTemplate.opsForValue(); // String 타입을 쉽게 처리하는 메서드
+  }
 
   // 데이터 저장
   public void setValue(String key, String value) {
