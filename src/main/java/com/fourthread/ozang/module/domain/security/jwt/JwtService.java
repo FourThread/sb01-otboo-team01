@@ -44,9 +44,9 @@ public class JwtService {
   @Value("${jwt.refresh-token-expiration-seconds}")
   private long refreshTokenValiditySeconds;
 
-  private final JwtTokenRepository jwtTokenRepository;
+  //  private final JwtTokenRepository jwtTokenRepository;
+  private final RedisDao redisDao;
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
   private final ObjectMapper objectMapper;
   private final JwtBlacklist jwtBlacklist;
 
