@@ -1,6 +1,5 @@
-package com.fourthread.ozang.module.domain.security.jwt;
+package com.fourthread.ozang.module.domain.security.jwt.dto.data;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import java.time.Instant;
 
 public record JwtDto(
