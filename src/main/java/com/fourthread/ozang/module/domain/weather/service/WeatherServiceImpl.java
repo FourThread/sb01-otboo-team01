@@ -23,10 +23,12 @@ import com.fourthread.ozang.module.domain.weather.util.CoordinateConverter;
 import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -193,22 +195,12 @@ public class WeatherServiceImpl implements WeatherService {
         LocalDate today,
         WeatherAPILocation loc
     ) {
-        int baseHour = Integer.parseInt(baseTime.substring(0,2));
+        int baseHour = Integer.parseInt(baseTime.substring(0, 2));
         boolean morning = Set.of(2,5,8,11,14).contains(baseHour);
         boolean evening = Set.of(17,20,23).contains(baseHour);
 
-        Map<LocalDate, List<WeatherApiResponse.Item>> grouped = items.stream()
-            .filter(it -> {
-                LocalDate d = LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE);
-                int offset = (int) ChronoUnit.DAYS.between(today, d);
-                String t = it.fcstTime();
-                if (offset <= 3) return true;
-                if (offset == 4) return morning
-                    ? Set.of("0200","0500","0800","1100","1400").contains(t)
-                    : t.endsWith("00");
-                if (offset == 5 && evening) return Set.of("0200","0500","0800","1100","1400","1700","2000","2300").contains(t);
-                return false;
-            })
+        Map<LocalDate, List<WeatherApiResponse.Item>> byDate = items.stream()
+            .filter(it -> includeItem(it, today, morning, evening))
             .collect(Collectors.groupingBy(
                 it -> LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE),
                 LinkedHashMap::new,
@@ -216,59 +208,85 @@ public class WeatherServiceImpl implements WeatherService {
             ));
 
         List<WeatherDto> result = new ArrayList<>();
-
-        for (Map.Entry<LocalDate, List<WeatherApiResponse.Item>> entry : grouped.entrySet()) {
+        for (var entry : byDate.entrySet()) {
             LocalDate date = entry.getKey();
-            List<WeatherApiResponse.Item> dayItems = entry.getValue();
+            List<WeatherApiResponse.Item> day = entry.getValue();
 
-            LocalDateTime forecastedAt = parseDateTime(dayItems.get(0).baseDate(), dayItems.get(0).baseTime());
-            String earliestTime = dayItems.stream()
-                .map(WeatherApiResponse.Item::fcstTime)
-                .min(String::compareTo).orElse("0000");
-            LocalDateTime forecastAt = LocalDateTime.of(
-                date.getYear(), date.getMonth(), date.getDayOfMonth(),
-                Integer.parseInt(earliestTime.substring(0,2)), 0
-            );
-
-            double minTemp = dayItems.stream()
+            // 기온(T1H)
+            DoubleSummaryStatistics tStat = day.stream()
                 .filter(i -> "T1H".equals(i.category()))
-                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
-                .min().orElse(0);
-            double maxTemp = dayItems.stream()
-                .filter(i -> "T1H".equals(i.category()))
-                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
-                .max().orElse(0);
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
+                .summaryStatistics();
+            double curTemp = tStat.getCount()>0
+                ? tStat.getAverage()
+                : // T1H 없으면 TMN/TMX 평균
+                    day.stream().filter(i->"TMN".equals(i.category())||"TMX".equals(i.category()))
+                        .mapToDouble(i->parseDouble(i.fcstValue()))
+                        .average().orElse(0);
+            double minTemp = tStat.getCount()>0
+                ? tStat.getMin()
+                : day.stream().filter(i->"TMN".equals(i.category()))
+                    .mapToDouble(i->parseDouble(i.fcstValue()))
+                    .min().orElse(curTemp);
+            double maxTemp = tStat.getCount()>0
+                ? tStat.getMax()
+                : day.stream().filter(i->"TMX".equals(i.category()))
+                    .mapToDouble(i->parseDouble(i.fcstValue()))
+                    .max().orElse(curTemp);
 
-            // 강수확률 평균
-            double avgPop = dayItems.stream()
-                .filter(i -> "POP".equals(i.category()))
-                .mapToDouble(i -> Double.parseDouble(i.fcstValue()))
+            // 습도(REH)
+            double avgHum = day.stream()
+                .filter(i -> "REH".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
                 .average().orElse(0);
 
-            // 하늘상태(가장 빈도 높은 코드)
-            String skyCode = dayItems.stream()
+            // 풍속(WSD)
+            double avgWsd = day.stream()
+                .filter(i -> "WSD".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
+                .average().orElse(0);
+
+            // 강수확률(POP)
+            double avgPop = day.stream()
+                .filter(i -> "POP".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
+                .average().orElse(0);
+
+            // 하늘상태(SKY) 최빈값
+            String skyCode = day.stream()
                 .filter(i -> "SKY".equals(i.category()))
                 .collect(Collectors.groupingBy(WeatherApiResponse.Item::fcstValue, Collectors.counting()))
                 .entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey).orElse("1");
 
-            WeatherDto dto = new WeatherDto(
+            result.add(new WeatherDto(
                 null,
-                forecastedAt,
-                forecastAt,
+                parseDateTime(day.get(0).baseDate(), day.get(0).baseTime()),
+                LocalDateTime.of(date, LocalTime.NOON),
                 loc,
                 SkyStatus.fromCode(skyCode),
                 new PrecipitationDto(PrecipitationType.NONE, 0.0, avgPop),
-                new HumidityDto(0.0, 0.0),
-                new TemperatureDto(0.0, 0.0, minTemp, maxTemp),
-                new WindSpeedDto(0.0, WindStrength.WEAK)
-            );
-            result.add(dto);
+                new HumidityDto(avgHum, 0.0),
+                new TemperatureDto(curTemp, 0.0, minTemp, maxTemp),
+                new WindSpeedDto(avgWsd, WindStrength.fromSpeed(avgWsd))
+            ));
         }
-
         return result;
     }
+
+    private boolean includeItem(WeatherApiResponse.Item it, LocalDate today, boolean morning, boolean evening) {
+        LocalDate d = LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE);
+        int offset = (int) ChronoUnit.DAYS.between(today, d);
+        String t = it.fcstTime();
+        if (offset <= 3) return t.endsWith("00");
+        if (offset == 4) return morning
+            ? Set.of("0200","0500","0800","1100","1400").contains(t)
+            : t.endsWith("00");
+        if (offset == 5 && evening) return Set.of("0200","0500","0800","1100","1400","1700","2000","2300").contains(t);
+        return false;
+    }
+
     private LocalDateTime parseDateTime(String date, String time) {
         String t = time.length() < 4
             ? String.format("%04d", Integer.parseInt(time))
@@ -277,12 +295,16 @@ public class WeatherServiceImpl implements WeatherService {
         return LocalDateTime.parse(ymdhm, DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
     }
 
+    private double parseDouble(String v) {
+        try { return Double.parseDouble(v); }
+        catch (Exception e) { return 0; }
+    }
+
     private void validateCoordinates(Double longitude, Double latitude) {
         if (longitude == null || latitude == null) {
             throw new InvalidCoordinateException("경도와 위도는 필수입니다.");
         }
 
-        // 한국 영토 범위 검증
         if (latitude < 33.0 || latitude > 43.0 || longitude < 124.0 || longitude > 132.0) {
             throw new InvalidCoordinateException("한국 영토 범위를 벗어난 좌표입니다.");
         }
@@ -298,7 +320,6 @@ public class WeatherServiceImpl implements WeatherService {
             String errorMsg = header != null ? header.resultMsg() : "Unknown error";
             String resultCode = header != null ? header.resultCode() : "UNKNOWN";
 
-            // Open API 에러 코드
             switch (resultCode) {
                 case "01" -> throw new WeatherApiException("어플리케이션 에러 - base_date/base_time 파라미터 오류", resultCode);
                 case "02" -> throw new WeatherApiException("데이터베이스 에러", resultCode);
