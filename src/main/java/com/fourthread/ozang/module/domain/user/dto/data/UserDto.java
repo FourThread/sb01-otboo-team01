@@ -16,12 +16,5 @@ public record UserDto(
     List<Items> linkedOAuthProviders,
     Boolean locked
 ) {
-  public static JwtPayloadDto toJwtPayloadDto(UserDto userDto) {
-    return new JwtPayloadDto(
-        userDto.id(),
-        userDto.email(),
-        userDto.name(),
-        userDto.role()
-    );
-  }
+
 }

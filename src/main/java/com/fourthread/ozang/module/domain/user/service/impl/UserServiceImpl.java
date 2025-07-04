@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -10,6 +9,7 @@ import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
@@ -190,12 +190,13 @@ public class UserServiceImpl implements UserService {
     mailService.sendResetPasswordEmail(user.getEmail(), tempPassword);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public UserCursorPageResponse getUserList(String cursor, UUID idAfter, int limit, SortBy sortBy,
       SortDirection sortDirection, String emailLike, Role roleEqual, Boolean locked) {
     log.info("[UserService] 사용자 목록을 조회합니다");
-    if (!"createdAt".equals(sortBy)) {
-      throw new IllegalArgumentException("현재는 createdAt 기준 정렬만 지원합니다");
+    if (sortBy != SortBy.EMAIL) {
+      throw new IllegalArgumentException("현재는 EMAIL 기준 정렬만 지원합니다");
     }
 
     return userRepository.searchUsers(

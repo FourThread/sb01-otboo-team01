@@ -6,10 +6,12 @@ import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,8 +41,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             log.warn("[UserDetailsService] {} 사용자의 임시 비밀번호 유효시간이 만료되었습니다", email);
             throw new UserException(ErrorCode.TEMP_PASSWORD_EXPIRED, null, null);
           }
-          UserDto userDto = userMapper.toDto(user);
-          JwtPayloadDto payloadDto = UserDto.toJwtPayloadDto(userDto);
+          JwtPayloadDto payloadDto = JwtPayloadDto.toJwtPayloadDto(user);
           String password = user.getPassword();
           log.info("[UserDetailsService] UserDetails 객체를 반환합니다");
           return new UserDetailsImpl(payloadDto, password);

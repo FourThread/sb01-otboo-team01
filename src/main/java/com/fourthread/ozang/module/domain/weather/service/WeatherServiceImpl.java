@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,9 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherApiClient weatherApiClient;
     private final KakaoApiClient kakaoApiClient;
     private final CoordinateConverter coordinateConverter;
+
+    @Value("${batch.weather.retention-days:30}")
+    private int defaultRetentionDays;
 
     @Override
     @Transactional
@@ -269,6 +273,42 @@ public class WeatherServiceImpl implements WeatherService {
 
         return result;
     }
+
+    @Override
+    @Transactional
+    public int cleanupOldWeatherData() {
+        return cleanupOldWeatherData(defaultRetentionDays);
+    }
+
+    @Override
+    @Transactional
+    public int cleanupOldWeatherData(int retentionDays) {
+        log.info("오래된 날씨 데이터 정리 시작 - 보관 기간: {}일", retentionDays);
+
+        try {
+            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
+            log.debug("삭제 기준 날짜: {}", cutoffDate);
+
+            long deleteCount = weatherRepository.countOldWeatherData(cutoffDate);
+
+            if (deleteCount > 0) {
+                log.info("삭제 예정 날씨 데이터: {}건", deleteCount);
+
+                // 삭제(배치)
+                weatherRepository.deleteOldWeatherData(cutoffDate);
+                log.info("{}일 이전 날씨 데이터 {}건 삭제 완료", retentionDays, deleteCount);
+            } else {
+                log.info("삭제할 오래된 날씨 데이터가 없습니다");
+            }
+
+            return (int) deleteCount;
+
+        } catch (Exception e) {
+            log.error("날씨 데이터 정리 중 오류 발생", e);
+            throw new RuntimeException("날씨 데이터 정리 실패", e);
+        }
+    }
+
     private LocalDateTime parseDateTime(String date, String time) {
         String t = time.length() < 4
             ? String.format("%04d", Integer.parseInt(time))

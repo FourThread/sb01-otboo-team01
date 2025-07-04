@@ -1,0 +1,13 @@
+batch:
+  weather:
+    retention-days: 14  # 운영환경에서는 14일 보관
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    token-cleanup:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.batch: WARN
+    com.fourthread.ozang.module.config.batch: INFO

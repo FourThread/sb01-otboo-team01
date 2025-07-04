@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.user.dto.response;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
 import java.util.List;
 import java.util.UUID;
 

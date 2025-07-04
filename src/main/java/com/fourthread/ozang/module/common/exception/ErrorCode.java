@@ -18,7 +18,13 @@ public enum ErrorCode {
   
   // 피드 관련
   FEED_NOT_FOUND("Feed Not Found", "존재하지 않는 피드입니다", HttpStatus.NOT_FOUND),
-  FEED_LIKE_NOT_FOUND("Feed Like Not Found", "피드를 좋아요 하지 않았습니다", HttpStatus.NOT_FOUND);
+  FEED_LIKE_NOT_FOUND("Feed Like Not Found", "피드를 좋아요 하지 않았습니다", HttpStatus.NOT_FOUND),
+
+  // 의상 관련
+  CLOTHES_NOT_FOUND("CLOTHES_NOT_FOUND", "의상 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  DUPLICATE_CLOTHES("DUPLICATE_CLOTHES", "이미 존재하는 의상입니다.", HttpStatus.CONFLICT),
+  CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND("CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND", "의상 속성 정의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION("DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION", "이미 존재하는 의상 속성 정의입니다.", HttpStatus.CONFLICT);
 
   private final String code;
   private final String message;
