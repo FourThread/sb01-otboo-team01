@@ -24,7 +24,7 @@ public class DirectMessageController {
 
     return dmMessageService.send(request);
   }
-
+  
   @GetMapping("/api/direct-messages")
   public DirectMessageDtoCursorResponse retrieveDirectMessage(
       @Validated @ModelAttribute DirectMessageDtoCursorRequest request) {

@@ -14,4 +14,8 @@ public enum SortDirection {
     public boolean isDescending() {
         return this == DESCENDING;
     }
+
+    public boolean isAsc() {
+        return this == ASCENDING;
+    }
 }

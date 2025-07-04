@@ -16,11 +16,8 @@ import lombok.NoArgsConstructor;
 @Getter
 public class JwtToken extends BaseUpdatableEntity {
 
-  @Column(nullable = false, updatable = false)
+  @Column(nullable = false, updatable = false, unique = true)
   private String email;
-
-  @Column(columnDefinition = "varchar(512)", nullable = false, unique = true)
-  private String accessToken;
 
   @Column(columnDefinition = "varchar(512)", nullable = false, unique = true)
   private String refreshToken;
@@ -30,11 +27,5 @@ public class JwtToken extends BaseUpdatableEntity {
 
   public boolean isExpired() {
     return this.expiryDate.isBefore(Instant.now());
-  }
-
-  public void update(String accessToken, String refreshToken, Instant expiryDate) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    this.expiryDate = expiryDate;
   }
 }

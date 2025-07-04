@@ -26,7 +26,7 @@ public class JwtLogoutHandler implements LogoutHandler {
     resolveRefreshToken(request)
         .ifPresentOrElse(refreshToken -> {
           log.info("[JwtLogoutHandler] 리프레시 토큰 쿠키 발견: {}", refreshToken);
-          jwtService.invalidateJwtToken(refreshToken);
+          jwtService.invalidateRefreshToken(refreshToken);
           log.info("[JwtLogoutHandler] JWT 토큰 무효화 완료");
           invalidateRefreshTokenCookie(response);
           log.info("[JwtLogoutHandler] 리프레시 토큰 쿠키 삭제 완료");
