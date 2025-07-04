@@ -39,8 +39,14 @@ public class KakaoApiClient {
         }
 
         return response.documents().stream()
-            .map(doc -> doc.region2DepthName() + " " + doc.region3DepthName())
-            .collect(Collectors.toList());
+            .map(d -> List.of(
+                d.region1DepthName(),         // 시·도
+                d.region2DepthName(),         // 구
+                d.region3DepthName()))        // 동
+            .flatMap(List::stream)
+            .filter(n -> n != null && !n.isBlank())
+            .distinct()
+            .toList();
     }
 
 }
