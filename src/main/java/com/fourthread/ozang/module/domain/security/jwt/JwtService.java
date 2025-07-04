@@ -56,9 +56,7 @@ public class JwtService {
     JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
-    JwtToken JwtToken = new JwtToken(payloadDto.email(),
-        refreshJwtDto.token(), refreshJwtDto.exp());
-    jwtTokenRepository.save(JwtToken);
+    redisDao.setValues("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return new JwtTokenResponse(accessJwtDto.token(),
@@ -147,14 +145,24 @@ public class JwtService {
 
   @Transactional
   public void invalidateRefreshToken(String refreshToken) {
-    jwtTokenRepository.findByRefreshToken(refreshToken)
-        .ifPresent(this::invalidateRefreshToken);
+    JwtDto jwtDto = parse(refreshToken);
+    String key = "refresh:" + jwtDto.payloadDto().email();
+
+    redisDao.delete(key);
+
+    if (!jwtDto.isExpired()) {
+      jwtBlacklist.put(refreshToken, jwtDto.exp());
+    }
   }
 
   @Transactional
   public void invalidateJwtTokenByEmail(String email) {
-    jwtTokenRepository.findByEmail(email)
-        .ifPresent(this::invalidateRefreshToken);
+    String key = "refresh:" + email;
+    String token = (String) redisDao.getValue(key);
+
+    if (token != null) {
+      invalidateRefreshToken(token);
+    }
   }
 
   private JwtDto generateJwtDto(JwtPayloadDto payloadDto, long tokenValiditySeconds) {
@@ -182,18 +190,6 @@ public class JwtService {
     }
 
     return new JwtDto(issueTime, expirationTime, payloadDto, signedJWT.serialize());
-  }
-
-  private void invalidateRefreshToken(JwtToken refreshToken) {
-    // Refresh Token도 탈취되었을 때를 대비해서 블랙 리스트에 넣기
-    if (!refreshToken.isExpired()) {
-      jwtBlacklist.put(refreshToken.getRefreshToken(), refreshToken.getExpiryDate());
-      log.info("[JwtService] AccessToken 블랙리스트 등록 - 만료 시간: {}", refreshToken.getExpiryDate());
-    }
-
-    // DB에서 세션 삭제
-    jwtTokenRepository.delete(refreshToken);
-    log.info("[JwtService - invalidateRefreshToken] Refresh Token 삭제 - 이메일: {}", refreshToken.getEmail());
   }
 
   public void invalidateAccessToken(String accessToken) {
