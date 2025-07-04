@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.repository;
+package com.fourthread.ozang.module.domain.clothes.repository.query;
 
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
@@ -8,14 +8,16 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
 import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.*;
 
+@Repository
 @RequiredArgsConstructor
-public class ClothesAttributeDefinitionRepositoryImpl implements ClothesAttributeDefinitionRepositoryCustom{
+public class ClothesAttributeDefinitionRepositoryImpl implements ClothesAttributeDefinitionRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 

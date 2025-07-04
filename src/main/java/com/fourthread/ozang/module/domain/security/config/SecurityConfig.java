@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.oauth.handle.OAuth2FailureHandler;
 import com.fourthread.ozang.module.domain.oauth.handle.OAuth2SuccessHandler;
 import com.fourthread.ozang.module.domain.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
@@ -13,7 +14,6 @@ import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtLogoutHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +36,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Slf4j
 @Configuration
@@ -50,7 +53,8 @@ public class SecurityConfig {
       CustomAuthenticationEntryPoint authenticationEntryPoint,
       CustomAccessDeniedHandler accessDeniedHandler,
       CustomOAuth2UserService customOAuth2UserService,
-      OAuth2SuccessHandler oAuth2SuccessHandler
+      OAuth2SuccessHandler oAuth2SuccessHandler,
+      OAuth2FailureHandler oAuth2FailureHandler
       ) throws Exception {
     http
         .authorizeHttpRequests(authorize -> authorize
@@ -61,11 +65,16 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.RESETPASSWORD).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+            .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
+        )
         .headers(headers -> headers
             .frameOptions(frameOptions -> frameOptions.disable())
         )
@@ -96,6 +105,7 @@ public class SecurityConfig {
                 .userService(customOAuth2UserService)
             )
             .successHandler(oAuth2SuccessHandler)
+            .failureHandler(oAuth2FailureHandler)
         );
 
     return http.build();

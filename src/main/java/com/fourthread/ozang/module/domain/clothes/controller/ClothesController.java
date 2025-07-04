@@ -3,9 +3,10 @@ package com.fourthread.ozang.module.domain.clothes.controller;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDtoCursorResponse;
+import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
 import com.fourthread.ozang.module.domain.clothes.service.ClothesService;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +50,21 @@ public class ClothesController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<ClothesDtoCursorResponse> findAll(
+            @RequestParam UUID ownerId,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam ClothesType typeEqual,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) UUID idAfter,
+            @RequestParam(required = false, defaultValue = "CREATED_AT") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESCENDING") String sortDirection) {
+        ClothesDtoCursorResponse response = clothesService.findAll(
+                ownerId, cursor, idAfter, limit, typeEqual, sortBy, sortDirection);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 }
