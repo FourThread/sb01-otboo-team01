@@ -1,8 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.batch;
+package com.fourthread.ozang.module.domain.security.jwt.batch;
 
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
-import com.fourthread.ozang.module.config.batch.BatchService;
-import com.fourthread.ozang.module.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -12,69 +10,71 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * JWT 토큰 도메인 배치 작업 설정
+ */
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class WeatherBatchConfig {
+public class JwtBatchConfig {
 
-    private final WeatherService weatherService;
+    private final JwtBatchService jwtBatchService;
     private final BatchJobExecutionListener batchJobExecutionListener;
 
-    @Value("${batch.weather.retention-days:30}")
-    private int weatherRetentionDays;
-
+    /**
+     * 만료된 JWT 토큰 정리 Job
+     */
     @Bean
-    public Job weatherDataCleanupJob(
-        JobRepository jobRepository,
-        Step weatherDataCleanupStep
-    ) {
-        return new JobBuilder("weatherDataCleanupJob", jobRepository)
+    public Job expiredTokenCleanupJob(JobRepository jobRepository, Step expiredTokenCleanupStep) {
+        return new JobBuilder("expiredTokenCleanupJob", jobRepository)
             .listener(batchJobExecutionListener)
-            .start(weatherDataCleanupStep)
-            .build();
-    }
-
-    @Bean
-    public Step weatherDataCleanupStep(
-        JobRepository jobRepository,
-        PlatformTransactionManager transactionManager,
-        Tasklet weatherDataCleanupTasklet
-    ) {
-        return new StepBuilder("weatherDataCleanupStep", jobRepository)
-            .tasklet(weatherDataCleanupTasklet, transactionManager)
+            .start(expiredTokenCleanupStep)
             .build();
     }
 
     /**
-     * 날씨 데이터 정리 Tasklet
-     * 설정된 보관 기간보다 오래된 날씨 데이터 삭제
+     * 만료된 토큰 정리 Step
      */
     @Bean
-    public Tasklet weatherDataCleanupTasklet() {
+    public Step expiredTokenCleanupStep(
+        JobRepository jobRepository,
+        PlatformTransactionManager transactionManager,
+        Tasklet expiredTokenCleanupTasklet
+    ) {
+        return new StepBuilder("expiredTokenCleanupStep", jobRepository)
+            .tasklet(expiredTokenCleanupTasklet, transactionManager)
+            .build();
+    }
+
+    /**
+     * 만료된 토큰 정리 Tasklet
+     * 만료된 JWT 토큰들을 정리
+     */
+    @Bean
+    public Tasklet expiredTokenCleanupTasklet() {
         return (contribution, chunkContext) -> {
-            log.info("날씨 데이터 정리 배치 작업 시작");
+            log.info("만료된 JWT 토큰 정리 배치 작업 시작");
 
             try {
-                int deletedCount = weatherService.cleanupOldWeatherData();
+                int deletedCount = jwtBatchService.cleanupExpiredTokens();
 
-                log.info("날씨 데이터 정리 완료 - 삭제된 데이터: {}건", deletedCount);
+                log.info("JWT 토큰 정리 완료 - 삭제된 토큰: {}건", deletedCount);
 
                 // ExecutionContext에 결과 저장 (모니터링용)
                 chunkContext.getStepContext()
                     .getStepExecution()
                     .getJobExecution()
                     .getExecutionContext()
-                    .putInt("deletedWeatherCount", deletedCount);
+                    .putInt("deletedTokenCount", deletedCount);
 
                 return RepeatStatus.FINISHED;
 
             } catch (Exception e) {
-                log.error("날씨 데이터 정리 배치 작업 실패, e");
+                log.error("만료된 토큰 정리 배치 작업 실패", e);
                 throw e;
             }
         };

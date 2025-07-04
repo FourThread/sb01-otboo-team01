@@ -33,11 +33,23 @@ spring:
       enabled: true
       path: /h2-console
 
+batch:
+  weather:
+    retention-days: 30  # 날씨 데이터 보관 기간 (일)
+
+    # 스케줄러 설정
+    scheduler:
+      weather-cleanup:
+        enabled: true  # 날씨 데이터 정리 스케줄러 활성화
+      token-cleanup:
+        enabled: true  # JWT 토큰 정리 스케줄러 활성화
+
+# Spring Batch 기본 설정
   batch:
     job:
-      enabled: false
+      enabled: false #애플리케이션 시작 시 배치 작업 자동 실행 여부
     jdbc:
-      initialize-schema: always
+      initialize-schema: embedded #배치 메타데이터 테이블 초기화
 
 logging:
   level:
@@ -48,7 +60,6 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-  # ??? API ??
 weather:
   api:
     key:  ${WEATHER_API_KEY}
@@ -58,7 +69,6 @@ weather:
     forecast:
       url: ${weather.api.base-url}/getVilageFst
 
-  # ??? API ??
 kakao:
   api:
     key: ${KAKAO_API_KEY}
@@ -77,3 +87,6 @@ admin:
 security:
   temp-password:
     expiration-hours: 1
+
+app:
+  timezone: Asia/Seoul
