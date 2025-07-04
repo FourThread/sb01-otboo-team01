@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.repository;
+package com.fourthread.ozang.module.domain.clothes.repository.query;
 
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
