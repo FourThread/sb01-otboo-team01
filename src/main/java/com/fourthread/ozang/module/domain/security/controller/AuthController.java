@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.security.controller;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
+import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fourthread.ozang.module.domain.user.dto.request.ResetPasswordRequest;
@@ -10,7 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,8 +34,8 @@ public class AuthController {
   @GetMapping("/me")
   public ResponseEntity<String> me(
       @CookieValue(value = "refresh_token") String refreshToken) {
-    JwtToken jwtToken = jwtService.getJwtToken(refreshToken);
-    return ResponseEntity.status(HttpStatus.OK).body(jwtToken.getAccessToken());
+    JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
+    return ResponseEntity.status(HttpStatus.OK).body(jwtToken.accessToken());
   }
 
   // 리프레시 토큰을 이용해서 리프레시 토큰과 엑세스 토큰을 재발급 받는다
@@ -42,17 +45,17 @@ public class AuthController {
       HttpServletResponse response
   ) {
     log.info("[AuthController] Refresh 토큰 요청 수신");
-    JwtToken jwtSession = jwtService.refreshJwtToken(refreshToken);
+    JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
 
-    log.info("[AutnController] AccessToken 재발급 완료! - 사용자 : {}, 만료 시간 : {}", jwtSession.getEmail(), jwtSession.getExpiryDate());
+    log.info("[AuthController] AccessToken 재발급 완료!");
     Cookie refreshTokenCookie = new Cookie("refresh_token",
-        jwtSession.getRefreshToken());
+        jwtToken.refreshToken());
     refreshTokenCookie.setHttpOnly(true);
     response.addCookie(refreshTokenCookie);
 
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(jwtSession.getAccessToken());
+        .body(jwtToken.accessToken());
   }
 
   @PostMapping("/reset-password")
@@ -61,5 +64,12 @@ public class AuthController {
   ) {
     userService.resetPassword(request.email());
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/csrf-token")
+  public ResponseEntity<CsrfToken> getCsrfToken(CsrfToken csrfToken) {
+    log.debug("[CSRF] CsrfToken 토큰을 발급합니다.");
+
+    return ResponseEntity.ok(csrfToken);
   }
 }

@@ -5,9 +5,8 @@ import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;
 import com.fourthread.ozang.module.domain.security.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
-import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       } else {
         log.warn("[JwtAuthFilter] 유효하지 않은 토큰 - 무효화 시도 - URI: {}", request.getRequestURI());
-        jwtService.invalidateJwtToken(accessToken);
+        jwtService.invalidateAccessToken(accessToken);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ErrorDetails errorDetails = new ErrorDetails(

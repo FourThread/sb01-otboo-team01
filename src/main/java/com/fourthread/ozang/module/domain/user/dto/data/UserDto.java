@@ -1,6 +1,6 @@
 package com.fourthread.ozang.module.domain.user.dto.data;
 
-import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.user.dto.type.Items;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.time.LocalDateTime;
@@ -16,12 +16,5 @@ public record UserDto(
     List<Items> linkedOAuthProviders,
     Boolean locked
 ) {
-  public static JwtPayloadDto toJwtPayloadDto(UserDto userDto) {
-    return new JwtPayloadDto(
-        userDto.id(),
-        userDto.email(),
-        userDto.name(),
-        userDto.role()
-    );
-  }
+
 }
