@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security;
 
+import com.fourthread.ozang.module.domain.user.exception.UserException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
@@ -75,7 +76,7 @@ class CustomUserDetailsServiceTest {
   }
 
   @Test
-  @DisplayName("임시 비밀번호가 만료되었을 경우 CredentialsExpiredException 발생")
+  @DisplayName("임시 비밀번호가 만료되었을 경우 UserException 발생")
   void loadUserByUsername_tempPasswordExpired() {
     // given
     String email = "expired@email.com";
@@ -84,7 +85,7 @@ class CustomUserDetailsServiceTest {
     given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
 
     // when & then
-    assertThrows(CredentialsExpiredException.class, () -> userDetailsService.loadUserByUsername(email));
+    assertThrows(UserException.class, () -> userDetailsService.loadUserByUsername(email));
   }
 
   @Test
