@@ -42,7 +42,7 @@ public class User extends BaseUpdatableEntity {
   private Role role;
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   private Boolean locked;
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private Profile profile;
   @Setter @Getter
   private LocalDateTime tempPasswordIssuedAt;
@@ -94,6 +94,13 @@ public class User extends BaseUpdatableEntity {
     this.profile = profile;
     if (profile != null) {
       profile.setUser(this);
+    }
+  }
+
+  // OAuth 제공자 추가
+  public void addOAuthProvider(Items provider) {
+    if (!this.linkedOAuthProviders.contains(provider)) {
+      this.linkedOAuthProviders.add(provider);
     }
   }
 }

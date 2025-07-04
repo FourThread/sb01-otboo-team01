@@ -4,6 +4,7 @@ import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import io.jsonwebtoken.Jwt;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Value("${security.temp-password.expiration-hours}")
   private long expirationHours;
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
 
   @Transactional(readOnly = true)
   @Override
@@ -39,8 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             log.warn("[UserDetailsService] {} 사용자의 임시 비밀번호 유효시간이 만료되었습니다", email);
             throw new CredentialsExpiredException("임시 비밀번호 유효시간이 만료되었습니다.");
           }
-          UserDto userDto = userMapper.toDto(user);
-          JwtPayloadDto payloadDto = UserDto.toJwtPayloadDto(userDto);
+          JwtPayloadDto payloadDto = JwtPayloadDto.toJwtPayloadDto(user);
           String password = user.getPassword();
           log.info("[UserDetailsService] UserDetails 객체를 반환합니다");
           return new UserDetailsImpl(payloadDto, password);

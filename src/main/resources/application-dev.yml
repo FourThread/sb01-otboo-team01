@@ -1,0 +1,12 @@
+batch:
+  weather:
+    retention-days: 3  # 개발환경에서는 3일만 보관
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    token-cleanup:
+      enabled: true
+
+logging:
+  level:
+    com.fourthread.ozang.module.config.batch: DEBUG
