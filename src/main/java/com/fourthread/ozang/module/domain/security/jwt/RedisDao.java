@@ -1,39 +1,41 @@
 package com.fourthread.ozang.module.domain.security.jwt;
 
 import java.time.Duration;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class RedisDao {
 
   private final RedisTemplate<String, Object> redisTemplate;
-  private final ValueOperations<String, Object> valueOperations;
 
   public RedisDao(RedisTemplate<String, Object> redisTemplate) {
     this.redisTemplate = redisTemplate;
-    this.valueOperations = redisTemplate.opsForValue(); // String 타입을 쉽게 처리하는 메서드
   }
 
   // 데이터 저장
   public void setValue(String key, String value) {
-    valueOperations.set(key, value);
+    redisTemplate.opsForValue().set(key, value);
   }
 
   // 만료 시간이 있는 데이터 저장
   public void setValues(String key, String data, Duration duration) {
-    valueOperations.set(key, data, duration);
+    log.debug("[RedisDao] Redis에 데이터를 저장합니다");
+    redisTemplate.opsForValue().set(key, data, duration);
   }
 
   // 데이터 조회
   public Object getValue(String key) {
-    return valueOperations.get(key);
+    log.debug("[RedisDao] Redis에 데이터를 조회합니다");
+    return redisTemplate.opsForValue().get(key);
   }
 
   // 데이터 삭제
   public void delete(String key) {
+    log.debug("[RedisDao] Redis에 데이터를 제거합니다");
     redisTemplate.delete(key);
   }
 }

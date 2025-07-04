@@ -72,6 +72,7 @@ public class SecurityConfig {
         )
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(SecurityMatchers.H2_CONSOLE)
             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
             .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
         )
