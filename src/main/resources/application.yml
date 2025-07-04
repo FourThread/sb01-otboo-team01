@@ -15,7 +15,7 @@ spring:
     properties:
       mail:
         smtp:
-          auth: trueㅒ
+          auth: true
           starttls:
             enable: true
   data:
