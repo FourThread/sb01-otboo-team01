@@ -34,9 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,9 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherApiClient weatherApiClient;
     private final KakaoApiClient kakaoApiClient;
     private final CoordinateConverter coordinateConverter;
+
+    @Value("${batch.weather.retention-days:30}")
+    private int defaultRetentionDays;
 
     @Override
     @Transactional
@@ -71,7 +76,8 @@ public class WeatherServiceImpl implements WeatherService {
             gridCoordinate.getY()
         );
 
-        if (cachedWeather.isPresent() && cachedWeather.get().getForecastedAt().isAfter(oneHourAgo)) {
+        if (cachedWeather.isPresent() && cachedWeather.get().getForecastedAt()
+            .isAfter(oneHourAgo)) {
             log.info("캐시된 날씨 데이터 사용");
             return weatherMapper.toDto(cachedWeather.get());
         }
@@ -189,191 +195,198 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     /// 5일치 예보 추출
-    ///
-    ///
     private List<WeatherDto> filterFiveDay(
         List<WeatherApiResponse.Item> items,
         String baseTime,
         LocalDate today,
         WeatherAPILocation loc
-    ){
-        int baseHour = Integer.parseInt(baseTime.substring(0,2));
-        boolean morning = Set.of(2,5,8,11,14).contains(baseHour);
-        boolean evening = Set.of(17,20,23).contains(baseHour);
+    ) {
+        int baseHour = Integer.parseInt(baseTime.substring(0, 2));
+        boolean morning = Set.of(2, 5, 8, 11, 14).contains(baseHour);
+        boolean evening = Set.of(17, 20, 23).contains(baseHour);
 
-        // 1) 날짜별 그룹핑 (오늘은 모든 HH00 포함)
         Map<LocalDate, List<WeatherApiResponse.Item>> byDate = items.stream()
-            .filter(it -> {
-                LocalDate d = LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE);
-                int offset = (int) ChronoUnit.DAYS.between(today, d);
-                String t = it.fcstTime();
-                if (offset == 0 || offset <= 3) return t.endsWith("00");
-                if (offset == 4) return morning
-                    ? Set.of("0200","0500","0800","1100","1400").contains(t)
-                    : t.endsWith("00");
-                if (offset == 5 && evening) return Set.of("0200","0500","0800","1100","1400","1700","2000","2300").contains(t);
-                return false;
-            })
+            .filter(it -> includeItem(it, today, morning, evening))
             .collect(Collectors.groupingBy(
                 it -> LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE),
-                LinkedHashMap::new, Collectors.toList()
+                LinkedHashMap::new,
+                Collectors.toList()
             ));
 
         List<WeatherDto> result = new ArrayList<>();
+        WeatherDto previousDay = null;
+
         for (var entry : byDate.entrySet()) {
             LocalDate date = entry.getKey();
             List<WeatherApiResponse.Item> day = entry.getValue();
 
-            // — 기온(T1H) 집계
-            var tStat = day.stream().filter(i->"T1H".equals(i.category()))
-                .mapToDouble(i->Double.parseDouble(i.fcstValue()))
+            DoubleSummaryStatistics tStat = day.stream()
+                .filter(i -> "TMP".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
                 .summaryStatistics();
-            double curTemp = tStat.getCount()>0 ? tStat.getAverage() : 0.0;
-            double minT    = tStat.getCount()>0 ? tStat.getMin()     : curTemp;
-            double maxT    = tStat.getCount()>0 ? tStat.getMax()     : curTemp;
 
-            // — 전날 비교
-            LocalDateTime fAt = LocalDateTime.of(date, LocalTime.NOON);
-            double prevTemp = weatherRepository.findByForecastAtAndLocation(fAt.minusDays(1), loc.x(), loc.y())
-                .map(w->w.getTemperature().getCurrent()).orElse(0.0);
-            double compTemp = curTemp - prevTemp;
+            double curTemp;
+            double minTemp;
+            double maxTemp;
 
-            // — 습도(REH)
-            double avgHum = day.stream().filter(i->"REH".equals(i.category()))
-                .mapToDouble(i->Double.parseDouble(i.fcstValue()))
+            if (tStat.getCount() > 0) {
+                curTemp = tStat.getAverage();
+                minTemp = tStat.getMin();
+                maxTemp = tStat.getMax();
+            } else {
+                Optional<Double> tmnOpt = day.stream()
+                    .filter(i -> "TMN".equals(i.category()))
+                    .mapToDouble(i -> parseDouble(i.fcstValue()))
+                    .min().stream().boxed().findFirst();
+
+                Optional<Double> tmxOpt = day.stream()
+                    .filter(i -> "TMX".equals(i.category()))
+                    .mapToDouble(i -> parseDouble(i.fcstValue()))
+                    .max().stream().boxed().findFirst();
+
+                minTemp = tmnOpt.orElse(20.0);
+                maxTemp = tmxOpt.orElse(25.0);
+                curTemp = (minTemp + maxTemp) / 2.0;
+            }
+
+            // 습도(REH)
+            double avgHum = day.stream()
+                .filter(i -> "REH".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
+                .average().orElse(50.0);
+
+            // 풍속(WSD)
+            double avgWsd = day.stream()
+                .filter(i -> "WSD".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
+                .average().orElse(1.0);
+
+            // 강수확률(POP)
+            double avgPop = day.stream()
+                .filter(i -> "POP".equals(i.category()))
+                .mapToDouble(i -> parseDouble(i.fcstValue()))
                 .average().orElse(0.0);
-            double prevHum = weatherRepository.findByForecastAtAndLocation(fAt.minusDays(1), loc.x(), loc.y())
-                .map(w->w.getHumidity().getCurrent()).orElse(0.0);
-            double compHum = avgHum - prevHum;
 
-            // — 풍속(WSD)
-            double avgWsd = day.stream().filter(i->"WSD".equals(i.category()))
-                .mapToDouble(i->Double.parseDouble(i.fcstValue()))
-                .average().orElse(0.0);
+            // 강수량(PCP)
+            double precipitation = day.stream()
+                .filter(i -> "PCP".equals(i.category()))
+                .mapToDouble(i -> {
+                    String value = i.fcstValue();
+                    if ("강수없음".equals(value) || value.isEmpty()) {
+                        return 0.0;
+                    }
+                    try {
+                        return Double.parseDouble(value.replaceAll("[^0-9.]", ""));
+                    } catch (NumberFormatException e) {
+                        return 0.0;
+                    }
+                })
+                .sum();
 
-            // — 강수확률(POP)
-            double avgPop = day.stream().filter(i->"POP".equals(i.category()))
-                .mapToDouble(i->Double.parseDouble(i.fcstValue()))
-                .average().orElse(0.0);
+            // 강수형태(PTY)
+            PrecipitationType precipitationType = day.stream()
+                .filter(i -> "PTY".equals(i.category()))
+                .map(i -> {
+                    String value = i.fcstValue();
+                    return switch (value) {
+                        case "1" -> PrecipitationType.RAIN;
+                        case "2" -> PrecipitationType.RAIN_SNOW;
+                        case "3" -> PrecipitationType.SNOW;
+                        case "4" -> PrecipitationType.SHOWER;
+                        default -> PrecipitationType.NONE;
+                    };
+                })
+                .findFirst()
+                .orElse(precipitation > 0 ? PrecipitationType.RAIN : PrecipitationType.NONE);
 
-            // — 하늘상태(SKY) 최빈값
-            String skyCode = day.stream().filter(i->"SKY".equals(i.category()))
-                .collect(Collectors.groupingBy(WeatherApiResponse.Item::fcstValue, Collectors.counting()))
-                .entrySet().stream().max(Map.Entry.comparingByValue())
+            // 하늘상태(SKY)
+            String skyCode = day.stream()
+                .filter(i -> "SKY".equals(i.category()))
+                .collect(Collectors.groupingBy(WeatherApiResponse.Item::fcstValue,
+                    Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey).orElse("1");
 
-            // — DTO 생성
-            result.add(new WeatherDto(
-                null,
+            double temperatureCompared = 0.0;
+            double humidityCompared = 0.0;
+            if (previousDay != null) {
+                temperatureCompared = curTemp - previousDay.temperature().current();
+                humidityCompared = avgHum - previousDay.humidity().current();
+            }
+
+            WeatherDto weatherDto = new WeatherDto(
+                UUID.randomUUID(), // 임시 ID 생성(db 저장 필요한지 고민)
                 parseDateTime(day.get(0).baseDate(), day.get(0).baseTime()),
-                fAt,
+                LocalDateTime.of(date, LocalTime.NOON),
                 loc,
                 SkyStatus.fromCode(skyCode),
-                new PrecipitationDto(PrecipitationType.NONE, 0.0, avgPop),
-                new HumidityDto(avgHum, compHum),
-                new TemperatureDto(curTemp, compTemp, minT, maxT),
+                new PrecipitationDto(precipitationType, precipitation, avgPop),
+                new HumidityDto(avgHum, humidityCompared),
+                new TemperatureDto(curTemp, temperatureCompared, minTemp, maxTemp),
                 new WindSpeedDto(avgWsd, WindStrength.fromSpeed(avgWsd))
-            ));
+            );
+
+            result.add(weatherDto);
+            previousDay = weatherDto;
         }
+
         return result;
     }
 
-//
-//    private List<WeatherDto> filterFiveDay(
-//        List<WeatherApiResponse.Item> items,
-//        String baseTime,
-//        LocalDate today,
-//        WeatherAPILocation loc
-//    ) {
-//        int baseHour = Integer.parseInt(baseTime.substring(0, 2));
-//        boolean morning = Set.of(2,5,8,11,14).contains(baseHour);
-//        boolean evening = Set.of(17,20,23).contains(baseHour);
-//
-//        Map<LocalDate, List<WeatherApiResponse.Item>> byDate = items.stream()
-//            .filter(it -> includeItem(it, today, morning, evening))
-//            .collect(Collectors.groupingBy(
-//                it -> LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE),
-//                LinkedHashMap::new,
-//                Collectors.toList()
-//            ));
-//
-//        List<WeatherDto> result = new ArrayList<>();
-//        for (var entry : byDate.entrySet()) {
-//            LocalDate date = entry.getKey();
-//            List<WeatherApiResponse.Item> day = entry.getValue();
-//
-//            // 기온(T1H)
-//            DoubleSummaryStatistics tStat = day.stream()
-//                .filter(i -> "T1H".equals(i.category()))
-//                .mapToDouble(i -> parseDouble(i.fcstValue()))
-//                .summaryStatistics();
-//            double curTemp = tStat.getCount()>0
-//                ? tStat.getAverage()
-//                : // T1H 없으면 TMN/TMX 평균
-//                    day.stream().filter(i->"TMN".equals(i.category())||"TMX".equals(i.category()))
-//                        .mapToDouble(i->parseDouble(i.fcstValue()))
-//                        .average().orElse(0);
-//            double minTemp = tStat.getCount()>0
-//                ? tStat.getMin()
-//                : day.stream().filter(i->"TMN".equals(i.category()))
-//                    .mapToDouble(i->parseDouble(i.fcstValue()))
-//                    .min().orElse(curTemp);
-//            double maxTemp = tStat.getCount()>0
-//                ? tStat.getMax()
-//                : day.stream().filter(i->"TMX".equals(i.category()))
-//                    .mapToDouble(i->parseDouble(i.fcstValue()))
-//                    .max().orElse(curTemp);
-//
-//            // 습도(REH)
-//            double avgHum = day.stream()
-//                .filter(i -> "REH".equals(i.category()))
-//                .mapToDouble(i -> parseDouble(i.fcstValue()))
-//                .average().orElse(0);
-//
-//            // 풍속(WSD)
-//            double avgWsd = day.stream()
-//                .filter(i -> "WSD".equals(i.category()))
-//                .mapToDouble(i -> parseDouble(i.fcstValue()))
-//                .average().orElse(0);
-//
-//            // 강수확률(POP)
-//            double avgPop = day.stream()
-//                .filter(i -> "POP".equals(i.category()))
-//                .mapToDouble(i -> parseDouble(i.fcstValue()))
-//                .average().orElse(0);
-//
-//            // 하늘상태(SKY) 최빈값
-//            String skyCode = day.stream()
-//                .filter(i -> "SKY".equals(i.category()))
-//                .collect(Collectors.groupingBy(WeatherApiResponse.Item::fcstValue, Collectors.counting()))
-//                .entrySet().stream()
-//                .max(Map.Entry.comparingByValue())
-//                .map(Map.Entry::getKey).orElse("1");
-//
-//            result.add(new WeatherDto(
-//                null,
-//                parseDateTime(day.get(0).baseDate(), day.get(0).baseTime()),
-//                LocalDateTime.of(date, LocalTime.NOON),
-//                loc,
-//                SkyStatus.fromCode(skyCode),
-//                new PrecipitationDto(PrecipitationType.NONE, 0.0, avgPop),
-//                new HumidityDto(avgHum, 0.0),
-//                new TemperatureDto(curTemp, 0.0, minTemp, maxTemp),
-//                new WindSpeedDto(avgWsd, WindStrength.fromSpeed(avgWsd))
-//            ));
-//        }
-//        return result;
-//    }
+    @Override
+    @Transactional
+    public int cleanupOldWeatherData() {
+        return cleanupOldWeatherData(defaultRetentionDays);
+    }
 
-    private boolean includeItem(WeatherApiResponse.Item it, LocalDate today, boolean morning, boolean evening) {
+    @Override
+    @Transactional
+    public int cleanupOldWeatherData(int retentionDays) {
+        log.info("오래된 날씨 데이터 정리 시작 - 보관 기간: {}일", retentionDays);
+
+        try {
+            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
+            log.debug("삭제 기준 날짜: {}", cutoffDate);
+
+            long deleteCount = weatherRepository.countOldWeatherData(cutoffDate);
+
+            if (deleteCount > 0) {
+                log.info("삭제 예정 날씨 데이터: {}건", deleteCount);
+
+                // 삭제(배치)
+                weatherRepository.deleteOldWeatherData(cutoffDate);
+                log.info("{}일 이전 날씨 데이터 {}건 삭제 완료", retentionDays, deleteCount);
+            } else {
+                log.info("삭제할 오래된 날씨 데이터가 없습니다");
+            }
+
+            return (int) deleteCount;
+
+        } catch (Exception e) {
+            log.error("날씨 데이터 정리 중 오류 발생", e);
+            throw new RuntimeException("날씨 데이터 정리 실패", e);
+        }
+    }
+
+
+    private boolean includeItem(WeatherApiResponse.Item it, LocalDate today, boolean morning,
+        boolean evening) {
         LocalDate d = LocalDate.parse(it.fcstDate(), DateTimeFormatter.BASIC_ISO_DATE);
         int offset = (int) ChronoUnit.DAYS.between(today, d);
         String t = it.fcstTime();
-        if (offset <= 3) return t.endsWith("00");
-        if (offset == 4) return morning
-            ? Set.of("0200","0500","0800","1100","1400").contains(t)
-            : t.endsWith("00");
-        if (offset == 5 && evening) return Set.of("0200","0500","0800","1100","1400","1700","2000","2300").contains(t);
+        if (offset <= 3) {
+            return t.endsWith("00");
+        }
+        if (offset == 4) {
+            return morning
+                ? Set.of("0200", "0500", "0800", "1100", "1400").contains(t)
+                : t.endsWith("00");
+        }
+        if (offset == 5 && evening) {
+            return Set.of("0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300")
+                .contains(t);
+        }
         return false;
     }
 
@@ -386,8 +399,11 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     private double parseDouble(String v) {
-        try { return Double.parseDouble(v); }
-        catch (Exception e) { return 0; }
+        try {
+            return Double.parseDouble(v);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private void validateCoordinates(Double longitude, Double latitude) {
@@ -411,7 +427,9 @@ public class WeatherServiceImpl implements WeatherService {
             String resultCode = header != null ? header.resultCode() : "UNKNOWN";
 
             switch (resultCode) {
-                case "01" -> throw new WeatherApiException("어플리케이션 에러 - base_date/base_time 파라미터 오류", resultCode);
+                case "01" ->
+                    throw new WeatherApiException("어플리케이션 에러 - base_date/base_time 파라미터 오류",
+                        resultCode);
                 case "02" -> throw new WeatherApiException("데이터베이스 에러", resultCode);
                 case "03" -> throw new WeatherDataFetchException("해당 조건의 데이터가 없습니다 - nx/ny 좌표 오류");
                 case "04" -> throw new WeatherApiException("HTTP 에러 - 기상청 서버 연결 오류", resultCode);
@@ -432,8 +450,9 @@ public class WeatherServiceImpl implements WeatherService {
         }
 
         WeatherApiResponse.Body body = response.response().body();
-        if (body == null || body.items() == null || body.items().item() == null || body.items().item().isEmpty()) {
-                throw new WeatherDataFetchException("날씨 데이터가 없습니다.");
+        if (body == null || body.items() == null || body.items().item() == null || body.items()
+            .item().isEmpty()) {
+            throw new WeatherDataFetchException("날씨 데이터가 없습니다.");
         }
     }
 
@@ -441,7 +460,7 @@ public class WeatherServiceImpl implements WeatherService {
      * 단기예보용 base_date 계산 (KST 발표시 10분 이후부터 해당 시각)
      */
     private String calculateBaseDate(LocalDateTime now) {
-        int[] hours = {23, 20, 17, 14, 11,  8, 5, 2};
+        int[] hours = {23, 20, 17, 14, 11, 8, 5, 2};
         for (int h : hours) {
             LocalDateTime publish = now.withHour(h).withMinute(10).withSecond(0);
             if (!now.isBefore(publish)) {
@@ -456,7 +475,7 @@ public class WeatherServiceImpl implements WeatherService {
      * 단기예보용 base_time 계산 ("HH00", 발표시각 10분 이후부터)
      */
     private String calculateBaseTime(LocalDateTime now) {
-        int[] hours = {23, 20, 17, 14, 11,  8, 5, 2};
+        int[] hours = {23, 20, 17, 14, 11, 8, 5, 2};
         for (int h : hours) {
             LocalDateTime publish = now.withHour(h).withMinute(10).withSecond(0);
             if (!now.isBefore(publish)) {
