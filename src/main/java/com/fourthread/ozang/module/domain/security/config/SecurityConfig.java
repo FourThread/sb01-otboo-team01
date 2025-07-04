@@ -33,7 +33,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Slf4j
 @Configuration
@@ -64,7 +66,8 @@ public class SecurityConfig {
         )
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .ignoringRequestMatchers(SecurityMatchers.SIGN_UP, SecurityMatchers.LOGIN, SecurityMatchers.REFRESH, SecurityMatchers.LOGOUT)
+            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+            .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
         )
         .headers(headers -> headers
             .frameOptions(frameOptions -> frameOptions.disable())
