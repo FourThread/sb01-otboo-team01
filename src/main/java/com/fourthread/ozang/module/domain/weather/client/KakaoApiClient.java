@@ -38,10 +38,6 @@ public class KakaoApiClient {
             throw new WeatherApiException("카카오 API 지역코드 응답 없음", "KAKAO_NO_CONTENT");
         }
 
-//        return response.documents().stream()
-//            .map(doc -> doc.region2DepthName() + " " + doc.region3DepthName())
-//            .collect(Collectors.toList());
-
         return response.documents().stream()
             .map(d -> List.of(
                 d.region1DepthName(),         // 시·도
@@ -49,7 +45,7 @@ public class KakaoApiClient {
                 d.region3DepthName()))        // 동
             .flatMap(List::stream)
             .filter(n -> n != null && !n.isBlank())
-            .distinct()                          // ★ 중복 제거
+            .distinct()
             .toList();
     }
 
