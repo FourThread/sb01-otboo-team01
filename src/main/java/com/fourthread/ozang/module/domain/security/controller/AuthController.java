@@ -45,7 +45,7 @@ public class AuthController {
     log.info("[AuthController] Refresh 토큰 요청 수신");
     JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
 
-    log.info("[AutnController] AccessToken 재발급 완료! - 만료 시간 : {}", jwtToken.accessTokenExpiresIn());
+    log.info("[AutnController] AccessToken 재발급 완료!");
     Cookie refreshTokenCookie = new Cookie("refresh_token",
         jwtToken.refreshToken());
     refreshTokenCookie.setHttpOnly(true);
