@@ -391,7 +391,7 @@ public class WeatherServiceImpl implements WeatherService {
         // 강수확률(POP)
         double avgPop = dayItems.stream()
             .filter(i -> "POP".equals(i.category()))
-            .mapToDouble(i -> parseDouble(i.fcstValue()))
+            .mapToDouble(i -> parseDouble(i.fcstValue()) / 100.0 )
             .average().orElse(0.0);
 
         // 하늘상태(SKY)
