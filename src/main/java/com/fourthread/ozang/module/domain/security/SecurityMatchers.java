@@ -8,5 +8,5 @@ public class SecurityMatchers {
   public static final String ME = "/api/auth/me";
   public static final String SIGN_UP = "/api/users";
   public static final String REFRESH = "/api/auth/refresh";
-
+  public static final String CSRF_TOKEN = "/api/auth/csrf-token";
 }
