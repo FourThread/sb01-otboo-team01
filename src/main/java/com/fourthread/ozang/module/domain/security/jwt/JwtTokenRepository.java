@@ -15,8 +15,6 @@ public interface JwtTokenRepository extends JpaRepository<JwtToken, Long> {
 
   Optional<JwtToken> findByEmail(String email);
 
-  List<JwtToken> findAllByExpiryDateAfter(LocalDateTime after);
-
   /**
    * 만료된 토큰 조회 (배치용)
    */

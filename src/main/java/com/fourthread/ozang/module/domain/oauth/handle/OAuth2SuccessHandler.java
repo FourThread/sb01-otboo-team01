@@ -1,8 +1,9 @@
 package com.fourthread.ozang.module.domain.oauth.handle;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
+import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
@@ -47,10 +48,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("[OAuth2SuccessHandler] 이전 토큰을 무효화합니다");
         jwtService.invalidateJwtTokenByEmail(payloadDto.email());
 
-        JwtToken jwtSession = jwtService.registerJwtToken(payloadDto);
+        JwtTokenResponse jwtSession = jwtService.registerJwtToken(payloadDto);
         log.info("[OAuth2SuccessHandler] 새로운 Access Token을 발급합니다");
 
-        String refreshToken = jwtSession.getRefreshToken();
+        String refreshToken = jwtSession.refreshToken();
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/api/auth");

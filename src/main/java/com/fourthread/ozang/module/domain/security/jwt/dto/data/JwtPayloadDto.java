@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.jwt;
+package com.fourthread.ozang.module.domain.security.jwt.dto.data;
 
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.User;
