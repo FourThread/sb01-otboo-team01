@@ -3,7 +3,6 @@ package com.fourthread.ozang.module.domain.security;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.User;

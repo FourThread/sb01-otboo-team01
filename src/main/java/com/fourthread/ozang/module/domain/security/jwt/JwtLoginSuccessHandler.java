@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
+import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,10 +30,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
     jwtService.invalidateJwtTokenByEmail(principal.getPayloadDto().email());
 
-    JwtToken jwtSession = jwtService.registerJwtToken(principal.getPayloadDto());
+    JwtTokenResponse jwtSession = jwtService.registerJwtToken(principal.getPayloadDto());
     log.info("[JwtLoginSuccessHandler] 새로운 Access Token을 발급합니다");
 
-    String refreshToken = jwtSession.getRefreshToken();
+    String refreshToken = jwtSession.refreshToken();
     Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
     refreshTokenCookie.setHttpOnly(true);
     response.addCookie(refreshTokenCookie); // refresh token은 쿠키에 저장해서 반환
@@ -41,7 +42,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(jwtSession.getAccessToken())); // Access Token은 응답 Body에 담아서 반환
+    response.getWriter().write(objectMapper.writeValueAsString(jwtSession.accessToken())); // Access Token은 응답 Body에 담아서 반환
 
   }
 }

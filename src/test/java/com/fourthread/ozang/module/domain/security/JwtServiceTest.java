@@ -2,11 +2,12 @@ package com.fourthread.ozang.module.domain.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.security.jwt.JwtBlacklist;
-import com.fourthread.ozang.module.domain.security.jwt.JwtDto;
-import com.fourthread.ozang.module.domain.security.jwt.JwtPayloadDto;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
 import com.fourthread.ozang.module.domain.security.jwt.JwtTokenRepository;
+import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,8 +59,8 @@ class JwtServiceTest {
     JwtPayloadDto payload = new JwtPayloadDto(userId, "test@email.com", "tester", Role.USER);
 
     // when
-    JwtToken token = jwtService.registerJwtToken(payload);
-    JwtDto parsed = jwtService.parse(token.getAccessToken());
+    JwtTokenResponse token = jwtService.registerJwtToken(payload);
+    JwtDto parsed = jwtService.parse(token.accessToken());
 
     // then
     assertThat(parsed.payloadDto().userId()).isEqualTo(payload.userId());
