@@ -62,7 +62,7 @@ public class JwtService {
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return new JwtTokenResponse(accessJwtDto.token(),
-        refreshJwtDto.token(), accessJwtDto.exp(), refreshJwtDto.exp());
+        refreshJwtDto.token());
   }
 
   public boolean validate(String token) {
@@ -143,8 +143,7 @@ public class JwtService {
         accessJwtDto.exp());
 
     log.info("[JwtService] 토큰 갱신 완료 - 만료 : {}", accessJwtDto.exp());
-    return new JwtTokenResponse(accessJwtDto.token(), refreshToken, accessJwtDto.exp(),
-        null);
+    return new JwtTokenResponse(accessJwtDto.token(), refreshToken);
   }
 
   @Transactional
