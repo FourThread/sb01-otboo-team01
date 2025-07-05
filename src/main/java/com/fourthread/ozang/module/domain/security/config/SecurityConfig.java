@@ -8,7 +8,7 @@ import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Config
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
-import com.fourthread.ozang.module.domain.security.SecurityMatchers;
+import com.fourthread.ozang.module.domain.security.jwt.dto.type.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
 import com.fourthread.ozang.module.domain.security.jwt.handler.JwtLoginSuccessHandler;
 import com.fourthread.ozang.module.domain.security.jwt.handler.JwtLogoutHandler;
@@ -64,7 +64,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
-            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESETPASSWORD).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESET_PASSWORD).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .requestMatchers(SecurityMatchers.OAUTH2).permitAll()

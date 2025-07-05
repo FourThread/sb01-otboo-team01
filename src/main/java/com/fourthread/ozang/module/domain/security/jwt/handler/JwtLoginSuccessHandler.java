@@ -1,7 +1,7 @@
 package com.fourthread.ozang.module.domain.security.jwt.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import jakarta.servlet.ServletException;
