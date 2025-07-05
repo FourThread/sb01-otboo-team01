@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.security.oauth.handle;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.module.domain.user.entity.User;
