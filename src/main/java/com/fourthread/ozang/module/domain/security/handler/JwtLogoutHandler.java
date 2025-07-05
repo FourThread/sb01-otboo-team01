@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.jwt.handler;
+package com.fourthread.ozang.module.domain.security.handler;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import jakarta.servlet.http.Cookie;

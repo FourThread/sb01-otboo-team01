@@ -10,8 +10,8 @@ import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationE
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
 import com.fourthread.ozang.module.domain.security.jwt.dto.type.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
-import com.fourthread.ozang.module.domain.security.jwt.handler.JwtLoginSuccessHandler;
-import com.fourthread.ozang.module.domain.security.jwt.handler.JwtLogoutHandler;
+import com.fourthread.ozang.module.domain.security.handler.JwtLoginSuccessHandler;
+import com.fourthread.ozang.module.domain.security.handler.JwtLogoutHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import java.util.List;

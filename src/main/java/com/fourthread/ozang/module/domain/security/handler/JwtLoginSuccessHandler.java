@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.jwt.handler;
+package com.fourthread.ozang.module.domain.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
