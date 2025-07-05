@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2FailureHandler;
-import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2SuccessHandler;
+import com.fourthread.ozang.module.domain.security.oauth.handler.OAuth2FailureHandler;
+import com.fourthread.ozang.module.domain.security.oauth.handler.OAuth2SuccessHandler;
 import com.fourthread.ozang.module.domain.security.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
