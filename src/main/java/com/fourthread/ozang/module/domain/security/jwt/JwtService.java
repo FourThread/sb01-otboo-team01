@@ -6,6 +6,7 @@ import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.module.domain.security.jwt.dto.type.TokenType;
+import com.fourthread.ozang.module.domain.security.redis.RedisDao;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;

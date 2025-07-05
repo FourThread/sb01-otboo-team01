@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config;
+package com.fourthread.ozang.module.domain.security.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableRedisRepositories
-public class RedisConfig {
+public class SecurityRedisConfig {
 
   @Value("${spring.data.redis.host}")
   private String host;

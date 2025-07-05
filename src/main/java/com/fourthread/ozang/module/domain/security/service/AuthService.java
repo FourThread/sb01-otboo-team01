@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.Service;
+package com.fourthread.ozang.module.domain.security.service;
 
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 

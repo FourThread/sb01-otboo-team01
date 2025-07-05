@@ -1,13 +1,11 @@
 package com.fourthread.ozang.module.domain.security.jwt;
 
 import com.fourthread.ozang.module.domain.security.jwt.dto.type.TokenType;
+import com.fourthread.ozang.module.domain.security.redis.RedisDao;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
