@@ -3,6 +3,7 @@ package com.fourthread.ozang.module.domain.security.jwt;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,13 @@ public class JwtLogoutHandler implements LogoutHandler {
   public void logout(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) {
     log.info("[JwtLogoutHandler] 로그아웃 요청 수신");
+    resolveAccessToken(request).ifPresent(accessToken -> {
+      if (jwtService.validate(accessToken)) {
+        jwtService.invalidateAccessToken(accessToken);
+        log.info("[JwtLogoutHandler] Access Token 블랙리스트 등록 완료");
+      }
+    });
+
     resolveRefreshToken(request)
         .ifPresentOrElse(refreshToken -> {
           log.info("[JwtLogoutHandler] 리프레시 토큰 쿠키 발견: {}", refreshToken);
@@ -40,6 +48,14 @@ public class JwtLogoutHandler implements LogoutHandler {
         .filter(cookie -> cookie.getName().equals("refresh_token"))
         .findFirst()
         .map(Cookie::getValue);
+  }
+
+  private Optional<String> resolveAccessToken(HttpServletRequest request) {
+    String header = request.getHeader("Authorization");
+    if (header != null && header.startsWith("Bearer ")) {
+      return Optional.of(header.substring(7));
+    }
+    return Optional.empty();
   }
 
   private void invalidateRefreshTokenCookie(HttpServletResponse response) {

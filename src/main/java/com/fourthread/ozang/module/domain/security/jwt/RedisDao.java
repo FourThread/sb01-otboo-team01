@@ -3,7 +3,6 @@ package com.fourthread.ozang.module.domain.security.jwt;
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -16,14 +15,9 @@ public class RedisDao {
     this.redisTemplate = redisTemplate;
   }
 
-  // 데이터 저장
-  public void setValue(String key, String value) {
-    redisTemplate.opsForValue().set(key, value);
-  }
-
   // 만료 시간이 있는 데이터 저장
   public void setValues(String key, String data, Duration duration) {
-    log.debug("[RedisDao] Redis에 데이터를 저장합니다");
+    log.debug("[RedisDao] Redis 저장");
     redisTemplate.opsForValue().set(key, data, duration);
   }
 

@@ -20,11 +20,15 @@ public class RedisConfig {
   @Value("${spring.data.redis.port}")
   private int port;
 
+  @Value("${spring.data.redis.database:0}")
+  private int database;
+
   @Bean
   public RedisConnectionFactory redisConnectionFactory() {
     RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
     redisStandaloneConfiguration.setHostName(host);
     redisStandaloneConfiguration.setPort(port);
+    redisStandaloneConfiguration.setDatabase(database);
 
     return new LettuceConnectionFactory(redisStandaloneConfiguration);
   }
@@ -39,6 +43,8 @@ public class RedisConfig {
 
     redisTemplate.setHashKeySerializer(new StringRedisSerializer());
     redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+
+    redisTemplate.afterPropertiesSet();
 
     return redisTemplate;
   }

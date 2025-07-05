@@ -22,6 +22,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      database: 0
 
   security:
     oauth2:
@@ -109,8 +110,8 @@ kakao:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration-seconds: 600
-  refresh-token-expiration-seconds: 86400
+  access-token-expiration-seconds: 600 #10분
+  refresh-token-expiration-seconds: 86400 #24시간
 
 admin:
   username: ${ADMIN_USERNAME}

@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security.jwt;
 
+import com.fourthread.ozang.module.domain.security.jwt.dto.type.TokenType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -19,9 +20,9 @@ public class JwtBlacklist {
 
   private final RedisDao redisDao;
 
-  public void put(String token, Instant expirationTime) {
+  public void put(String token, Instant expirationTime, TokenType tokenType) {
     Duration ttl = Duration.between(Instant.now(), expirationTime);
-    redisDao.setValues("blacklist:" + token, "blacklisted", ttl);
+    redisDao.setValues("blacklist:" + token, tokenType.toString(), ttl);
     log.info("[JwtBlacklist] 블랙리스트 등록 - 만료 시간: {}", expirationTime);
   }
 
