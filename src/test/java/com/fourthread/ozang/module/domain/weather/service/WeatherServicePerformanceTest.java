@@ -30,7 +30,7 @@ public class WeatherServicePerformanceTest {
     @Autowired
     private WeatherRepository weatherRepository;
 
-    // 테스트용 좌표들 (서로 다른 지역으로 중복 최소화)
+    // 테스트용 좌표
     private static final Double[][] TEST_COORDINATES = {
         {126.9780, 37.5665}, // 서울시청
         {129.0756, 35.1796}, // 부산시청  
@@ -44,13 +44,10 @@ public class WeatherServicePerformanceTest {
 
     private static final int TEST_ITERATIONS = 3;
 
-    /**
-     * 각 테스트 전에 데이터베이스 정리
-     */
     @BeforeEach
     @Transactional
     void setUp() {
-        log.info("성능 테스트를 위한 데이터베이스 정리");
+        log.info("데이터베이스 정리");
         try {
             weatherRepository.deleteAll();
             log.debug("데이터베이스 정리 완료");
@@ -133,7 +130,6 @@ public class WeatherServicePerformanceTest {
         log.info("성능 측정 시작 ({}회 반복)...", TEST_ITERATIONS);
 
         for (int i = 0; i < TEST_ITERATIONS; i++) {
-            // 다른 좌표 사용
             Double[] coord = TEST_COORDINATES[i % TEST_COORDINATES.length];
             Double testLongitude = coord[0];
             Double testLatitude = coord[1];
