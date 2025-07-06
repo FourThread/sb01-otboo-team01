@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
+import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.weather.client.KakaoApiClient;
 import com.fourthread.ozang.module.domain.weather.client.WeatherApiClient;
 import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
@@ -36,9 +37,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.service.GenericResponseService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +52,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class WeatherServiceImpl implements WeatherService {
 
     private final WeatherRepository weatherRepository;
@@ -54,12 +59,16 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherApiClient weatherApiClient;
     private final KakaoApiClient kakaoApiClient;
     private final CoordinateConverter coordinateConverter;
+    private final GenericResponseService responseBuilder;
 
     @Value("${batch.weather.retention-days:30}")
     private int defaultRetentionDays;
 
+    @Qualifier("apiCallExecutor")
+    private final Executor apiCallExecutor;
+
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public WeatherDto getWeatherForecast(Double longitude, Double latitude) {
         log.info("날씨 정보 조회 시작 - 위도: {}, 경도: {}", latitude, longitude);
 
@@ -110,8 +119,87 @@ public class WeatherServiceImpl implements WeatherService {
         );
     }
 
+    // 비동기 처리
     @Transactional
     protected Weather fetchAndSaveWeatherData(Double latitude, Double longitude,
+        GridCoordinate gridCoordinate) {
+        try {
+            log.info("외부 API 병렬 호출 시작");
+            long startTime = System.currentTimeMillis();
+
+            CompletableFuture<WeatherApiResponse> weatherAPiFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    long apiStartTime = System.currentTimeMillis();
+                    log.debug("기상청 API 호출 시작");
+                    WeatherApiResponse response = weatherApiClient.getWeatherForecast(
+                        gridCoordinate);
+                    long apiEndTime = System.currentTimeMillis();
+                    log.debug("기상청 API 호출 완료 - 소요시간={}ms", apiEndTime - apiStartTime);
+                    return response;
+                }, apiCallExecutor)
+                .orTimeout(10, TimeUnit.SECONDS);
+
+            CompletableFuture<List<String>> locationFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    long apiStartTime = System.currentTimeMillis();
+                    log.debug("카카오 API 호출 시작");
+                    List<String> locations = kakaoApiClient.getLocationNames(latitude, longitude);
+                    long apiEndTime = System.currentTimeMillis();
+                    log.debug("카카오 API 호출 완료 - 소요시간={}ms", apiEndTime - apiStartTime);
+                    return locations;
+                }, apiCallExecutor)
+                .orTimeout(5, TimeUnit.SECONDS);
+
+
+            // 두 API 호출이 모두 완료될 때까지 대기
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(
+                weatherAPiFuture, locationFuture);
+
+            WeatherApiResponse apiResponse;
+            List<String> locationNames;
+
+            try {
+                combinedFuture.join(); // 모든 비동기 작업 완료 대기
+                apiResponse = weatherAPiFuture.join();
+                locationNames = locationFuture.join();
+
+                long endTime = System.currentTimeMillis();
+                log.info("외부 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
+            } catch (Exception e) {
+                log.error("외부 API 호출 중 오류 발생", e);
+                throw new WeatherDataFetchException("외부 API 호출 실패", e);
+            }
+
+            validateApiResponse(apiResponse);
+
+            WeatherAPILocation location = weatherMapper.toWeatherAPILocation(
+                latitude, longitude,
+                gridCoordinate.getX(), gridCoordinate.getY(),
+                locationNames
+            );
+
+            List<WeatherApiResponse.Item> items = apiResponse.response().body().items().item();
+            Weather weather = weatherMapper.fromApiResponse(items, location);
+
+            String responseHash = generateResponseHash(apiResponse);
+            weather.setApiResponseHash(responseHash);
+
+            Weather savedWeather = weatherRepository.save(weather);
+            log.info("날씨 데이터 저장 완료 - ID: {}", savedWeather.getId());
+
+            return savedWeather;
+
+        } catch (WeatherApiException | WeatherDataFetchException | InvalidCoordinateException e) {
+            log.error("날씨 데이터 조회 실패", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("예상치 못한 오류 발생", e);
+            throw new WeatherDataFetchException("날씨 데이터 조회 중 오류 발생", e);
+        }
+    }
+
+    @Transactional
+    protected Weather fetchAndSaveWeatherDataV1(Double latitude, Double longitude,
         GridCoordinate gridCoordinate) {
         try {
             //  1. 기상청 API 호출
@@ -166,13 +254,48 @@ public class WeatherServiceImpl implements WeatherService {
         String baseTime = calculateBaseTime(nowKst);
         log.debug("기상청 단기예보 호출 기준시각 - date: {}, time: {}", baseDate, baseTime);
 
-        WeatherApiResponse resp = weatherApiClient.callVilageFcst(
-            grid, baseDate, baseTime
-        );
+        log.info("5일 예보 병렬 호출 시작");
+        long startTime = System.currentTimeMillis();
+
+        CompletableFuture<WeatherApiResponse> weatherApiFuture = CompletableFuture
+            .supplyAsync(() -> {
+                long apiStartTime = System.currentTimeMillis();
+                log.debug("기상청 단기예보 API 호출 시작");
+                WeatherApiResponse response = weatherApiClient.callVilageFcst(grid, baseDate, baseTime);
+                long apiEndTime = System.currentTimeMillis();
+                log.debug("기상청 단기예보 API 호출 완료 - 소요시간: {}ms", apiEndTime - apiStartTime);
+                return response;
+            }, apiCallExecutor)
+            .orTimeout(15, TimeUnit.SECONDS);
+
+        CompletableFuture<List<String>> locationFuture = CompletableFuture
+            .supplyAsync(() -> {
+                long apiStartTime = System.currentTimeMillis();
+                log.debug("카카오 API 호출 시작");
+                List<String> locations = kakaoApiClient.getLocationNames(latitude, longitude);
+                long apiEndTime = System.currentTimeMillis();
+                log.debug("카카오 API 호출 완료 - 소요시간: {}ms", apiEndTime - apiStartTime);
+                return locations;
+            }, apiCallExecutor) // 커스텀 Executor 사용
+            .orTimeout(5, TimeUnit.SECONDS);
+
+        WeatherApiResponse resp;
+        List<String> locationNames;
+
+        try {
+            CompletableFuture.allOf(weatherApiFuture, locationFuture).join();
+            resp = weatherApiFuture.join();
+            locationNames = locationFuture.join();
+
+            long endTime = System.currentTimeMillis();
+            log.info("5일 예보 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
+
+        } catch (Exception e) {
+            log.error("5일 예보 API 호출 중 오류 발생", e);
+            throw new WeatherDataFetchException("5일 예보 API 호출 실패", e);
+        }
 
         validateApiResponse(resp);
-
-        List<String> locationNames = kakaoApiClient.getLocationNames(latitude, longitude);
 
         return ensureFiveDayForecast(
             resp.response().body().items().item(),
