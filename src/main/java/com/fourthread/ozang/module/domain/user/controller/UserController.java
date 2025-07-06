@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.user.controller;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
@@ -12,6 +11,7 @@ import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import java.util.Optional;
 import java.util.UUID;
