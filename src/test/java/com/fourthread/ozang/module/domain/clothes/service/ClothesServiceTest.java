@@ -11,6 +11,8 @@ import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
+import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,9 @@ class ClothesServiceTest {
 
 
     private ClothesDto clothesDto;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private ClothesRepository clothesRepository;
@@ -120,6 +125,7 @@ class ClothesServiceTest {
                 List.of(attributeDto)
         );
 
+        given(userRepository.existsById(ownerId)).willReturn(true);
         given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
         given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
 
@@ -153,6 +159,7 @@ class ClothesServiceTest {
 
         String expectedImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-image.jpg";
 
+        given(userRepository.existsById(ownerId)).willReturn(true);
         given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
         given(imageService.uploadImage(imageFile)).willReturn(expectedImageUrl);
         given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
@@ -180,6 +187,7 @@ class ClothesServiceTest {
                 List.of(new ClothesAttributeDto(invalidDefinitionId, "화이트"))
         );
 
+        given(userRepository.existsById(ownerId)).willReturn(true);
         given(definitionRepository.findById(invalidDefinitionId)).willReturn(Optional.empty());
 
         //when then
@@ -223,6 +231,30 @@ class ClothesServiceTest {
         assertThatThrownBy(() -> clothesService.update(clothesId, request, null))
                 .isInstanceOf(ClothesAttributeDefinitionException.class);
         then(clothesRepository).should(never()).save(any());
+    }
+
+    @DisplayName("존재하지 않는 ownerId로 옷 등록 시 예외가 발생한다.")
+    @Test
+    void clothes_create_fail_when_owner_not_exist() {
+        //given
+        ClothesAttributeDto attributeDto = new ClothesAttributeDto(definitionId, "화이트");
+
+        ClothesCreateRequest request = new ClothesCreateRequest(
+                ownerId,
+                "여름 셔츠",
+                ClothesType.TOP,
+                List.of(attributeDto)
+        );
+
+        //ownerId는 존재하지 않음
+        given(userRepository.existsById(ownerId)).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> clothesService.create(request, null))
+                .isInstanceOf(UserException.class);
+
+        then(clothesRepository).should(never()).save(any());
+        then(imageService).should(never()).uploadImage(any());
     }
 
 
