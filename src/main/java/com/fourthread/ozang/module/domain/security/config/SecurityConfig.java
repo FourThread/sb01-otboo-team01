@@ -1,8 +1,8 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2FailureHandler;
-import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2SuccessHandler;
+import com.fourthread.ozang.module.domain.security.oauth.handler.OAuth2FailureHandler;
+import com.fourthread.ozang.module.domain.security.oauth.handler.OAuth2SuccessHandler;
 import com.fourthread.ozang.module.domain.security.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
@@ -64,7 +64,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
-            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESETPASSWORD).permitAll()
+            .requestMatchers(HttpMethod.POST, SecurityMatchers.RESET_PASSWORD).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
@@ -72,6 +72,7 @@ public class SecurityConfig {
         )
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(SecurityMatchers.H2_CONSOLE)
             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
             .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
         )

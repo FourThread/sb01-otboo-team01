@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -75,6 +76,9 @@ class WeatherServiceImplTest {
     @Mock
     private CoordinateConverter coordinateConverter;
 
+    @Mock
+    private Executor apiCallExecutor;
+
     @Captor
     private ArgumentCaptor<Weather> weatherCaptor;
 
@@ -85,6 +89,12 @@ class WeatherServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        lenient().doAnswer(invocation -> {
+            Runnable task = invocation.getArgument(0);
+            task.run(); // 동기 실행
+            return null;
+        }).when(apiCallExecutor).execute(any(Runnable.class));
+
         // 기본 설정
         lenient().when(coordinateConverter.convertToGrid(anyDouble(), anyDouble()))
             .thenReturn(new GridCoordinate(GRID_X, GRID_Y));
@@ -216,7 +226,6 @@ class WeatherServiceImplTest {
         void getFiveDayForecast_Success() {
             // Given
             WeatherApiResponse mockResponse = createMockFiveDayApiResponse();
-            List<WeatherDto> expectedDtos = createMockWeatherDtoList(5);
 
             when(weatherApiClient.callVilageFcst(any(), anyString(), anyString()))
                 .thenReturn(mockResponse);
@@ -422,11 +431,5 @@ class WeatherServiceImplTest {
                 new WeatherApiResponse.Body("JSON", new WeatherApiResponse.Items(items), 1, items.size(), items.size())
             )
         );
-    }
-
-    private List<WeatherDto> createMockWeatherDtoList(int count) {
-        return Stream.generate(this::createMockWeatherDto)
-            .limit(count)
-            .toList();
     }
 }

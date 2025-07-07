@@ -1,14 +1,11 @@
-package com.fourthread.ozang.module.domain.security.Service.impl;
+package com.fourthread.ozang.module.domain.security.service.impl;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.security.Service.AuthService;
+import com.fourthread.ozang.module.domain.security.service.AuthService;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
-import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
