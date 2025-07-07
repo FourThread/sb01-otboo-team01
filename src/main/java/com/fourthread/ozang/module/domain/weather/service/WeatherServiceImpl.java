@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.weather.client.KakaoApiClient;
 import com.fourthread.ozang.module.domain.weather.client.WeatherApiClient;
 import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
@@ -38,12 +37,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.service.GenericResponseService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -179,6 +177,13 @@ public class WeatherServiceImpl implements WeatherService {
 
                 long endTime = System.currentTimeMillis();
                 log.info("외부 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
+            } catch (CompletionException e) {
+                log.error("외부 API 호출 중 오류 발생", e);
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                throw new WeatherDataFetchException("외부 API 호출 실패", e);
             } catch (Exception e) {
                 log.error("외부 API 호출 중 오류 발생", e);
                 throw new WeatherDataFetchException("외부 API 호출 실패", e);
