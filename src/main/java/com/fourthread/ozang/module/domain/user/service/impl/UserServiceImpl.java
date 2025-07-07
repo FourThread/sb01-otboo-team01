@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
+import com.fourthread.ozang.module.domain.clothes.service.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -43,8 +44,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileMapper profileMapper;
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
-//  private final ProfileStorage profileStorage;
-
+  private final ImageService imageService;
 
   @Transactional
   @Override
@@ -141,7 +141,7 @@ public class UserServiceImpl implements UserService {
     if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
       MultipartFile file = nullableProfile.get();
 
-//      profileImageUrl = profileStorage.saveFile(file);
+//      profileImageUrl = .saveFile(file);
     }
 
     findProfile.updateProfile(

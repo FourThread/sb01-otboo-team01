@@ -1,6 +1,6 @@
 package com.fourthread.ozang.module.domain.user.service;
 
-import com.fourthread.ozang.module.domain.storage.ProfileStorage;
+import com.fourthread.ozang.module.domain.clothes.service.ImageService;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
@@ -29,7 +29,7 @@ public class UserServiceTest {
   private UserRepository userRepository;
 
   @Mock
-  private ProfileStorage profileStorage;
+  private ImageService imageService;
 
   @Mock
   private ProfileRepository profileRepository;
