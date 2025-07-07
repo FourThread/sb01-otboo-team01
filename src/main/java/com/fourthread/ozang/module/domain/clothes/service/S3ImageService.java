@@ -101,7 +101,9 @@ public class S3ImageService implements ImageService {
 
         } catch (S3Exception e) {
             log.error("Failed to delete image from S3: {}", imageUrl, e);
-            // 삭제 실패 시 로그만 남기고 예외는 던지지 않음 (이미지가 이미 삭제되었을 수 있음)
+            throw new ClothesException(ErrorCode.FILE_DELETE_ERROR,
+                this.getClass().getSimpleName(),
+                "이미지 삭제 중 오류가 발생했습니다.");
         }
     }
 
