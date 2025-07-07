@@ -15,6 +15,7 @@ public class UserDetailsImpl implements UserDetails {
 
   private final JwtPayloadDto payloadDto;
   private final String password;
+  private final boolean locked;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -38,7 +39,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return UserDetails.super.isAccountNonLocked();
+    return !locked;
   }
 
   @Override

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record UserCursorPageResponse(
-    List<UserDto> content,
+    List<UserDto> data,
     String nextCursor,
     UUID nextIdAfter,
     boolean hasNext,

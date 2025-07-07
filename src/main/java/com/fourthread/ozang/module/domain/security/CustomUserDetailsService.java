@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,7 +27,6 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Value("${security.temp-password.expiration-hours}")
   private long expirationHours;
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
 
   @Transactional(readOnly = true)
   @Override
@@ -36,15 +36,22 @@ public class CustomUserDetailsService implements UserDetailsService {
     return userRepository.findByEmail(email)
         .map(user -> {
           log.info("[UserDetailsService] {} 사용자를 발견했습니다", email);
+
+          if (user.getLocked()) {
+            log.warn("[UserDetailsService] {} 사용자의 계정이 잠겨있습니다", email);
+            throw new LockedException("Account is locked");
+          }
+
           if (user.getTempPasswordIssuedAt() != null && user.getTempPasswordIssuedAt().plusHours(expirationHours)
               .isBefore(LocalDateTime.now())) {
             log.warn("[UserDetailsService] {} 사용자의 임시 비밀번호 유효시간이 만료되었습니다", email);
             throw new UserException(ErrorCode.TEMP_PASSWORD_EXPIRED, null, null);
           }
+
           JwtPayloadDto payloadDto = JwtPayloadDto.toJwtPayloadDto(user);
           String password = user.getPassword();
           log.info("[UserDetailsService] UserDetails 객체를 반환합니다");
-          return new UserDetailsImpl(payloadDto, password);
+          return new UserDetailsImpl(payloadDto, password, user.getLocked());
         })
         .orElseThrow(() -> {
           log.warn("[UserDetailsService] {} 사용자를 찾을 수 없습니다", email);
