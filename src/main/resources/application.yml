@@ -125,6 +125,26 @@ security:
 app:
   timezone: Asia/Seoul
 
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+    stack:
+      auto: false
+
+# 이미지 업로드 설정
+file:
+  upload:
+    clothes:
+      path: clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
 
 management:
   info:
@@ -146,3 +166,4 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
+
