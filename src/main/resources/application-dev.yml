@@ -10,3 +10,27 @@ batch:
 logging:
   level:
     com.fourthread.ozang.module.config.batch: DEBUG
+
+cloud:
+  aws:
+    s3:
+      bucket: ozang-dev-bucket
+
+# 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: dev/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+    profiles:
+      path: dev/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
