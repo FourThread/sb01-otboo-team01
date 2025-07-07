@@ -2,9 +2,11 @@ package com.fourthread.ozang.module.domain.notification.mapper;
 
 import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
 import com.fourthread.ozang.module.domain.notification.entity.Notification;
+import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 
+@Component
 public class NotificationMapper {
 
     public NotificationDto toDto(Notification notification) {
