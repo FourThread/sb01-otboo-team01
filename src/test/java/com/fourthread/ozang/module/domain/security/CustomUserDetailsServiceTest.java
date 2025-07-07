@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.security;
 
+import com.fourthread.ozang.module.domain.security.userdetails.CustomUserDetailsService;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
