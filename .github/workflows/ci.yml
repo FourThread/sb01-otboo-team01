@@ -19,6 +19,8 @@ jobs:
       ADMIN_USERNAME : ${{secrets.ADMIN_USERNAME}}
       ADMIN_PASSWORD : ${{secrets.ADMIN_PASSWORD}}
       ADMIN_EMAIL : ${{secrets.ADMIN_EMAIL}}
+      AWS_ACCESS_KEY : ${{secrets.AWS_ACCESS_KEY}}
+      AWS_SECRET_KEY : ${{secrets.AWS_SECRET_KEY}}
 
     steps:
       - name: Checkout code
