@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -74,6 +75,9 @@ class WeatherServiceImplTest {
 
     @Mock
     private CoordinateConverter coordinateConverter;
+
+    @Mock
+    private Executor apiCallExecutor;
 
     @Captor
     private ArgumentCaptor<Weather> weatherCaptor;
