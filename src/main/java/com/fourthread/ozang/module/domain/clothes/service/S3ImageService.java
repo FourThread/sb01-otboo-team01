@@ -147,7 +147,7 @@ public class S3ImageService implements ImageService {
      */
     private String generateFileName(String originalFilename) {
         String extension = getFileExtension(originalFilename);
-        return UUID.randomUUID().toString() + "." + extension;
+        return UUID.randomUUID() + "." + extension;
     }
 
     /**
