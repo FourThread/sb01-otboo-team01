@@ -89,6 +89,12 @@ class WeatherServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        lenient().doAnswer(invocation -> {
+            Runnable task = invocation.getArgument(0);
+            task.run(); // 동기 실행
+            return null;
+        }).when(apiCallExecutor).execute(any(Runnable.class));
+
         // 기본 설정
         lenient().when(coordinateConverter.convertToGrid(anyDouble(), anyDouble()))
             .thenReturn(new GridCoordinate(GRID_X, GRID_Y));
