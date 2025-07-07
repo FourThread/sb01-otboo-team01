@@ -76,3 +76,7 @@ file:
       path: test/clothes/images/
       allowed-extensions: jpg,jpeg,png,gif,webp
       max-size: 10485760  # 10MB
+    profiles:
+      path: test/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB

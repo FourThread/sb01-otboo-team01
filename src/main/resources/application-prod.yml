@@ -32,6 +32,11 @@ file:
       path: prod/clothes/images/
       allowed-extensions: jpg,jpeg,png,gif,webp
       max-size: 5242880  # 5MB (운영환경에서는 더 작게)
+    profiles:
+      path: prod/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880  # 5MB
+
 
 spring:
   servlet:

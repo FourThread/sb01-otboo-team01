@@ -31,6 +31,11 @@ file:
       path: dev/clothes/images/
       allowed-extensions: jpg,jpeg,png,gif,webp
       max-size: 10485760  # 10MB
+    profiles:
+      path: dev/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+
 
 spring:
   servlet:
