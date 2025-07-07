@@ -14,6 +14,7 @@ import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClothesService {
@@ -30,19 +32,28 @@ public class ClothesService {
     private final ClothesRepository clothesRepository;
     private final ClothesAttributeDefinitionRepository definitionRepository;
     private final ClothesMapper clothesMapper;
+    private final ImageService imageService;
 
     @Transactional
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
 
         //TODO ownerId 존재 검증
 
-        //TODO 이미지 저장
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            imageUrl = imageService.uploadClothesImage(image);
+            log.info("Image uploaded for new clothes. URL: {}", imageUrl);
+        }
 
         Clothes clothes = Clothes.builder()
                 .ownerId(request.ownerId())
                 .name(request.name())
                 .type(request.type())
                 .build();
+
+        if (imageUrl != null) {
+            clothes.updateImageUrl(imageUrl);
+        }
 
         addAttributesToClothes(clothes, request.attributes());
 
@@ -60,8 +71,21 @@ public class ClothesService {
 
         addAttributesToClothes(clothes, request.attributes());
 
-        //TODO 이미지 갱신
-        //if (imageFile != null && !imageFile.isEmpty()) { }
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String oldImageUrl = clothes.getImageUrl();
+            if (oldImageUrl != null && !oldImageUrl.isBlank()) {
+                try {
+                    imageService.deleteClothesImage(oldImageUrl);
+                    log.info("Old image deleted={}", oldImageUrl);
+                } catch (Exception e) {
+                    log.warn("Failed to delete old image={}", oldImageUrl, e);
+                }
+            }
+
+            String newImageUrl = imageService.uploadClothesImage(imageFile);
+            clothes.updateImageUrl(newImageUrl);
+            log.info("New image upload for clothes {}: {}", clothesId, newImageUrl);
+        }
 
         return clothesMapper.toDto(clothes);
     }
@@ -75,9 +99,21 @@ public class ClothesService {
         }
     }
 
+    @Transactional
     public void delete(UUID clothesId) {
         Clothes clothes = clothesRepository.findById(clothesId)
                 .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
+
+        String imageUrl = clothes.getImageUrl();
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            try {
+                imageService.deleteClothesImage(imageUrl);
+                log.info("Image deleted for clothes {}: {}", clothesId, imageUrl);
+            } catch (Exception e) {
+                log.warn("Failed to delete image for clothes {}: {}", clothesId, imageUrl, e);
+            }
+        }
+
         clothesRepository.delete(clothes);
     }
 
