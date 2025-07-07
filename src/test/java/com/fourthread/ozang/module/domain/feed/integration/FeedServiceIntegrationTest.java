@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.integration;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -90,7 +91,7 @@ public class FeedServiceIntegrationTest {
   @BeforeEach
   void setup() {
     author = userRepository.save(new User("test-user", "test@example.com", "password"));
-    Profile profile = new Profile("user", Gender.ETC, LocalDateTime.now(),
+    Profile profile = new Profile("user", Gender.ETC, LocalDate.now(),
         new Location(1.0, 1.0, 1, 1, List.of("local")), 1, "url");
     profile.setUser(author);
     profileRepository.save(profile);

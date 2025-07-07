@@ -1,7 +1,7 @@
 //package com.fourthread.ozang.module.domain.user.repository;
 //
-//import com.fourthread.ozang.module.config.AppConfig;
 //import com.fourthread.ozang.module.config.QuerydslConfig;
+//import com.fourthread.ozang.module.config.database.JpaConfig;
 //import com.fourthread.ozang.module.domain.user.dto.type.Role;
 //import com.fourthread.ozang.module.domain.user.entity.User;
 //import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
@@ -18,7 +18,7 @@
 //
 //@DataJpaTest
 //@ActiveProfiles("test")
-//@Import({AppConfig.class, QuerydslConfig.class, UserMapper.class})
+//@Import({JpaConfig.class, QuerydslConfig.class, UserMapper.class})
 //public class UserRepositoryTest {
 //
 //  @Autowired

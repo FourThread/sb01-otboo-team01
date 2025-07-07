@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.repository;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -82,14 +83,14 @@ class FeedRepositoryTest {
   private void setupUsers() {
     // 사용자1 생성
     author1 = userRepository.save(new User("user1", "user1@example.com", "password"));
-    Profile profile1 = new Profile("User One", Gender.MALE, LocalDateTime.now().minusYears(25),
+    Profile profile1 = new Profile("User One", Gender.MALE, LocalDate.now().minusYears(25),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 3, "profile1.jpg");
     profile1.setUser(author1);
     profileRepository.save(profile1);
 
     // 사용자2 생성
     author2 = userRepository.save(new User("user2", "user2@example.com", "password"));
-    Profile profile2 = new Profile("User Two", Gender.FEMALE, LocalDateTime.now().minusYears(23),
+    Profile profile2 = new Profile("User Two", Gender.FEMALE, LocalDate.now().minusYears(23),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 2, "profile2.jpg");
     profile2.setUser(author2);
     profileRepository.save(profile2);
