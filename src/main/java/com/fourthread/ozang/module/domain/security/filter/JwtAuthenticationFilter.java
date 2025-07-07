@@ -35,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final ObjectMapper objectMapper;
   private final JwtService jwtService;
-  private final UserRepository userRepository;
 
   @Override
   protected void doFilterInternal(
@@ -50,32 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       log.info("[JwtAuthenticationFilter] {} URI에서 AccessToken을 확인했습니다", request.getRequestURI());
       if (jwtService.validate(accessToken)) {
         JwtPayloadDto payloadDto = jwtService.parse(accessToken).payloadDto();
-
-        // 계정 잠금 상태를 확인
-        boolean isLocked = userRepository.findByEmail(payloadDto.email()).map(User::getLocked)
-            .orElse(false);
-
-        if (isLocked) {
-          log.warn("[JwtAuthenticationFilter] 잠긴 계정의 토큰 접근 차단: {}", payloadDto.email());
-          jwtService.invalidateAccessToken(accessToken);
-
-          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-          response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-          ErrorDetails errorDetails = new ErrorDetails(
-              "Authorization",
-              "계정이 잠겨있습니다. 관리자에게 문의하세요."
-          );
-
-          ErrorResponse errorResponse = new ErrorResponse(
-              "AccountLockedException",
-              "잠긴 계정입니다.",
-              errorDetails
-          );
-          response.setCharacterEncoding("UTF-8");
-          response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-          return;
-        }
-
         log.info("[JwtAuthenticationFilter] 토큰이 유효합니다 - 사용자 : {}, 요청 URI : {}", payloadDto.email(), request.getRequestURI());
         UserDetailsImpl userDetails = new UserDetailsImpl(payloadDto, null, false);
         UsernamePasswordAuthenticationToken authenticationToken =

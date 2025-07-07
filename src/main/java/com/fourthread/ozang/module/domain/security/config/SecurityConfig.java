@@ -55,8 +55,7 @@ public class SecurityConfig {
       CustomAccessDeniedHandler accessDeniedHandler,
       CustomOAuth2UserService customOAuth2UserService,
       OAuth2SuccessHandler oAuth2SuccessHandler,
-      OAuth2FailureHandler oAuth2FailureHandler,
-      UserRepository userRepository
+      OAuth2FailureHandler oAuth2FailureHandler
       ) throws Exception {
     http
         .authorizeHttpRequests(authorize -> authorize
@@ -97,7 +96,7 @@ public class SecurityConfig {
             session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .addFilterBefore(new JwtAuthenticationFilter(objectMapper, jwtService, userRepository),
+        .addFilterBefore(new JwtAuthenticationFilter(objectMapper, jwtService),
             UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(exceptionHandler ->
             exceptionHandler.authenticationEntryPoint(authenticationEntryPoint)
