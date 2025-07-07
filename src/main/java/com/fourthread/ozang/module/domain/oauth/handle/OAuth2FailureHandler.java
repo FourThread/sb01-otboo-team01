@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,12 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
   @Override
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception) throws IOException {
-    log.error("[OAuth2FailureHandler] 로그인 실패: {}", exception.getMessage());
-    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "소셜 로그인 실패");
+
+    if (exception.getCause() instanceof LockedException) {
+      log.error("[OAuth2FailureHandler] 잠긴 계정으로 OAuth 로그인 시도: {}", exception.getMessage());
+    } else {
+      log.error("[OAuth2FailureHandler] OAuth 로그인 실패: {}", exception.getMessage());
+    }
+    response.sendRedirect("/");
   }
 }
