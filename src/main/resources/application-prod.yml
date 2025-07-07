@@ -11,3 +11,30 @@ logging:
   level:
     org.springframework.batch: WARN
     com.fourthread.ozang.module.config.batch: INFO
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    s3:
+      bucket: ${AWS_S3_PROD_BUCKET:ozang-prod-bucket}
+      region: ${AWS_REGION:ap-northeast-2}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+    stack:
+      auto: false
+
+# 운영환경 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: prod/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880  # 5MB (운영환경에서는 더 작게)
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
