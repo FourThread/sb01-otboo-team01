@@ -56,7 +56,6 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherApiClient weatherApiClient;
     private final KakaoApiClient kakaoApiClient;
     private final CoordinateConverter coordinateConverter;
-    private final GenericResponseService responseBuilder;
     private final Executor apiCallExecutor;
 
     @Value("${batch.weather.retention-days:30}")
@@ -68,7 +67,6 @@ public class WeatherServiceImpl implements WeatherService {
         WeatherApiClient weatherApiClient,
         KakaoApiClient kakaoApiClient,
         CoordinateConverter coordinateConverter,
-        GenericResponseService responseBuilder,
         @Qualifier("apiCallExecutor") Executor apiCallExecutor) {
 
         this.weatherRepository = weatherRepository;
@@ -76,7 +74,6 @@ public class WeatherServiceImpl implements WeatherService {
         this.weatherApiClient = weatherApiClient;
         this.kakaoApiClient = kakaoApiClient;
         this.coordinateConverter = coordinateConverter;
-        this.responseBuilder = responseBuilder;
         this.apiCallExecutor = apiCallExecutor;
     }
 
