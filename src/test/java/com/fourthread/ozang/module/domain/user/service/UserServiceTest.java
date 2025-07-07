@@ -1,12 +1,18 @@
 package com.fourthread.ozang.module.domain.user.service;
 
+import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.service.impl.UserServiceImpl;
+import java.util.Optional;
+import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +24,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -39,6 +46,9 @@ public class UserServiceTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private JwtService jwtService;
 
   @Nested
   @DisplayName("사용자 생성")
@@ -75,6 +85,91 @@ public class UserServiceTest {
     String encode = passwordEncoder.encode(password);
 
     assertNotEquals(encode, password);
+  }
+
+  @Nested
+  @DisplayName("계정 잠금 관리")
+  class AccountLockManagement {
+
+    @Test
+    @DisplayName("성공 - 계정을 잠금 상태로 변경하면 JWT 토큰이 무효화됨")
+    void changeLock_success_lockAccount() {
+      // given
+      UUID userId = UUID.randomUUID();
+      String email = "test@email.com";
+      UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+
+      User user = new User("tester", email, "password", Role.USER);
+      user.changeLocked(false); // 현재 잠금 해제 상태
+      ReflectionTestUtils.setField(user, "id", userId);
+
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+      // when
+      UUID result = userService.changeLock(userId, request);
+
+      // then
+      assertThat(user.getLocked()).isTrue();
+      verify(jwtService).invalidateJwtTokenByEmail(email);
+    }
+
+    @Test
+    @DisplayName("성공 - 계정을 잠금 해제 상태로 변경하면 JWT 토큰 무효화하지 않음")
+    void changeLock_success_unlockAccount() {
+      // given
+      UUID userId = UUID.randomUUID();
+      String email = "test@email.com";
+      UserLockUpdateRequest request = new UserLockUpdateRequest(false);
+
+      User user = new User("tester", email, "password", Role.USER);
+      user.changeLocked(true); // 현재 잠금 상태
+      ReflectionTestUtils.setField(user, "id", userId);
+
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+      // when
+      UUID result = userService.changeLock(userId, request);
+
+      // then
+      assertThat(user.getLocked()).isFalse();
+      verify(jwtService, never()).invalidateJwtTokenByEmail(any());
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 사용자 ID로 잠금 상태 변경 시 예외 발생")
+    void changeLock_fail_userNotFound() {
+      // given
+      UUID userId = UUID.randomUUID();
+      UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+
+      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> userService.changeLock(userId, request))
+          .isInstanceOf(UserException.class);
+    }
+
+    @Test
+    @DisplayName("성공 - 이미 잠금 상태인 계정을 다시 잠금 상태로 변경해도 JWT 토큰 무효화하지 않음")
+    void changeLock_success_alreadyLocked() {
+      // given
+      UUID userId = UUID.randomUUID();
+      String email = "test@email.com";
+      UserLockUpdateRequest request = new UserLockUpdateRequest(true);
+
+      User user = new User("tester", email, "password", Role.USER);
+      user.changeLocked(true); // 이미 잠금 상태
+      ReflectionTestUtils.setField(user, "id", userId);
+
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+      // when
+      UUID result = userService.changeLock(userId, request);
+
+      // then
+      assertThat(user.getLocked()).isTrue();
+      verify(jwtService, never()).invalidateJwtTokenByEmail(any());
+    }
   }
 
 //  @Nested

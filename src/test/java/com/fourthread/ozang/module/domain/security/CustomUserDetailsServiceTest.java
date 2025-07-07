@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.security;
 
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Nested;
 import static org.mockito.BDDMockito.*;
 
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
@@ -20,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -97,5 +99,66 @@ class CustomUserDetailsServiceTest {
 
     // when & then
     assertThrows(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(email));
+  }
+
+  @Nested
+  @DisplayName("잠긴 계정 로그인")
+  class LockedAccountLogin {
+
+    @Test
+    @DisplayName("잠긴 계정으로 로그인 시 LockedException 발생")
+    void loadUserByUsername_shouldThrowLockedExceptionForLockedAccount() {
+      // given
+      String email = "locked@email.com";
+      String encodedPassword = "encoded-password";
+      LocalDateTime now = LocalDateTime.now();
+
+      User lockedUser = new User("lockedUser", email, encodedPassword, Role.USER);
+      ReflectionTestUtils.setField(lockedUser, "id", UUID.randomUUID());
+      ReflectionTestUtils.setField(lockedUser, "createdAt", now);
+      lockedUser.setTempPasswordIssuedAt(null);
+      lockedUser.changeLocked(true); // 계정 잠금
+
+      given(userRepository.findByEmail(email)).willReturn(Optional.of(lockedUser));
+
+      // when & then
+      assertThrows(LockedException.class, () -> userDetailsService.loadUserByUsername(email));
+    }
+
+    @Test
+    @DisplayName("잠금 해제된 계정으로 로그인 시 정상 처리")
+    void loadUserByUsername_shouldSucceedForUnlockedAccount() {
+      // given
+      String email = "unlocked@email.com";
+      String encodedPassword = "encoded-password";
+      LocalDateTime now = LocalDateTime.now();
+
+      User unlockedUser = new User("unlockedUser", email, encodedPassword, Role.USER);
+      ReflectionTestUtils.setField(unlockedUser, "id", UUID.randomUUID());
+      ReflectionTestUtils.setField(unlockedUser, "createdAt", now);
+      unlockedUser.setTempPasswordIssuedAt(null);
+      unlockedUser.changeLocked(false); // 계정 잠금 해제
+
+      UserDto userDto = new UserDto(
+          (UUID) ReflectionTestUtils.getField(unlockedUser, "id"),
+          now,
+          email,
+          "unlockedUser",
+          Role.USER,
+          null,
+          false
+      );
+
+      given(userRepository.findByEmail(email)).willReturn(Optional.of(unlockedUser));
+      given(userMapper.toDto(unlockedUser)).willReturn(userDto);
+
+      // when
+      var userDetails = userDetailsService.loadUserByUsername(email);
+
+      // then
+      assertNotNull(userDetails);
+      assertEquals(email, userDetails.getUsername());
+      assertEquals(encodedPassword, userDetails.getPassword());
+    }
   }
 }
