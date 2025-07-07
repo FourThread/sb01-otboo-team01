@@ -157,7 +157,13 @@ public class UserServiceImpl implements UserService {
     if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
       MultipartFile file = nullableProfile.get();
 
-//      profileImageUrl = .saveFile(file);
+      // 기존 이미지가 있다면 S3에서 삭제
+      if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+        imageService.deleteImage(profileImageUrl);
+      }
+
+      // 새 이미지 업로드
+      profileImageUrl = imageService.uploadImage(file);
     }
 
     findProfile.updateProfile(

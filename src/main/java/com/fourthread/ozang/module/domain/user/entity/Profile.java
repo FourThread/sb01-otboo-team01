@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class Profile extends BaseUpdatableEntity {
   @Column(length = 10)
   private Gender gender;
 
-  private LocalDateTime birthDate;
+  private LocalDate birthDate;
 
   @Embedded
   @Column(length = 50)
@@ -43,7 +44,7 @@ public class Profile extends BaseUpdatableEntity {
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
-  public Profile(String name, Gender gender, LocalDateTime birthDate, Location location,
+  public Profile(String name, Gender gender, LocalDate birthDate, Location location,
       Integer temperatureSensitivity, String profileImageUrl) {
     this.name = name;
     this.gender = gender;
@@ -53,7 +54,7 @@ public class Profile extends BaseUpdatableEntity {
     this.profileImageUrl = profileImageUrl;
   }
 
-  public void updateProfile(String name, Gender gender, LocalDateTime birthDate,
+  public void updateProfile(String name, Gender gender, LocalDate birthDate,
       Location location, Integer temperatureSensitivity, String profileImageUrl) {
     this.name = name;
     this.gender = gender;
