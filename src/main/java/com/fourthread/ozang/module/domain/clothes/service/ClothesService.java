@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.clothes.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
 import com.fourthread.ozang.module.domain.clothes.dto.response.*;
@@ -41,7 +40,7 @@ public class ClothesService {
 
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
-            imageUrl = imageService.uploadClothesImage(image);
+            imageUrl = imageService.uploadImage(image);
             log.info("Image uploaded for new clothes. URL: {}", imageUrl);
         }
 
@@ -75,14 +74,14 @@ public class ClothesService {
             String oldImageUrl = clothes.getImageUrl();
             if (oldImageUrl != null && !oldImageUrl.isBlank()) {
                 try {
-                    imageService.deleteClothesImage(oldImageUrl);
+                    imageService.deleteImage(oldImageUrl);
                     log.info("Old image deleted={}", oldImageUrl);
                 } catch (Exception e) {
                     log.warn("Failed to delete old image={}", oldImageUrl, e);
                 }
             }
 
-            String newImageUrl = imageService.uploadClothesImage(imageFile);
+            String newImageUrl = imageService.uploadImage(imageFile);
             clothes.updateImageUrl(newImageUrl);
             log.info("New image upload for clothes {}: {}", clothesId, newImageUrl);
         }
@@ -107,7 +106,7 @@ public class ClothesService {
         String imageUrl = clothes.getImageUrl();
         if (imageUrl != null && !imageUrl.isBlank()) {
             try {
-                imageService.deleteClothesImage(imageUrl);
+                imageService.deleteImage(imageUrl);
                 log.info("Image deleted for clothes {}: {}", clothesId, imageUrl);
             } catch (Exception e) {
                 log.warn("Failed to delete image for clothes {}: {}", clothesId, imageUrl, e);

@@ -40,7 +40,7 @@ public class S3ImageService implements ImageService {
     /**
      * 의상 이미지를 S3에 업로드
      */
-    public String uploadClothesImage(MultipartFile file) {
+    public String uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
         }
@@ -83,7 +83,7 @@ public class S3ImageService implements ImageService {
     /**
      * S3에서 이미지 삭제
      */
-    public void deleteClothesImage(String imageUrl) {
+    public void deleteImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             return;
         }

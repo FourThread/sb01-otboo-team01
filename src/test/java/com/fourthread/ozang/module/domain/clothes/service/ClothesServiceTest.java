@@ -129,7 +129,7 @@ class ClothesServiceTest {
         //then
         assertThat(result).isEqualTo(clothesDto);
         then(clothesRepository).should().save(any(Clothes.class));
-        then(imageService).should(never()).uploadClothesImage(any());
+        then(imageService).should(never()).uploadImage(any());
     }
 
     @DisplayName("이미지와 함께 옷을 등록할 수 있다.")
@@ -154,7 +154,7 @@ class ClothesServiceTest {
         String expectedImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-image.jpg";
 
         given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
-        given(imageService.uploadClothesImage(imageFile)).willReturn(expectedImageUrl);
+        given(imageService.uploadImage(imageFile)).willReturn(expectedImageUrl);
         given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
 
         //when
@@ -163,7 +163,7 @@ class ClothesServiceTest {
         //then
         assertThat(result).isEqualTo(clothesDto);
         then(clothesRepository).should().save(any(Clothes.class));
-        then(imageService).should().uploadClothesImage(imageFile);
+        then(imageService).should().uploadImage(imageFile);
     }
 
 

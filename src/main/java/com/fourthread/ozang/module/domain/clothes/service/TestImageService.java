@@ -19,7 +19,7 @@ public class TestImageService implements ImageService {
     private static final String DUMMY_BASE_URL = "https://test-bucket.s3.amazonaws.com/clothes/";
 
     @Override
-    public String uploadClothesImage(MultipartFile file) {
+    public String uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
         }
@@ -33,7 +33,7 @@ public class TestImageService implements ImageService {
     }
 
     @Override
-    public void deleteClothesImage(String imageUrl) {
+    public void deleteImage(String imageUrl) {
         if (imageUrl != null && !imageUrl.isBlank()) {
             log.info("Test image deletion simulated: {}", imageUrl);
         }
