@@ -10,3 +10,30 @@ batch:
 logging:
   level:
     com.fourthread.ozang.module.config.batch: DEBUG
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    s3:
+      bucket: ${AWS_S3_DEV_BUCKET:ozang-dev-bucket}
+      region: ${AWS_REGION:ap-northeast-2}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+    stack:
+      auto: false
+
+# 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: dev/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
