@@ -18,11 +18,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.S3Client;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "KAKAO_API_KEY=kakao-test",
+    "WEATHER_API_KEY=api-test",
+    "ADMIN_USERNAME=admin",
+    "ADMIN_EMAIL=admin@mail.com",
+    "ADMIN_PASSWORD=1234",
+    "JWT_SECRET=1dfadfafafvdfa",
+    "cloud.aws.s3.bucket=test-bucket"
+
+})
 @ActiveProfiles("test")
 public class UserServiceIntegrationTest {
+
+  @MockitoBean
+  private S3Client s3Client;
 
   @Autowired
   private UserService userService;

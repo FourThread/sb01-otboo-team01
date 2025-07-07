@@ -41,7 +41,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Transactional
 @ActiveProfiles("test")
@@ -54,10 +57,14 @@ import org.springframework.test.context.ActiveProfiles;
         "ADMIN_PASSWORD=test-pass",
         "JWT_SECRET=d12d12d21d21d12d2",
         "KAKAO_API_KEY=test",
-        "WEATHER_API_KEY=dwqqdd11"
+        "WEATHER_API_KEY=dwqqdd11",
+        "cloud.aws.s3.bucket=test-bucket"
     }
 )
 public class FeedServiceIntegrationTest {
+
+  @MockitoBean
+  private S3Client s3Client;
 
   @Autowired
   private UserRepository userRepository;

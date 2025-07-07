@@ -10,12 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import software.amazon.awssdk.services.s3.S3Client;
 
 
 @Transactional
@@ -25,12 +27,15 @@ import static org.assertj.core.api.Assertions.assertThat;
         "ADMIN_USERNAME=admin",
         "ADMIN_EMAIL=admin@mail.com",
         "ADMIN_PASSWORD=1234",
-        "JWT_SECRET=1dfadfafafvdfa"
+        "JWT_SECRET=1dfadfafafvdfa",
+    "cloud.aws.s3.bucket=test-bucket"
 
 })
 @ActiveProfiles("test")
 class ClothesRepositoryImplTest {
 
+    @MockitoBean
+    private S3Client s3Client;
 
     @Autowired
     private ClothesRepositoryImpl repository;
