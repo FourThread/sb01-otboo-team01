@@ -60,12 +60,28 @@ public class WeatherServiceImpl implements WeatherService {
     private final KakaoApiClient kakaoApiClient;
     private final CoordinateConverter coordinateConverter;
     private final GenericResponseService responseBuilder;
+    private final Executor apiCallExecutor;
 
     @Value("${batch.weather.retention-days:30}")
     private int defaultRetentionDays;
 
-    @Qualifier("apiCallExecutor")
-    private final Executor apiCallExecutor;
+    public WeatherServiceImpl(
+        WeatherRepository weatherRepository,
+        WeatherMapper weatherMapper,
+        WeatherApiClient weatherApiClient,
+        KakaoApiClient kakaoApiClient,
+        CoordinateConverter coordinateConverter,
+        GenericResponseService responseBuilder,
+        @Qualifier("apiCallExecutor") Executor apiCallExecutor) {
+
+        this.weatherRepository = weatherRepository;
+        this.weatherMapper = weatherMapper;
+        this.weatherApiClient = weatherApiClient;
+        this.kakaoApiClient = kakaoApiClient;
+        this.coordinateConverter = coordinateConverter;
+        this.responseBuilder = responseBuilder;
+        this.apiCallExecutor = apiCallExecutor;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -149,7 +165,6 @@ public class WeatherServiceImpl implements WeatherService {
                     return locations;
                 }, apiCallExecutor)
                 .orTimeout(5, TimeUnit.SECONDS);
-
 
             // 두 API 호출이 모두 완료될 때까지 대기
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(
@@ -261,7 +276,8 @@ public class WeatherServiceImpl implements WeatherService {
             .supplyAsync(() -> {
                 long apiStartTime = System.currentTimeMillis();
                 log.debug("기상청 단기예보 API 호출 시작");
-                WeatherApiResponse response = weatherApiClient.callVilageFcst(grid, baseDate, baseTime);
+                WeatherApiResponse response = weatherApiClient.callVilageFcst(grid, baseDate,
+                    baseTime);
                 long apiEndTime = System.currentTimeMillis();
                 log.debug("기상청 단기예보 API 호출 완료 - 소요시간: {}ms", apiEndTime - apiStartTime);
                 return response;
@@ -514,7 +530,7 @@ public class WeatherServiceImpl implements WeatherService {
         // 강수확률(POP)
         double avgPop = dayItems.stream()
             .filter(i -> "POP".equals(i.category()))
-            .mapToDouble(i -> parseDouble(i.fcstValue()) / 100.0 )
+            .mapToDouble(i -> parseDouble(i.fcstValue()) / 100.0)
             .average().orElse(0.0);
 
         // 하늘상태(SKY)
