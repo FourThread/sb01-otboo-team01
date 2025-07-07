@@ -1,7 +1,6 @@
-package com.fourthread.ozang.module.domain.oauth.handle;
+package com.fourthread.ozang.module.domain.security.oauth.handler;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -57,8 +56,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         refreshTokenCookie.setPath("/api/auth");
         response.addCookie(refreshTokenCookie);
 
-        // 리다이렉트
-        response.sendRedirect("/");
+        // 성공 메시지와 함께 홈 화면으로 리다이렉트
+        String redirectUrl = "/?success=oauth_login&message=" + java.net.URLEncoder.encode("소셜 로그인에 성공했습니다!", "UTF-8");
+        response.sendRedirect(redirectUrl);
     }
 
     private String extractEmail(Map<String, Object> attributes) {

@@ -3,8 +3,8 @@ package com.fourthread.ozang.module.domain.security.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;
-import com.fourthread.ozang.module.domain.security.SecurityMatchers;
-import com.fourthread.ozang.module.domain.security.UserDetailsImpl;
+import com.fourthread.ozang.module.domain.security.jwt.dto.type.SecurityMatchers;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
@@ -57,7 +57,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("[JwtAuthenticationFilter] SecurityContext에 인증 완료 - 사용자: {}", payloadDto.email());
 
         chain.doFilter(request, response);
-
       } else {
         log.warn("[JwtAuthFilter] 유효하지 않은 토큰 - 무효화 시도 - URI: {}", request.getRequestURI());
         jwtService.invalidateAccessToken(accessToken);
@@ -77,6 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
       }
     } else {
+
       chain.doFilter(request, response);
     }
   }

@@ -1,6 +1,6 @@
 package com.fourthread.ozang.module.config.batch;
 
-import com.fourthread.ozang.module.domain.security.jwt.batch.JwtBatchService;
+//import com.fourthread.ozang.module.domain.security.jwt.batch.JwtBatchService;
 import com.fourthread.ozang.module.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BatchService {
 
     private final WeatherService weatherService;
-    private final JwtBatchService jwtBatchService;
+//    private final JwtBatchService jwtBatchService;
 
     /**
      * 날씨 데이터 정리 (기본 보관 기간 사용)
@@ -43,9 +43,9 @@ public class BatchService {
      * JWT 토큰 정리
      * @return 삭제된 토큰 개수
      */
-    public int cleanupExpiredTokens() {
-        log.info("JWT 토큰 정리 작업 호출");
-        return jwtBatchService.cleanupExpiredTokens();
-    }
+//    public int cleanupExpiredTokens() {
+//        log.info("JWT 토큰 정리 작업 호출");
+//        return jwtBatchService.cleanupExpiredTokens();
+//    }
 
 }

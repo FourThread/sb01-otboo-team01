@@ -1,10 +1,11 @@
 package com.fourthread.ozang.module.domain.security.jwt;
 
+import com.fourthread.ozang.module.domain.security.jwt.dto.type.TokenType;
+import com.fourthread.ozang.module.domain.security.redis.RedisDao;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,30 +13,19 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtBlacklist {
 
-  private final Map<String, Instant> blacklist = new ConcurrentHashMap<>();
+  private final RedisDao redisDao;
 
-  public void put(String accessToken, Instant expirationTime) {
-    blacklist.putIfAbsent(accessToken, expirationTime);
-    log.info("[JwtBlackList] 블랙리스트에 Access Token 등록 완료");
+  public void put(String token, Instant expirationTime, TokenType tokenType) {
+    Duration ttl = Duration.between(Instant.now(), expirationTime);
+    redisDao.setValues("blacklist:" + token, tokenType.toString(), ttl);
+    log.info("[JwtBlacklist] 블랙리스트 등록 - 만료 시간: {}", expirationTime);
   }
 
-  public boolean contains(String accessToken) {
-    boolean isBlacklisted = blacklist.containsKey(accessToken);
-    if (isBlacklisted) {
-      log.info("블랙리스트에 포함된 액세스 토큰 감지");
-    }
-    return isBlacklisted;
-  }
-
-  // 1시간마다 정리
-  @Scheduled(fixedDelay = 60 * 60 * 1000)
-  public void cleanUp() {
-    int before = blacklist.size();
-    blacklist.values().removeIf(expirationTime -> expirationTime.isBefore(Instant.now()));
-    int after = blacklist.size();
-    log.info("블랙리스트 정리 작업 수행 완료: {} → {}", before, after);
+  public boolean contains(String token) {
+    return redisDao.getValue("blacklist:" + token) != null;
   }
 }
 

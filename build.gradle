@@ -109,6 +109,9 @@ dependencies {
     // java mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    //Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // monitoring
     implementation 'io.micrometer:micrometer-registry-prometheus'
 

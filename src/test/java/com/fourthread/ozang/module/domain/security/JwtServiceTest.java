@@ -5,9 +5,8 @@ import com.fourthread.ozang.module.domain.security.jwt.JwtBlacklist;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.JwtToken;
-import com.fourthread.ozang.module.domain.security.jwt.JwtTokenRepository;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
+import com.fourthread.ozang.module.domain.security.redis.RedisDao;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -28,9 +27,6 @@ class JwtServiceTest {
   private JwtService jwtService;
 
   @Mock
-  private JwtTokenRepository jwtTokenRepository;
-
-  @Mock
   private UserRepository userRepository;
 
   @Mock
@@ -41,6 +37,9 @@ class JwtServiceTest {
 
   @Mock
   private JwtBlacklist jwtBlacklist;
+
+  @Mock
+  private RedisDao redisDao;
 
   private String secret;
 
