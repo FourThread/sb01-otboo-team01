@@ -56,12 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         log.info("[JwtAuthenticationFilter] SecurityContext에 인증 완료 - 사용자: {}", payloadDto.email());
 
-        long start = System.currentTimeMillis();
         chain.doFilter(request, response);
-        long duration = System.currentTimeMillis() - start;
-
-        log.info("[{}] {} 처리 시간: {}ms", request.getMethod(), request.getRequestURI(), duration);
-
       } else {
         log.warn("[JwtAuthFilter] 유효하지 않은 토큰 - 무효화 시도 - URI: {}", request.getRequestURI());
         jwtService.invalidateAccessToken(accessToken);
@@ -81,11 +76,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
       }
     } else {
-      long start = System.currentTimeMillis();
-      chain.doFilter(request, response);
-      long duration = System.currentTimeMillis() - start;
 
-      log.info("[{}] {} 처리 시간: {}ms", request.getMethod(), request.getRequestURI(), duration);
+      chain.doFilter(request, response);
     }
   }
 
