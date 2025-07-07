@@ -26,7 +26,6 @@ public class NotificationService {
     public NotificationCursorResponse findAllByReceiver(UUID receiverId, String cursor, UUID idAfter, int limit) {
         SortDirection direction = SortDirection.DESCENDING; // 현재는 고정된 정렬 방향 (DESC)
 
-        // limit + 1로 초과 조회 → hasNext 판단용
         List<Notification> results = notificationRepository.findAllByCondition(
                 receiverId,
                 cursor,
@@ -53,6 +52,10 @@ public class NotificationService {
                 "createdAt",
                 direction.name()
         );
+    }
+
+    private String getCursorValue(Notification notification) {
+        return notification.getCreatedAt().toString(); // LocalDateTime → String (ISO8601)
     }
 
     @Transactional
