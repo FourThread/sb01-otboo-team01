@@ -28,9 +28,6 @@ public class S3ImageService implements ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    @Value("${file.upload.clothes.path}")
-    private String clothesImagePath;
-
     @Value("${file.upload.clothes.allowed-extensions}")
     private String allowedExtensions;
 
@@ -49,7 +46,7 @@ public class S3ImageService implements ImageService {
         validateImageFile(file);
 
         String fileName = generateFileName(file.getOriginalFilename());
-        String key = clothesImagePath + fileName;
+        String key = uploadPath + fileName;
 
         try {
             // S3에 파일 업로드
@@ -174,14 +171,14 @@ public class S3ImageService implements ImageService {
         try {
             if (imageUrl.contains(bucketName)) {
                 // S3 직접 URL인 경우
-                int keyStartIndex = imageUrl.indexOf(clothesImagePath);
+                int keyStartIndex = imageUrl.indexOf(uploadPath);
                 if (keyStartIndex != -1) {
                     return imageUrl.substring(keyStartIndex);
                 }
             }
             // 다른 형태의 URL인 경우 마지막 경로 부분을 clothesImagePath와 결합
             String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-            return clothesImagePath + fileName;
+            return uploadPath + fileName;
         } catch (Exception e) {
             log.warn("Failed to extract key from URL: {}", imageUrl);
             return imageUrl;
