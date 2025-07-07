@@ -1,11 +1,10 @@
-package com.fourthread.ozang.module.domain.oauth.service;
+package com.fourthread.ozang.module.domain.security.oauth.service;
 
-import com.fourthread.ozang.module.domain.oauth.dto.OAuthAttributes;
-import com.fourthread.ozang.module.domain.oauth.parser.OAuthAttributesParser;
+import com.fourthread.ozang.module.domain.security.oauth.dto.OAuthAttributes;
+import com.fourthread.ozang.module.domain.security.oauth.parser.OAuthAttributesParser;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.entity.Profile;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.dto.type.Items;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +20,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j

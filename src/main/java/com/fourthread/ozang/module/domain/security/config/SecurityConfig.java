@@ -1,20 +1,19 @@
 package com.fourthread.ozang.module.domain.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.oauth.handle.OAuth2FailureHandler;
-import com.fourthread.ozang.module.domain.oauth.handle.OAuth2SuccessHandler;
-import com.fourthread.ozang.module.domain.oauth.service.CustomOAuth2UserService;
+import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2FailureHandler;
+import com.fourthread.ozang.module.domain.security.oauth.handle.OAuth2SuccessHandler;
+import com.fourthread.ozang.module.domain.security.oauth.service.CustomOAuth2UserService;
 import com.fourthread.ozang.module.domain.security.filter.JsonLoginFilter.Configurer;
 import com.fourthread.ozang.module.domain.security.handler.CustomAccessDeniedHandler;
 import com.fourthread.ozang.module.domain.security.handler.CustomAuthenticationEntryPoint;
 import com.fourthread.ozang.module.domain.security.handler.CustomLoginFailureHandler;
-import com.fourthread.ozang.module.domain.security.SecurityMatchers;
+import com.fourthread.ozang.module.domain.security.jwt.dto.type.SecurityMatchers;
 import com.fourthread.ozang.module.domain.security.filter.JwtAuthenticationFilter;
-import com.fourthread.ozang.module.domain.security.jwt.JwtLoginSuccessHandler;
-import com.fourthread.ozang.module.domain.security.jwt.JwtLogoutHandler;
+import com.fourthread.ozang.module.domain.security.handler.JwtLoginSuccessHandler;
+import com.fourthread.ozang.module.domain.security.handler.JwtLogoutHandler;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

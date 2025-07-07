@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security;
+package com.fourthread.ozang.module.domain.security.jwt.dto.type;
 
 public class SecurityMatchers {
 

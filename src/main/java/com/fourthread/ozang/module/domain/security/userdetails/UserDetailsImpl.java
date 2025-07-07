@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security;
+package com.fourthread.ozang.module.domain.security.userdetails;
 
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import java.util.Collection;
