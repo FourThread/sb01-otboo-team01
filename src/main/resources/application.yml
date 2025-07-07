@@ -124,3 +124,25 @@ security:
 
 app:
   timezone: Asia/Seoul
+
+
+management:
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+  server:
+    port: 8080
+  endpoint:
+    health:
+      show-components: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
