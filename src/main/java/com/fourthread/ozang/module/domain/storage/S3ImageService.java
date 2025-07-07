@@ -21,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Profile("!test")  // 테스트 환경이 아닐 때만 활성화
-public class S3ClothesImageService implements ImageService {
+public class S3ImageService implements ImageService {
 
     private final S3Client s3Client;
 
@@ -37,6 +37,7 @@ public class S3ClothesImageService implements ImageService {
     @Value("${file.upload.clothes.max-size}")
     private long maxFileSize;
 
+    private final String uploadPath;
     /**
      * 의상 이미지를 S3에 업로드
      */

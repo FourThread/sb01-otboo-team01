@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
@@ -45,6 +45,22 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
   private final ImageService imageService;
+
+  public UserServiceImpl(UserRepository userRepository,
+      ProfileRepository profileRepository,
+      UserMapper userMapper,
+      ProfileMapper profileMapper,
+      PasswordEncoder passwordEncoder,
+      MailService mailService,
+      @Qualifier("profileImageService") ImageService imageService) {
+    this.userRepository = userRepository;
+    this.profileRepository = profileRepository;
+    this.userMapper = userMapper;
+    this.profileMapper = profileMapper;
+    this.passwordEncoder = passwordEncoder;
+    this.mailService = mailService;
+    this.imageService = imageService;
+  }
 
   @Transactional
   @Override
