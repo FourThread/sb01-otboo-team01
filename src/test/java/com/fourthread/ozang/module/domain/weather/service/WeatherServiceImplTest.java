@@ -226,7 +226,6 @@ class WeatherServiceImplTest {
         void getFiveDayForecast_Success() {
             // Given
             WeatherApiResponse mockResponse = createMockFiveDayApiResponse();
-            List<WeatherDto> expectedDtos = createMockWeatherDtoList(5);
 
             when(weatherApiClient.callVilageFcst(any(), anyString(), anyString()))
                 .thenReturn(mockResponse);
@@ -432,11 +431,5 @@ class WeatherServiceImplTest {
                 new WeatherApiResponse.Body("JSON", new WeatherApiResponse.Items(items), 1, items.size(), items.size())
             )
         );
-    }
-
-    private List<WeatherDto> createMockWeatherDtoList(int count) {
-        return Stream.generate(this::createMockWeatherDto)
-            .limit(count)
-            .toList();
     }
 }
