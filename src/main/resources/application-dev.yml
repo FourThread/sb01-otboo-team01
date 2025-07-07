@@ -13,16 +13,8 @@ logging:
 
 cloud:
   aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
     s3:
-      bucket: ${AWS_S3_DEV_BUCKET:ozang-dev-bucket}
-      region: ${AWS_REGION:ap-northeast-2}
-    region:
-      static: ${AWS_REGION:ap-northeast-2}
-    stack:
-      auto: false
+      bucket: ozang-dev-bucket
 
 # 파일 업로드 설정
 file:

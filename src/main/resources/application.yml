@@ -67,6 +67,9 @@ spring:
       enabled: true
       path: /h2-console
 
+  profiles:
+    active: dev
+
 batch:
   weather:
     retention-days: 30  # 날씨 데이터 보관 기간 (일)
@@ -130,11 +133,8 @@ cloud:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
-    s3:
-      bucket: ${AWS_S3_BUCKET}
-      region: ${AWS_REGION:ap-northeast-2}
     region:
-      static: ${AWS_REGION:ap-northeast-2}
+      static: ap-northeast-2
     stack:
       auto: false
 
