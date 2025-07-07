@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.fourthread.ozang.module.domain.storage;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Profile("!test")  // 테스트 환경이 아닐 때만 활성화
-public class S3ImageService implements ImageService {
+public class S3ClothesImageService implements ImageService {
 
     private final S3Client s3Client;
 

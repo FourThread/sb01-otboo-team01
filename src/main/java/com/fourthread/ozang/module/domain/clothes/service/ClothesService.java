@@ -12,6 +12,7 @@ import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

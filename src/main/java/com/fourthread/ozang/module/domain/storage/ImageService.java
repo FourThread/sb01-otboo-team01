@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.fourthread.ozang.module.domain.storage;
 
 import org.springframework.web.multipart.MultipartFile;
 

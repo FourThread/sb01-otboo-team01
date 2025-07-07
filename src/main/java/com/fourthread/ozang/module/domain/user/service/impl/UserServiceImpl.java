@@ -1,7 +1,7 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.service.ImageService;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
