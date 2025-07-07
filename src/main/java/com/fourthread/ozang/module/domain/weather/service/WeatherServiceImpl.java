@@ -51,7 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class WeatherServiceImpl implements WeatherService {
 
     private final WeatherRepository weatherRepository;
