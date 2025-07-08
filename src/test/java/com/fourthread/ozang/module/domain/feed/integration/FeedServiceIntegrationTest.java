@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.integration;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -46,15 +47,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @SpringBootTest(
-    webEnvironment = WebEnvironment.RANDOM_PORT,
-    properties = {
-        "ADMIN_USERNAME=test-admin",
-        "ADMIN_EMAIL=test-admin@mail.com",
-        "ADMIN_PASSWORD=test-pass",
-        "JWT_SECRET=d12d12d21d21d12d2",
-        "KAKAO_API_KEY=test",
-        "WEATHER_API_KEY=dwqqdd11"
-    }
+    webEnvironment = WebEnvironment.RANDOM_PORT
 )
 public class FeedServiceIntegrationTest {
 
@@ -90,7 +83,7 @@ public class FeedServiceIntegrationTest {
   @BeforeEach
   void setup() {
     author = userRepository.save(new User("test-user", "test@example.com", "password"));
-    Profile profile = new Profile("user", Gender.ETC, LocalDateTime.now(),
+    Profile profile = new Profile("user", Gender.ETC, LocalDate.now(),
         new Location(1.0, 1.0, 1, 1, List.of("local")), 1, "url");
     profile.setUser(author);
     profileRepository.save(profile);

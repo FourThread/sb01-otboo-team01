@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.fourthread.ozang.module.domain.storage;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 @Profile("!test")  // 테스트 환경이 아닐 때만 활성화
 public class S3ImageService implements ImageService {
@@ -28,15 +26,13 @@ public class S3ImageService implements ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    @Value("${file.upload.clothes.path}")
-    private String clothesImagePath;
-
     @Value("${file.upload.clothes.allowed-extensions}")
     private String allowedExtensions;
 
     @Value("${file.upload.clothes.max-size}")
     private long maxFileSize;
 
+    private final String uploadPath;
     /**
      * 의상 이미지를 S3에 업로드
      */
@@ -48,7 +44,7 @@ public class S3ImageService implements ImageService {
         validateImageFile(file);
 
         String fileName = generateFileName(file.getOriginalFilename());
-        String key = clothesImagePath + fileName;
+        String key = uploadPath + fileName;
 
         try {
             // S3에 파일 업로드
@@ -173,14 +169,14 @@ public class S3ImageService implements ImageService {
         try {
             if (imageUrl.contains(bucketName)) {
                 // S3 직접 URL인 경우
-                int keyStartIndex = imageUrl.indexOf(clothesImagePath);
+                int keyStartIndex = imageUrl.indexOf(uploadPath);
                 if (keyStartIndex != -1) {
                     return imageUrl.substring(keyStartIndex);
                 }
             }
             // 다른 형태의 URL인 경우 마지막 경로 부분을 clothesImagePath와 결합
             String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-            return clothesImagePath + fileName;
+            return uploadPath + fileName;
         } catch (Exception e) {
             log.warn("Failed to extract key from URL: {}", imageUrl);
             return imageUrl;
