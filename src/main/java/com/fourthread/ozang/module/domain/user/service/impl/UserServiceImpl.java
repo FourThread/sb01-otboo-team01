@@ -3,6 +3,7 @@ package com.fourthread.ozang.module.domain.user.service.impl;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
@@ -44,6 +45,7 @@ public class UserServiceImpl implements UserService {
   private final ProfileMapper profileMapper;
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
+  private final JwtService jwtService;
   private final ImageService imageService;
 
   public UserServiceImpl(UserRepository userRepository,
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserService {
       UserMapper userMapper,
       ProfileMapper profileMapper,
       PasswordEncoder passwordEncoder,
+      JwtService jwtService,
       MailService mailService,
       @Qualifier("profileImageService") ImageService imageService) {
     this.userRepository = userRepository;
@@ -59,6 +62,7 @@ public class UserServiceImpl implements UserService {
     this.profileMapper = profileMapper;
     this.passwordEncoder = passwordEncoder;
     this.mailService = mailService;
+    this.jwtService = jwtService;
     this.imageService = imageService;
   }
 
@@ -191,7 +195,14 @@ public class UserServiceImpl implements UserService {
 
     log.info("[UserService] 사용자 계정 잠금 상태를 변경합니다 : before {} -> after {}", findUser.getLocked(),
         request.locked());
+    boolean wasUnlocked = !findUser.getLocked();
     findUser.changeLocked(locked);
+
+    // 계정이 잠금 상태로 변경된 경우, 해당 사용자의 모든 JWT 토큰을 무효화
+    if (wasUnlocked && locked) {
+      log.info("[UserService] 계정이 잠금되었으므로 사용자 {}의 모든 활성 세션을 로그아웃시킵니다", findUser.getEmail());
+      jwtService.invalidateJwtTokenByEmail(findUser.getEmail());
+    }
 
     return findUser.getId();
   }
