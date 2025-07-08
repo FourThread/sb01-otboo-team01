@@ -1,8 +1,7 @@
-package com.fourthread.ozang.module.config;
+package com.fourthread.ozang.module.config.s3;
 
 import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.storage.S3ImageService;
-import com.fourthread.ozang.module.domain.storage.TestImageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
