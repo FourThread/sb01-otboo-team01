@@ -56,12 +56,12 @@ public class Profile extends BaseUpdatableEntity {
 
   public void updateProfile(String name, Gender gender, LocalDate birthDate,
       Location location, Integer temperatureSensitivity, String profileImageUrl) {
-    this.name = name;
-    this.gender = gender;
-    this.birthDate = birthDate;
-    this.location = location;
-    this.temperatureSensitivity = temperatureSensitivity;
-    this.profileImageUrl = profileImageUrl;
+    if (name != null) this.name = name;
+    if (gender != null) this.gender = gender;
+    if (birthDate != null) this.birthDate = birthDate;
+    if (location != null) this.location = location;
+    if (temperatureSensitivity != null) this.temperatureSensitivity = temperatureSensitivity;
+    if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
   }
 
   public void setUser(User user) {
