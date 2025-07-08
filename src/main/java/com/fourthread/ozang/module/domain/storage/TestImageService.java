@@ -1,8 +1,7 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.fourthread.ozang.module.domain.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -12,7 +11,6 @@ import java.util.UUID;
  * 실제 파일 업로드 없이 더미 URL을 반환합니다.
  */
 @Slf4j
-@Service
 @Profile("test")  // 테스트 환경에서만 활성화
 public class TestImageService implements ImageService {
 

@@ -12,6 +12,8 @@ import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.module.domain.storage.ImageService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +29,27 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ClothesService {
 
-    private final ClothesRepository clothesRepository;
     private final UserRepository userRepository;
+    private final ClothesRepository clothesRepository;
     private final ClothesAttributeDefinitionRepository definitionRepository;
     private final ClothesMapper clothesMapper;
     private final ImageService imageService;
+
+    public ClothesService(
+        ClothesRepository clothesRepository,
+        UserRepository userRepository,
+        ClothesAttributeDefinitionRepository definitionRepository,
+        ClothesMapper clothesMapper,
+        @Qualifier("clothesImageService") ImageService imageService
+    ) {
+        this.clothesRepository = clothesRepository;
+        this.userRepository = userRepository;
+        this.definitionRepository = definitionRepository;
+        this.clothesMapper = clothesMapper;
+        this.imageService = imageService;
+    }
 
     @Transactional
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {

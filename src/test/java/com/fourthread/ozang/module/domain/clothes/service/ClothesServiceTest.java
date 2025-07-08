@@ -13,6 +13,7 @@ import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDef
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

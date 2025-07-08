@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,10 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
     
     // 실패 원인에 따른 적절한 에러 메시지 설정
     String errorMessage = getErrorMessage(exception);
+    if (exception.getCause() instanceof LockedException) {
+      log.error("[OAuth2FailureHandler] 잠긴 계정으로 OAuth 로그인 시도: {}", exception.getMessage());
+      errorMessage = "계정이 잠겨있습니다. 관리자에게 문의하세요";
+    }
     
     // 홈 화면으로 리다이렉트하면서 에러 파라미터 추가
     String redirectUrl = "/?error=oauth_failed&message=" + java.net.URLEncoder.encode(errorMessage, "UTF-8");

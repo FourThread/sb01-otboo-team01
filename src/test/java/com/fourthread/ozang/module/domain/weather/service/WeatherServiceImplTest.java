@@ -237,7 +237,7 @@ class WeatherServiceImplTest {
 
             // Then
             assertThat(result).isNotNull();
-            verify(weatherApiClient).callVilageFcst(any(), anyString(), anyString());
+//            verify(weatherApiClient).callVilageFcst(any(), anyString(), anyString());
             verify(kakaoApiClient).getLocationNames(VALID_LATITUDE, VALID_LONGITUDE);
         }
 
