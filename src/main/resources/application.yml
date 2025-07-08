@@ -67,6 +67,9 @@ spring:
       enabled: true
       path: /h2-console
 
+  profiles:
+    active: dev
+
 batch:
   weather:
     retention-days: 30  # 날씨 데이터 보관 기간 (일)
@@ -124,3 +127,48 @@ security:
 
 app:
   timezone: Asia/Seoul
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+# 이미지 업로드 설정
+file:
+  upload:
+    clothes:
+      path: clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+    profiles:
+      path: profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+
+
+management:
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+  server:
+    port: 8080
+  endpoint:
+    health:
+      show-components: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+

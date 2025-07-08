@@ -59,4 +59,8 @@ public class Clothes extends BaseUpdatableEntity {
         }
         this.attributes.clear();
     }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

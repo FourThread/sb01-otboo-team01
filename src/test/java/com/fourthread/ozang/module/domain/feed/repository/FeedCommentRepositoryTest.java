@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.repository;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -85,21 +86,21 @@ class FeedCommentRepositoryTest {
   private void setupUsers() {
     // 피드 작성자
     author = userRepository.save(new User("author", "author@example.com", "password"));
-    Profile authorProfile = new Profile("author", Gender.MALE, LocalDateTime.now().minusYears(25),
+    Profile authorProfile = new Profile("author", Gender.MALE, LocalDate.now().minusYears(25),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 3, "author.jpg");
     authorProfile.setUser(author);
     profileRepository.save(authorProfile);
 
     // 댓글 작성자1
     commenter1 = userRepository.save(new User("commenter1", "commenter1@example.com", "password"));
-    Profile commenter1Profile = new Profile("commenter1", Gender.FEMALE, LocalDateTime.now().minusYears(23),
+    Profile commenter1Profile = new Profile("commenter1", Gender.FEMALE, LocalDate.now().minusYears(23),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 2, "commenter1.jpg");
     commenter1Profile.setUser(commenter1);
     profileRepository.save(commenter1Profile);
 
     // 댓글 작성자2
     commenter2 = userRepository.save(new User("commenter2", "commenter2@example.com", "password"));
-    Profile commenter2Profile = new Profile("Commenter Two", Gender.MALE, LocalDateTime.now().minusYears(27),
+    Profile commenter2Profile = new Profile("Commenter Two", Gender.MALE, LocalDate.now().minusYears(27),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 1, "commenter2.jpg");
     commenter2Profile.setUser(commenter2);
     profileRepository.save(commenter2Profile);

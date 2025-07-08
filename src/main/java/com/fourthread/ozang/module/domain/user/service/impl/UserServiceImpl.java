@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
@@ -45,8 +46,25 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
   private final JwtService jwtService;
-//  private final ProfileStorage profileStorage;
+  private final ImageService imageService;
 
+  public UserServiceImpl(UserRepository userRepository,
+      ProfileRepository profileRepository,
+      UserMapper userMapper,
+      ProfileMapper profileMapper,
+      PasswordEncoder passwordEncoder,
+      JwtService jwtService,
+      MailService mailService,
+      @Qualifier("profileImageService") ImageService imageService) {
+    this.userRepository = userRepository;
+    this.profileRepository = profileRepository;
+    this.userMapper = userMapper;
+    this.profileMapper = profileMapper;
+    this.passwordEncoder = passwordEncoder;
+    this.mailService = mailService;
+    this.jwtService = jwtService;
+    this.imageService = imageService;
+  }
 
   @Transactional
   @Override
@@ -143,7 +161,13 @@ public class UserServiceImpl implements UserService {
     if (nullableProfile.isPresent() && !nullableProfile.get().isEmpty()) {
       MultipartFile file = nullableProfile.get();
 
-//      profileImageUrl = profileStorage.saveFile(file);
+      // 기존 이미지가 있다면 S3에서 삭제
+      if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+        imageService.deleteImage(profileImageUrl);
+      }
+
+      // 새 이미지 업로드
+      profileImageUrl = imageService.uploadImage(file);
     }
 
     findProfile.updateProfile(

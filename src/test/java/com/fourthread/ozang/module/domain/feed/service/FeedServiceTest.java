@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.service;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,7 +106,7 @@ class FeedServiceTest {
   @BeforeEach
   void init() {
     user = new User("test", "test@mail.com", "asdfasdf");
-    user.setProfile(new Profile("test", Gender.ETC, LocalDateTime.now(),
+    user.setProfile(new Profile("test", Gender.ETC, LocalDate.now(),
         new Location(1.0, 1.0, 1, 1, new ArrayList<>()), 10, "url"));
 
     feed = Feed.builder()

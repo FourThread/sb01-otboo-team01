@@ -1,0 +1,388 @@
+{
+  "id": null,
+  "uid": "spring-observability-final-min",
+  "title": "Spring Observability Dashboard",
+  "tags": [
+    "spring",
+    "prometheus",
+    "jvm",
+    "gc",
+    "hikari",
+    "logback"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Heap Memory Usage (%)",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"} * 100",
+          "legendFormat": "{{area}} - {{id}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Non-Heap Memory Usage (%)",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"nonheap\"} / jvm_memory_max_bytes{area=\"nonheap\"} * 100",
+          "legendFormat": "{{area}} - {{id}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Uptime (seconds)",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "time() - process_start_time_seconds"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "custom": {
+            "textMode": "value_and_name",
+            "justifyMode": "center"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Process Open Files",
+      "gridPos": {
+        "x": 6,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "process_open_fds"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "textMode": "value_and_name",
+            "justifyMode": "center"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "HikariCP Connections",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "hikaricp_connections",
+          "legendFormat": "Connections - {{pool}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "textMode": "value_and_name",
+            "justifyMode": "center"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Connection Timeout Count",
+      "gridPos": {
+        "x": 18,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_timeout_total",
+          "legendFormat": "Connections - {{pool}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "textMode": "value_and_name",
+            "justifyMode": "center"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "System CPU Usage (%)",
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "system_cpu_usage",
+          "legendFormat": "CPU (%)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Load Average (1m)",
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "system_load_average_1m",
+          "legendFormat": "1m Load"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "GC Count (per sec)",
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_count[1m])",
+          "legendFormat": "GC Count - {{gc}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "GC Pause Duration (sec)",
+      "gridPos": {
+        "x": 12,
+        "y": 27,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum[1m])",
+          "legendFormat": "GC Pause - {{gc}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Connection Usage Time (sec)",
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "rate(hikaricp_connection_usage_seconds_sum[1m])",
+          "legendFormat": "Connection Usage - {{pool}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests per Second",
+      "gridPos": {
+        "x": 12,
+        "y": 33,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count[1m])",
+          "legendFormat": "HTTP {{uri}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "ERROR Logs (per sec)",
+      "gridPos": {
+        "x": 0,
+        "y": 39,
+        "w": 24,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prom_ds_uid"
+      },
+      "targets": [
+        {
+          "expr": "sum by(level) (rate(logback_events_total{level=\"error\"}[1m]))",
+          "legendFormat": "Log Level - {{level}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -55,6 +57,9 @@ class ClothesServiceTest {
 
     @Mock
     private ClothesMapper clothesMapper;
+
+    @Mock
+    private ImageService imageService;
 
     @InjectMocks
     private ClothesService clothesService;
@@ -125,7 +130,43 @@ class ClothesServiceTest {
         //then
         assertThat(result).isEqualTo(clothesDto);
         then(clothesRepository).should().save(any(Clothes.class));
+        then(imageService).should(never()).uploadImage(any());
     }
+
+    @DisplayName("이미지와 함께 옷을 등록할 수 있다.")
+    @Test
+    void clothes_create_with_image() {
+        //given
+        ClothesAttributeDto attributeDto = new ClothesAttributeDto(definitionId, "화이트");
+        ClothesCreateRequest request = new ClothesCreateRequest(
+            ownerId,
+            "여름 셔츠",
+            ClothesType.TOP,
+            List.of(attributeDto)
+        );
+
+        MockMultipartFile imageFile = new MockMultipartFile(
+            "image",
+            "test-image.jpg",
+            "image/jpeg",
+            "test image content".getBytes()
+        );
+
+        String expectedImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-image.jpg";
+
+        given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
+        given(imageService.uploadImage(imageFile)).willReturn(expectedImageUrl);
+        given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
+
+        //when
+        ClothesDto result = clothesService.create(request, imageFile);
+
+        //then
+        assertThat(result).isEqualTo(clothesDto);
+        then(clothesRepository).should().save(any(Clothes.class));
+        then(imageService).should().uploadImage(imageFile);
+    }
+
 
     @DisplayName("속성 정의 ID가 존재하지 않으면 의상 등록에 실패한다.")
     @Test

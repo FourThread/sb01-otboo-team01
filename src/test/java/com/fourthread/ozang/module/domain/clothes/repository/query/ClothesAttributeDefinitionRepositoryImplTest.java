@@ -10,22 +10,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Transactional
-@SpringBootTest(properties = {
-        "KAKAO_API_KEY=kakao-test",
-        "WEATHER_API_KEY=api-test",
-        "ADMIN_USERNAME=admin",
-        "ADMIN_EMAIL=admin@mail.com",
-        "ADMIN_PASSWORD=1234",
-        "JWT_SECRET=1dfadfafafvdfa"
-
-})
+@SpringBootTest
 @ActiveProfiles("test")
 class ClothesAttributeDefinitionRepositoryImplTest {
 

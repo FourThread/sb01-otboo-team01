@@ -40,3 +40,6 @@ out/
 ### 설정 파일 ###
 .env
 /src/main/resources/static/
+
+# 프로메테우스 data 폴더 무시
+/infra/monitoring-example/data/
