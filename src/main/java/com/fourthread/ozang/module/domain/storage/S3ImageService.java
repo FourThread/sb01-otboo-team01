@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 @Profile("!test")  // 테스트 환경이 아닐 때만 활성화
 public class S3ImageService implements ImageService {

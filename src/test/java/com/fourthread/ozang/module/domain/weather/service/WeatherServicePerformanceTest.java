@@ -20,23 +20,11 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@SpringBootTest(properties = {
-    "KAKAO_API_KEY=kakao-test",
-    "WEATHER_API_KEY=api-test",
-    "ADMIN_USERNAME=admin",
-    "ADMIN_EMAIL=admin@mail.com",
-    "ADMIN_PASSWORD=1234",
-    "JWT_SECRET=1dfadfafafvdfa",
-    "cloud.aws.s3.bucket=test-bucket"
-
-})
+@SpringBootTest
 @ActiveProfiles("test")
 @Slf4j
 @DisplayName("날씨 서비스 성능 테스트")
 public class WeatherServicePerformanceTest {
-
-    @MockitoBean
-    private S3Client s3Client;
 
     @Autowired
     private WeatherService weatherService;

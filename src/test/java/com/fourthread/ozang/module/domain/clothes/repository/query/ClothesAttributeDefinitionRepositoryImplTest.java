@@ -19,21 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Transactional
-@SpringBootTest(properties = {
-        "KAKAO_API_KEY=kakao-test",
-        "WEATHER_API_KEY=api-test",
-        "ADMIN_USERNAME=admin",
-        "ADMIN_EMAIL=admin@mail.com",
-        "ADMIN_PASSWORD=1234",
-        "JWT_SECRET=1dfadfafafvdfa",
-    "cloud.aws.s3.bucket=test-bucket"
-
-})
+@SpringBootTest
 @ActiveProfiles("test")
 class ClothesAttributeDefinitionRepositoryImplTest {
-
-    @MockitoBean
-    private S3Client s3Client;
 
     @Autowired
     private ClothesAttributeDefinitionRepositoryImpl repository;
