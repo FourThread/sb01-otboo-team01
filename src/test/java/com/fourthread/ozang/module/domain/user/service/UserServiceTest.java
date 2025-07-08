@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.user.service;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.storage.ProfileStorage;
 import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
@@ -16,8 +15,6 @@ import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.user.service.impl.UserServiceImpl;
 import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.Optional;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
@@ -44,9 +41,6 @@ public class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
-
-  @Mock
-  private ProfileStorage profileStorage;
 
   @Mock
   private ProfileRepository profileRepository;
