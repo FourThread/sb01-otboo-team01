@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config;
+package com.fourthread.ozang.module.domain.storage;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,11 +10,11 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Profile("test")
 public class TestS3Config {
 
-    @Bean
-    public S3Client s3Client() {
-        // 테스트용 더미 S3Client 반환
-        return S3Client.builder()
-            .region(Region.of("ap-northeast-2"))
-            .build();
-    }
-} 
+  @Bean
+  public S3Client s3Client() {
+    // 테스트용 더미 S3Client 반환
+    return S3Client.builder()
+        .region(Region.of("ap-northeast-2"))
+        .build();
+  }
+}

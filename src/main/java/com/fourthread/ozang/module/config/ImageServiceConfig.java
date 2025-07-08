@@ -32,16 +32,4 @@ public class ImageServiceConfig {
     log.info("[Config] 프로필 이미지 경로: {}", profilePath);
     return new S3ImageService(s3Client, profilePath);
   }
-
-  @Bean(name = "clothesImageService")
-  @Profile("test")  // 테스트 환경에서만 TestImageService 사용
-  public ImageService testClothesImageService() {
-    return new TestImageService();
-  }
-
-  @Bean(name = "profileImageService")
-  @Profile("test")  // 테스트 환경에서만 TestImageService 사용
-  public ImageService testProfileImageService() {
-    return new TestImageService();
-  }
 }
