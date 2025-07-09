@@ -7,6 +7,12 @@ spring:
     password:
     driver-class-name: org.h2.Driver
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
