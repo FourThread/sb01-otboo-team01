@@ -121,6 +121,8 @@ dependencies {
     implementation 'co.elastic.clients:elasticsearch-java'
 
     // TestContainers (필요시 주석 해제)
+    testImplementation "org.testcontainers:elasticsearch"
+    testImplementation "org.testcontainers:testcontainers"
     // testImplementation 'org.testcontainers:junit-jupiter'
     // testImplementation 'org.testcontainers:postgresql'
 
