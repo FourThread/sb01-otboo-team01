@@ -5,7 +5,6 @@ import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.security.jwt.dto.type.TokenType;
 import com.fourthread.ozang.module.domain.security.redis.RedisDao;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
@@ -56,7 +55,7 @@ public class JwtService {
     JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
-    redisDao.setValues("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
+    redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return new JwtTokenResponse(accessJwtDto.token(),
@@ -149,10 +148,6 @@ public class JwtService {
     String key = "refresh:" + jwtDto.payloadDto().email();
 
     redisDao.delete(key);
-
-    if (!jwtDto.isExpired()) {
-      jwtBlacklist.put(refreshToken, jwtDto.exp(), TokenType.REFRESH);
-    }
   }
 
   @Transactional
@@ -194,7 +189,7 @@ public class JwtService {
 
   public void invalidateAccessToken(String accessToken) {
     JwtDto jwtDto = parse(accessToken);
-    jwtBlacklist.put(accessToken, jwtDto.exp(), TokenType.ACCESS);
+    jwtBlacklist.put(accessToken, jwtDto.exp());
     log.info("[JwtService - invalidateAccessToken] AccessToken 블랙리스트 등록 - 만료 시간 : {}", jwtDto.exp());
   }
 }
