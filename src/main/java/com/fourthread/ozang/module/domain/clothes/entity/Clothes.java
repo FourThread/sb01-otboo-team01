@@ -17,13 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Clothes extends BaseUpdatableEntity {
-
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "owner_id")
-    //private User owner;
-
-    //굳이 연관관계 필요없이 아이디만 가져도 될듯
-    //옷에서 유저정보를 얻진 않음
+    
     @Column(nullable = false)
     private UUID ownerId;
 
@@ -48,8 +42,11 @@ public class Clothes extends BaseUpdatableEntity {
         clothesAttribute.assignClothes(this);
     }
 
-    public void updateNameAndType(String name, ClothesType type) {
+    public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateType(ClothesType type) {
         this.type = type;
     }
 
@@ -58,5 +55,9 @@ public class Clothes extends BaseUpdatableEntity {
             attr.assignClothes(null);
         }
         this.attributes.clear();
+    }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

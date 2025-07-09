@@ -11,3 +11,27 @@ logging:
   level:
     org.springframework.batch: WARN
     com.fourthread.ozang.module.config.batch: INFO
+
+cloud:
+  aws:
+    s3:
+      bucket: ozang-prod-bucket
+
+# 운영환경 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: prod/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880  # 5MB (운영환경에서는 더 작게)
+    profiles:
+      path: prod/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880  # 5MB
+
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB

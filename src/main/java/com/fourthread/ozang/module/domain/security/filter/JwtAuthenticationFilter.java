@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       if (jwtService.validate(accessToken)) {
         JwtPayloadDto payloadDto = jwtService.parse(accessToken).payloadDto();
         log.info("[JwtAuthenticationFilter] 토큰이 유효합니다 - 사용자 : {}, 요청 URI : {}", payloadDto.email(), request.getRequestURI());
-        UserDetailsImpl userDetails = new UserDetailsImpl(payloadDto, null);
+        UserDetailsImpl userDetails = new UserDetailsImpl(payloadDto, null, false);
         UsernamePasswordAuthenticationToken authenticationToken =
             new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());

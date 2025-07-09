@@ -9,6 +9,7 @@ import com.fourthread.ozang.module.domain.user.dto.type.Items;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -45,6 +46,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = parser.parse(userNameAttributeName, oauth2User.getAttributes());
         User user = saveOrUpdate(attributes);
+
+        if (user.getLocked()) {
+            log.warn("[CustomOAuth2UserService] 잠긴 계정으로 OAuth 로그인 시도: {}", user.getEmail());
+            throw new LockedException("Account is locked");
+        }
 
         return new DefaultOAuth2User(
             Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
