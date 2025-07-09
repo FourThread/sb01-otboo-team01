@@ -3,10 +3,10 @@ package com.fourthread.ozang;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -15,10 +15,10 @@ import org.springframework.test.context.TestPropertySource;
 })
 class OZangApplicationTests {
 
-    @Mock
+    @MockitoBean
     private FeedElasticsearchRepository feedElasticsearchRepository;
 
-    @Mock
+    @MockitoBean
     private FeedSearchService feedSearchService;
 
     @Test
