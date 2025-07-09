@@ -16,9 +16,12 @@ public class RedisDao {
   }
 
   // 만료 시간이 있는 데이터 저장
-  public void setValues(String key, String data, Duration duration) {
-    log.debug("[RedisDao] Redis 저장");
-    redisTemplate.opsForValue().set(key, data, duration);
+  public void setValues(String key, String value, Duration ttl) {
+    if (ttl != null && !ttl.isNegative() && !ttl.isZero()) {
+      redisTemplate.opsForValue().set(key, value, ttl);
+    } else {
+      log.warn("유효하지 않은 TTL 값: {} → TTL 없이 저장 시도", ttl);
+    }
   }
 
   // 데이터 조회

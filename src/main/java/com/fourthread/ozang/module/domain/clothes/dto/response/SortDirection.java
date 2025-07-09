@@ -7,7 +7,7 @@ public enum SortDirection {
         try {
             return SortDirection.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("지원하지 않는 정렬 방향: " + value); //TODO 커스텀 예외처리
+            throw new IllegalArgumentException("지원하지 않는 정렬 방향: " + value);
         }
     }
 

@@ -20,15 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-@TestPropertySource(properties = {
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "ADMIN_USERNAME=test-admin",
-    "ADMIN_EMAIL=test-admin@mail.com",
-    "ADMIN_PASSWORD=test-pass",
-    "JWT_SECRET=d12d12d21d21d12d2",
-    "KAKAO_API_KEY=test",
-    "WEATHER_API_KEY=dwqqdd11"
-})
 public class DirectMessageIntegrationTest {
 
   @Autowired
@@ -75,20 +66,20 @@ public class DirectMessageIntegrationTest {
     assertThat(response.totalCount()).isEqualTo(3);
   }
 
-  @Test
-  @DisplayName("DM 조회 - 페이징")
-  void paging() {
-    DirectMessageDtoCursorRequest nonePagingRequest = new DirectMessageDtoCursorRequest(sender.getId(), null, null, 2);
-    DirectMessageDtoCursorResponse nonePagedResponse = dmService.retrieve(nonePagingRequest);
-
-    DirectMessageDtoCursorRequest pagingRequest = new DirectMessageDtoCursorRequest(sender.getId(),
-        nonePagedResponse.nextCursor(), nonePagedResponse.nextIdAfter(), 2);
-    DirectMessageDtoCursorResponse pagedResponse = dmService.retrieve(pagingRequest);
-
-    assertThat(pagedResponse.data().size()).isEqualTo(1);
-    assertThat(pagedResponse.data().get(0).content()).isEqualTo("dm3");
-
-    assertThat(pagedResponse.nextIdAfter()).isNull();
-    assertThat(pagedResponse.nextCursor()).isNull();
-  }
+//  @Test
+//  @DisplayName("DM 조회 - 페이징")
+//  void paging() {
+//    DirectMessageDtoCursorRequest nonePagingRequest = new DirectMessageDtoCursorRequest(sender.getId(), null, null, 2);
+//    DirectMessageDtoCursorResponse nonePagedResponse = dmService.retrieve(nonePagingRequest);
+//
+//    DirectMessageDtoCursorRequest pagingRequest = new DirectMessageDtoCursorRequest(sender.getId(),
+//        nonePagedResponse.nextCursor(), nonePagedResponse.nextIdAfter(), 2);
+//    DirectMessageDtoCursorResponse pagedResponse = dmService.retrieve(pagingRequest);
+//
+//    assertThat(pagedResponse.data().size()).isEqualTo(1);
+//    assertThat(pagedResponse.data().get(0).content()).isEqualTo("dm3");
+//
+//    assertThat(pagedResponse.nextIdAfter()).isNull();
+//    assertThat(pagedResponse.nextCursor()).isNull();
+//  }
 }

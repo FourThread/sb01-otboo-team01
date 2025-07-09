@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.integration;
 
+import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -40,15 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-@TestPropertySource(properties = {
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "ADMIN_USERNAME=test-admin",
-    "ADMIN_EMAIL=test-admin@mail.com",
-    "ADMIN_PASSWORD=test-pass",
-    "JWT_SECRET=d12d12d21d21d12d2",
-    "KAKAO_API_KEY=test",
-    "WEATHER_API_KEY=dwqqdd11"
-})
 class FeedCommentServiceIntegrationTest {
 
   @Autowired
@@ -93,26 +85,26 @@ class FeedCommentServiceIntegrationTest {
   private void setupUsers() {
     // 피드 작성자
     author = userRepository.save(new User("author", "author@example.com", "password"));
-    Profile authorProfile = new Profile("author", Gender.MALE, LocalDateTime.now().minusYears(25),
+    Profile authorProfile = new Profile("author", Gender.MALE, LocalDate.now().minusYears(25),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 3, "author.jpg");
     authorProfile.setUser(author);
     profileRepository.save(authorProfile);
 
     // 댓글 작성자들
     commenter1 = userRepository.save(new User("commenter1", "commenter1@example.com", "password"));
-    Profile commenter1Profile = new Profile("commenter1", Gender.FEMALE, LocalDateTime.now().minusYears(23),
+    Profile commenter1Profile = new Profile("commenter1", Gender.FEMALE, LocalDate.now().minusYears(23),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 2, "commenter1.jpg");
     commenter1Profile.setUser(commenter1);
     profileRepository.save(commenter1Profile);
 
     commenter2 = userRepository.save(new User("commenter2", "commenter2@example.com", "password"));
-    Profile commenter2Profile = new Profile("Commenter Two", Gender.MALE, LocalDateTime.now().minusYears(27),
+    Profile commenter2Profile = new Profile("Commenter Two", Gender.MALE, LocalDate.now().minusYears(27),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 1, "commenter2.jpg");
     commenter2Profile.setUser(commenter2);
     profileRepository.save(commenter2Profile);
 
     commenter3 = userRepository.save(new User("commenter3", "commenter3@example.com", "password"));
-    Profile commenter3Profile = new Profile("Commenter Three", Gender.ETC, LocalDateTime.now().minusYears(22),
+    Profile commenter3Profile = new Profile("Commenter Three", Gender.ETC, LocalDate.now().minusYears(22),
         new Location(37.5665, 126.9780, 60, 127, List.of("Seoul")), 4, "commenter3.jpg");
     commenter3Profile.setUser(commenter3);
     profileRepository.save(commenter3Profile);

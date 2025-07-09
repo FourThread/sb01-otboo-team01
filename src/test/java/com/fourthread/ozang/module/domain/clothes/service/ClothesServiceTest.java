@@ -11,6 +11,9 @@ import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
+import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,8 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ClothesServiceTest {
@@ -48,6 +52,9 @@ class ClothesServiceTest {
     private ClothesDto clothesDto;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private ClothesRepository clothesRepository;
 
     @Mock
@@ -55,6 +62,9 @@ class ClothesServiceTest {
 
     @Mock
     private ClothesMapper clothesMapper;
+
+    @Mock
+    private ImageService imageService;
 
     @InjectMocks
     private ClothesService clothesService;
@@ -116,6 +126,7 @@ class ClothesServiceTest {
                 List.of(attributeDto)
         );
 
+        given(userRepository.existsById(ownerId)).willReturn(true);
         given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
         given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
 
@@ -125,7 +136,44 @@ class ClothesServiceTest {
         //then
         assertThat(result).isEqualTo(clothesDto);
         then(clothesRepository).should().save(any(Clothes.class));
+        then(imageService).should(never()).uploadImage(any());
     }
+
+    @DisplayName("이미지와 함께 옷을 등록할 수 있다.")
+    @Test
+    void clothes_create_with_image() {
+        //given
+        ClothesAttributeDto attributeDto = new ClothesAttributeDto(definitionId, "화이트");
+        ClothesCreateRequest request = new ClothesCreateRequest(
+            ownerId,
+            "여름 셔츠",
+            ClothesType.TOP,
+            List.of(attributeDto)
+        );
+
+        MockMultipartFile imageFile = new MockMultipartFile(
+            "image",
+            "test-image.jpg",
+            "image/jpeg",
+            "test image content".getBytes()
+        );
+
+        String expectedImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-image.jpg";
+
+        given(userRepository.existsById(ownerId)).willReturn(true);
+        given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
+        given(imageService.uploadImage(imageFile)).willReturn(expectedImageUrl);
+        given(clothesMapper.toDto(any(Clothes.class))).willReturn(clothesDto);
+
+        //when
+        ClothesDto result = clothesService.create(request, imageFile);
+
+        //then
+        assertThat(result).isEqualTo(clothesDto);
+        then(clothesRepository).should().save(any(Clothes.class));
+        then(imageService).should().uploadImage(imageFile);
+    }
+
 
     @DisplayName("속성 정의 ID가 존재하지 않으면 의상 등록에 실패한다.")
     @Test
@@ -140,6 +188,7 @@ class ClothesServiceTest {
                 List.of(new ClothesAttributeDto(invalidDefinitionId, "화이트"))
         );
 
+        given(userRepository.existsById(ownerId)).willReturn(true);
         given(definitionRepository.findById(invalidDefinitionId)).willReturn(Optional.empty());
 
         //when then
@@ -183,6 +232,30 @@ class ClothesServiceTest {
         assertThatThrownBy(() -> clothesService.update(clothesId, request, null))
                 .isInstanceOf(ClothesAttributeDefinitionException.class);
         then(clothesRepository).should(never()).save(any());
+    }
+
+    @DisplayName("존재하지 않는 ownerId로 옷 등록 시 예외가 발생한다.")
+    @Test
+    void clothes_create_fail_when_owner_not_exist() {
+        //given
+        ClothesAttributeDto attributeDto = new ClothesAttributeDto(definitionId, "화이트");
+
+        ClothesCreateRequest request = new ClothesCreateRequest(
+                ownerId,
+                "여름 셔츠",
+                ClothesType.TOP,
+                List.of(attributeDto)
+        );
+
+        //ownerId는 존재하지 않음
+        given(userRepository.existsById(ownerId)).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> clothesService.create(request, null))
+                .isInstanceOf(UserException.class);
+
+        then(clothesRepository).should(never()).save(any());
+        then(imageService).should(never()).uploadImage(any());
     }
 
 
@@ -281,4 +354,75 @@ class ClothesServiceTest {
         )).isInstanceOf(IllegalArgumentException.class);
     }
 
+    @DisplayName("비어 있는 이미지 파일은 업로드되지 않는다.")
+    @Test
+    void image_is_empty_then_not_uploaded() {
+        //given
+        MultipartFile emptyImage = mock(MultipartFile.class);
+        given(emptyImage.isEmpty()).willReturn(true);
+
+        ClothesAttributeDto attributeDto = new ClothesAttributeDto(definitionId, "화이트");
+        ClothesCreateRequest request = new ClothesCreateRequest(
+                ownerId,
+                "여름 셔츠",
+                ClothesType.TOP,
+                List.of(attributeDto)
+        );
+
+        given(userRepository.existsById(ownerId)).willReturn(true);
+        given(definitionRepository.findById(definitionId)).willReturn(Optional.of(definition));
+        given(clothesMapper.toDto(any())).willReturn(clothesDto);
+
+        //when
+        ClothesDto result = clothesService.create(request, emptyImage);
+
+        //then
+        assertThat(result).isEqualTo(clothesDto);
+        then(imageService).should(never()).uploadImage(any());
+    }
+
+    @DisplayName("옷 이름이 null이면 이름 변경은 수행되지 않는다.")
+    @Test
+    void update_name_should_be_skipped_if_null_or_blank() {
+        Clothes clothes = mock(Clothes.class);
+
+        ClothesService service = new ClothesService(
+                clothesRepository, userRepository, definitionRepository, clothesMapper, imageService);
+
+        //when
+        ReflectionTestUtils.invokeMethod(service, "updateNameAndType", clothes, null, ClothesType.TOP);
+
+        //then
+        then(clothes).should(never()).updateName(any());
+    }
+
+    @DisplayName("옷 이름이 공백이면 이름 변경은 수행되지 않는다.")
+    @Test
+    void update_name_should_be_skipped_if_blank() {
+        Clothes clothes = mock(Clothes.class);
+
+        ClothesService service = new ClothesService(
+                clothesRepository, userRepository, definitionRepository, clothesMapper, imageService);
+
+        //when
+        ReflectionTestUtils.invokeMethod(service, "updateNameAndType", clothes, "   ", ClothesType.TOP);
+
+        //then
+        then(clothes).should(never()).updateName(any());
+    }
+
+    @DisplayName("의상 타입이 null이면 타입 변경은 수행되지 않는다.")
+    @Test
+    void update_type_should_be_skipped_if_null() {
+        Clothes clothes = mock(Clothes.class);
+
+        ClothesService service = new ClothesService(
+                clothesRepository, userRepository, definitionRepository, clothesMapper, imageService);
+
+        //when
+        ReflectionTestUtils.invokeMethod(service, "updateNameAndType", clothes, "새 이름", null);
+
+        //then
+        then(clothes).should(never()).updateType(any());
+    }
 }
