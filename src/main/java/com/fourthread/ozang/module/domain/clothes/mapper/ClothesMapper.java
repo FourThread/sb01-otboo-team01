@@ -15,7 +15,7 @@ public class ClothesMapper {
                 clothes.getId(),
                 clothes.getOwnerId(),
                 clothes.getName(),
-                null, //TODO 이미지 처리
+                clothes.getImageUrl(),
                 clothes.getType(),
                 clothes.getAttributes().stream()
                         .map(this::toAttributeWithDefDto)

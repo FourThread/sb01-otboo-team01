@@ -50,25 +50,25 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         JwtTokenResponse jwtSession = jwtService.registerJwtToken(payloadDto);
         log.info("[OAuth2SuccessHandler] 새로운 Access Token을 발급합니다");
 
-        String refreshToken = jwtSession.refreshToken();
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/auth");
-        response.addCookie(refreshTokenCookie);
+    String refreshToken = jwtSession.refreshToken();
+    Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+    refreshTokenCookie.setHttpOnly(true);
+    refreshTokenCookie.setPath("/api/auth");
+    response.addCookie(refreshTokenCookie);
 
-        // 성공 메시지와 함께 홈 화면으로 리다이렉트
-        String redirectUrl = "/?success=oauth_login&message=" + java.net.URLEncoder.encode("소셜 로그인에 성공했습니다!", "UTF-8");
-        response.sendRedirect(redirectUrl);
-    }
+    // 성공 메시지와 함께 홈 화면으로 리다이렉트
+    String redirectUrl = "/?success=oauth_login&message=" + java.net.URLEncoder.encode("소셜 로그인에 성공했습니다!", "UTF-8");
+    response.sendRedirect(redirectUrl);
+  }
 
-    private String extractEmail(Map<String, Object> attributes) {
-        if (attributes.get("kakao_account") instanceof Map<?, ?> kakaoAccount) {
-            Object email = kakaoAccount.get("email");
-            if (email instanceof String e) return e;
-        }
-        if (attributes.containsKey("email")) {
-            return (String) attributes.get("email");
-        }
-        return "unknown@example.com";
+  private String extractEmail(Map<String, Object> attributes) {
+    if (attributes.get("kakao_account") instanceof Map<?, ?> kakaoAccount) {
+      Object email = kakaoAccount.get("email");
+      if (email instanceof String e) return e;
     }
+    if (attributes.containsKey("email")) {
+      return (String) attributes.get("email");
+    }
+    return "unknown@example.com";
+  }
 }

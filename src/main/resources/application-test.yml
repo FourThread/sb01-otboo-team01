@@ -35,8 +35,8 @@ logging:
 
 weather:
   api:
-    key:  ${WEATHER_API_KEY}
-    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    key: test-weather-key
+    base-url: http://test-weather-api.com
     nowcast:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
@@ -44,8 +44,18 @@ weather:
 
 kakao:
   api:
-    key: ${KAKAO_API_KEY}
+    key: test-kakao-key
     url: https://dapi.kakao.com
+
+jwt:
+  secret: test-jwt-secret-key-for-testing-only
+  access-token-expiration-seconds: 600
+  refresh-token-expiration-seconds: 86400
+
+admin:
+  username: test-admin
+  password: test-password
+  email: test-admin@test.com
 
 batch:
   weather:
@@ -55,3 +65,27 @@ batch:
       enabled: false
     token-cleanup:
       enabled: false
+
+cloud:
+  aws:
+    credentials:
+      access-key: test-access-key
+      secret-key: test-secret-key
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: test-bucket
+    stack:
+      auto: false
+
+# 테스트용 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: test/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
+    profiles:
+      path: test/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 10485760  # 10MB
