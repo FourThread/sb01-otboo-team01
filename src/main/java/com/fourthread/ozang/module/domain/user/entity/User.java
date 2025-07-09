@@ -103,4 +103,19 @@ public class User extends BaseUpdatableEntity {
       this.linkedOAuthProviders.add(provider);
     }
   }
+
+  /**
+   * =============== 새로운 필드 추가 ===============
+   * 날씨 알림 활성화 여부
+   */
+  @Column(name = "weather_alert_enabled", nullable = false)
+  private boolean weatherAlertEnabled = true;
+
+  public boolean isWeatherAlertEnabled() {
+    return weatherAlertEnabled;
+  }
+
+  public void setWeatherAlertEnabled(boolean weatherAlertEnabled) {
+    this.weatherAlertEnabled = weatherAlertEnabled;
+  }
 }

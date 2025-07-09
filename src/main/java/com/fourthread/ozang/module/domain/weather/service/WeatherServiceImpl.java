@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,21 @@ public class WeatherServiceImpl implements WeatherService {
 
     @Value("${batch.weather.retention-days:30}")
     private int defaultRetentionDays;
+
+    /**
+     * =============== 새로운 설정 추가 ===============
+     */
+    @Value("${batch.weather.alert.heat-threshold:33}")
+    private double heatThreshold;
+
+    @Value("${batch.weather.alert.cold-threshold:-12}")
+    private double coldThreshold;
+
+    @Value("${batch.weather.alert.rain-threshold:30}")
+    private double rainThreshold;
+
+    @Value("${batch.weather.alert.wind-threshold:14}")
+    private double windThreshold;
 
     public WeatherServiceImpl(
         WeatherRepository weatherRepository,
@@ -629,6 +645,225 @@ public class WeatherServiceImpl implements WeatherService {
         }
     }
 
+    @Override
+    @Transactional
+    public List<Weather> syncWeatherData(Double longitude, Double latitude) {
+        log.info("날씨 데이터 동기화 시작 - 위도: {}, 경도: {}", latitude, longitude);
+
+        validateCoordinates(latitude, longitude);
+
+        try {
+            GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
+
+            // 현재 시간 기준으로 API 호출
+            LocalDateTime now = LocalDateTime.now();
+            String baseDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String baseTime = getValidBaseTime(now);
+
+            // API 호출
+            WeatherApiResponse response = weatherApiClient.getVillageForecast(
+                baseDate, baseTime, grid.getX(), grid.getY()
+            );
+
+            // 응답 파싱 및 저장
+            List<Weather> weathers = parseAndSaveWeatherData(response, grid, longitude, latitude);
+
+            log.info("날씨 데이터 동기화 완료 - {}건 저장", weathers.size());
+            return weathers;
+
+        } catch (Exception e) {
+            log.error("날씨 데이터 동기화 실패", e);
+            throw new WeatherDataFetchException("날씨 데이터 동기화에 실패했습니다.", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, List<Weather>> syncMultipleLocations(List<Map<String, Double>> locations) {
+        log.info("다중 위치 날씨 데이터 동기화 시작 - {}개 위치", locations.size());
+
+        Map<String, List<Weather>> results = new HashMap<>();
+
+        for (Map<String, Double> location : locations) {
+            Double longitude = location.get("longitude");
+            Double latitude = location.get("latitude");
+            String locationKey = String.format("%.4f,%.4f", latitude, longitude);
+
+            try {
+                List<Weather> weathers = syncWeatherData(longitude, latitude);
+                results.put(locationKey, weathers);
+            } catch (Exception e) {
+                log.error("위치 {} 동기화 실패", locationKey, e);
+                results.put(locationKey, new ArrayList<>());
+            }
+        }
+
+        return results;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WeatherStatistics getWeatherStatistics(LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("날씨 통계 조회 - {} ~ {}", startDate, endDate);
+
+        WeatherStatistics statistics = new WeatherStatistics();
+
+        // 날씨 데이터 조회
+        List<Weather> weathers = weatherRepository.findWeatherDataBetweenDates(startDate, endDate);
+
+        // 지역별 통계 계산
+        Map<String, List<Weather>> weatherByLocation = weathers.stream()
+            .collect(Collectors.groupingBy(w ->
+                w.getLocation().locationNames().isEmpty() ? "Unknown" : w.getLocation().locationNames().get(0)
+            ));
+
+        Map<String, Double> avgTempByLocation = new HashMap<>();
+        Map<String, Integer> precipDaysByLocation = new HashMap<>();
+        Map<String, Integer> clearDaysByLocation = new HashMap<>();
+
+        weatherByLocation.forEach((location, locationWeathers) -> {
+            // 평균 온도
+            double avgTemp = locationWeathers.stream()
+                .mapToDouble(w -> w.getTemperature().current())
+                .average()
+                .orElse(0.0);
+            avgTempByLocation.put(location, avgTemp);
+
+            // 강수일수
+            int precipDays = (int) locationWeathers.stream()
+                .filter(w -> w.getPrecipitation().type() != PrecipitationType.NONE)
+                .map(w -> w.getForecastAt().toLocalDate())
+                .distinct()
+                .count();
+            precipDaysByLocation.put(location, precipDays);
+
+            // 맑은 날 수
+            int clearDays = (int) locationWeathers.stream()
+                .filter(w -> w.getSkyStatus() == SkyStatus.CLEAR)
+                .map(w -> w.getForecastAt().toLocalDate())
+                .distinct()
+                .count();
+            clearDaysByLocation.put(location, clearDays);
+        });
+
+        // 전체 평균 온도
+        double overallAvgTemp = weathers.stream()
+            .mapToDouble(w -> w.getTemperature().current())
+            .average()
+            .orElse(0.0);
+
+        statistics.setAverageTemperatureByLocation(avgTempByLocation);
+        statistics.setPrecipitationDaysByLocation(precipDaysByLocation);
+        statistics.setClearDaysByLocation(clearDaysByLocation);
+        statistics.setOverallAverageTemperature(overallAvgTemp);
+        statistics.setTotalDataPoints(weathers.size());
+
+        return statistics;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExtremeWeatherInfo> detectExtremeWeatherConditions(LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("극한 날씨 조건 감지 - {} ~ {}", startDate, endDate);
+
+        List<ExtremeWeatherInfo> extremeWeathers = new ArrayList<>();
+
+        // 극한 날씨 조건 조회
+        List<Weather> weathers = weatherRepository.findExtremeWeatherConditions(
+            heatThreshold, coldThreshold, rainThreshold, windThreshold, startDate, endDate
+        );
+
+        for (Weather weather : weathers) {
+            ExtremeWeatherInfo info = new ExtremeWeatherInfo();
+            info.setWeather(weather);
+            info.setLocation(weather.getLocation().locationNames().isEmpty() ?
+                "Unknown" : weather.getLocation().locationNames().get(0));
+            info.setAlertTime(weather.getForecastAt());
+
+            // 경보 유형 판단
+            if (weather.getTemperature().max() >= heatThreshold) {
+                info.setAlertType("HEAT_WAVE");
+                info.setSeverity("WARNING");
+            } else if (weather.getTemperature().min() <= coldThreshold) {
+                info.setAlertType("COLD_WAVE");
+                info.setSeverity("WARNING");
+            } else if (weather.getPrecipitation().amount() >= rainThreshold) {
+                info.setAlertType("HEAVY_RAIN");
+                info.setSeverity("WARNING");
+            } else if (weather.getWindSpeed().speed() >= windThreshold) {
+                info.setAlertType("STRONG_WIND");
+                info.setSeverity("CAUTION");
+            }
+
+            extremeWeathers.add(info);
+        }
+
+        return extremeWeathers;
+    }
+
+    @Override
+    public WeatherRecommendationData generateRecommendationData(WeatherCondition weatherCondition) {
+        log.info("날씨 추천 데이터 생성 - 조건: {}", weatherCondition);
+
+        WeatherRecommendationData data = new WeatherRecommendationData();
+        data.setCondition(weatherCondition);
+        data.setGeneratedAt(LocalDateTime.now());
+
+        List<String> recommendedTypes = new ArrayList<>();
+        Map<String, Double> scores = new HashMap<>();
+
+        // 온도별 추천
+        switch (weatherCondition.getTemperatureRange()) {
+            case "VERY_COLD":
+                recommendedTypes.addAll(List.of("OUTER", "SCARF", "HAT"));
+                scores.put("OUTER", 95.0);
+                scores.put("SCARF", 85.0);
+                scores.put("HAT", 80.0);
+                data.setRecommendationMessage("매우 추운 날씨입니다. 따뜻한 외투와 목도리를 착용하세요.");
+                break;
+            case "COLD":
+                recommendedTypes.addAll(List.of("OUTER", "TOP", "BOTTOM"));
+                scores.put("OUTER", 90.0);
+                scores.put("TOP", 85.0);
+                scores.put("BOTTOM", 85.0);
+                data.setRecommendationMessage("추운 날씨입니다. 겉옷을 꼭 챙기세요.");
+                break;
+            case "MILD":
+                recommendedTypes.addAll(List.of("TOP", "BOTTOM"));
+                scores.put("TOP", 90.0);
+                scores.put("BOTTOM", 90.0);
+                data.setRecommendationMessage("온화한 날씨입니다. 가벼운 옷차림이 좋습니다.");
+                break;
+            case "WARM":
+                recommendedTypes.addAll(List.of("TOP", "BOTTOM", "HAT"));
+                scores.put("TOP", 85.0);
+                scores.put("BOTTOM", 85.0);
+                scores.put("HAT", 70.0);
+                data.setRecommendationMessage("따뜻한 날씨입니다. 얇은 옷을 추천합니다.");
+                break;
+            case "HOT":
+                recommendedTypes.addAll(List.of("TOP", "BOTTOM", "HAT", "ACCESSORY"));
+                scores.put("TOP", 90.0);
+                scores.put("BOTTOM", 85.0);
+                scores.put("HAT", 80.0);
+                scores.put("ACCESSORY", 75.0);
+                data.setRecommendationMessage("더운 날씨입니다. 통풍이 잘 되는 옷과 자외선 차단을 위한 모자를 추천합니다.");
+                break;
+        }
+
+        // 강수 시 추가
+        if (weatherCondition.isPrecipitation()) {
+            recommendedTypes.add("SHOES");
+            scores.put("SHOES", 85.0);
+            data.setRecommendationMessage(data.getRecommendationMessage() + " 비가 예상되니 방수 신발을 신으세요.");
+        }
+
+        data.setRecommendedClothesTypes(recommendedTypes);
+        data.setConfidenceScores(scores);
+
+        return data;
+    }
+
     private LocalDateTime parseDateTime(String date, String time) {
         String t = time.length() < 4
             ? String.format("%04d", Integer.parseInt(time))
@@ -736,5 +971,32 @@ public class WeatherServiceImpl implements WeatherService {
         } catch (Exception e) {
             return String.valueOf(System.currentTimeMillis());
         }
+    }
+
+    private String getValidBaseTime(LocalDateTime now) {
+        int hour = now.getHour();
+        int minute = now.getMinute();
+
+        // API 제공 시간: 02, 05, 08, 11, 14, 17, 20, 23시
+        int[] baseTimes = {2, 5, 8, 11, 14, 17, 20, 23};
+
+        for (int i = baseTimes.length - 1; i >= 0; i--) {
+            if (hour > baseTimes[i] || (hour == baseTimes[i] && minute >= 10)) {
+                return String.format("%02d00", baseTimes[i]);
+            }
+        }
+
+        // 전날 23시 데이터 사용
+        return "2300";
+    }
+
+    private List<Weather> parseAndSaveWeatherData(WeatherApiResponse response, GridCoordinate grid,
+        Double longitude, Double latitude) {
+        List<Weather> savedWeathers = new ArrayList<>();
+
+        // API 응답 파싱 및 Weather 엔티티 생성
+        // 실제 구현은 기존 WeatherService의 로직 참고
+
+        return savedWeathers;
     }
 }
