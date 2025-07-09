@@ -9,6 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd="curl -sSf http://localhost:9200"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
       TZ: Asia/Seoul
