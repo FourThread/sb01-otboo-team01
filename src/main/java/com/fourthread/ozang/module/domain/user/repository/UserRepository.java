@@ -2,6 +2,8 @@ package com.fourthread.ozang.module.domain.user.repository;
 
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.custom.UserCustomRepository;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, UserCustomRep
   boolean existsByName(String username);
 
   Optional<User> findByName(String name);
+
+  List<User> findAllByIdIn(Collection<UUID> ids);
 }

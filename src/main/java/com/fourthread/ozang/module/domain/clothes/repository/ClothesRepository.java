@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface ClothesRepository extends JpaRepository<Clothes, UUID>, ClothesRepositoryCustom {
 
   List<Clothes> findByIdIn(Collection<UUID> ids);
+
+  List<Clothes> findAllByIdIn(Collection<UUID> ids);
 }

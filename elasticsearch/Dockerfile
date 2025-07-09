@@ -1,0 +1,6 @@
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+
+RUN bin/elasticsearch-plugin install analysis-nori
+
+COPY hanhinsam-0.1.zip /tmp/hanhinsam-0.1.zip
+RUN bin/elasticsearch-plugin install --batch file:///tmp/hanhinsam-0.1.zip
