@@ -19,7 +19,7 @@ public class JwtBlacklist {
 
   public void put(String token, Instant expirationTime) {
     Duration ttl = Duration.between(Instant.now(), expirationTime);
-    redisDao.setValue("blackList:" + token, "", ttl);
+    redisDao.setValue("blackList:" + token, token, ttl);
     log.info("[JwtBlacklist] 블랙리스트 등록 - 만료 시간: {}", expirationTime);
   }
 
