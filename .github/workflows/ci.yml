@@ -66,7 +66,7 @@ jobs:
           echo "Java timezone: $JAVA_OPTS"
           echo "=========================="
           echo "Starting tests with JaCoCo coverage..."
-          ./gradlew clean test jacocoTestReport -Dspring.profiles.active=test
+          ./gradlew clean test jacocoTestReport
         env:
           TZ: Asia/Seoul
           JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Seoul

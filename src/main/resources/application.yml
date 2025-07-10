@@ -42,7 +42,7 @@ spring:
             user-name-attribute: id
 
   profiles:
-    active: dev
+    active: test
 
     # 스케줄러 설정
     scheduler:
