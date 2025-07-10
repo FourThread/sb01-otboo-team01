@@ -30,7 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
         "WEATHER_API_KEY=dummy-key",
         "KAKAO_API_KEY=dummy-key",
         "AWS_ACCESS_KEY=dummy-key",
-        "AWS_SECRET_KEY=dummy-key"
+        "AWS_SECRET_KEY=dummy-key",
+        "ADMIN_USERNAME=ddd",
+        "ADMIN_PASSWORD=dsadas",
+        "ADMIN_EMAIL=dsdads",
+        "JWT_SECRET=dasd"
     }
 )
 @AutoConfigureMockMvc
