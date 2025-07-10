@@ -40,7 +40,8 @@ public class BatchAdminController {
     private final JobLauncher asyncJobLauncher;
 
     private final Job weatherDataCleanupJob;
-    private final Job expiredTokenCleanupJob;
+
+    private final Job weatherCacheUpdateJob;
 
     private final JobExplorer jobExplorer;
 
@@ -64,248 +65,157 @@ public class BatchAdminController {
     }
 
     /**
-     * JWT 토큰 정리 배치 수동 실행
+     * 날씨 캐시 업데이트 배치 수동 실행
      */
-    @PostMapping("/token-cleanup")
-    public ResponseEntity<Map<String, Object>> runTokenCleanup(
+    @PostMapping("/weather-cache-update")
+    public ResponseEntity<Map<String, Object>> runWeatherCacheUpdate(
         @Parameter(description = "비동기 실행 여부", example = "true")
         @RequestParam(defaultValue = "true") boolean async
     ) {
-        log.info("[Admin] JWT 토큰 정리 배치 수동 실행 요청 - async: {}", async);
+        log.info("[Admin] 날씨 캐시 업데이트 배치 수동 실행 요청 - async: {}", async);
 
         return executeJob(
             async ? asyncJobLauncher : jobLauncher,
-            expiredTokenCleanupJob,
-            "manual_token_cleanup",
-            "JWT 토큰 정리 배치"
+            weatherCacheUpdateJob,
+            "manual_weather_cache_update",
+            "날씨 캐시 업데이트 배치"
         );
     }
 
-
     /**
-     * 배치 작업 실행 이력 조회 (도메인별)
+     * 배치 작업 실행 이력 조회
      */
-    @GetMapping("/history")
-    public ResponseEntity<Map<String, Object>> getBatchHistory(
+    @GetMapping("/executions")
+    public ResponseEntity<Map<String, Object>> getJobExecutions(
+        @Parameter(description = "작업 이름", example = "weatherDataCleanupJob")
+        @RequestParam(required = false) String jobName,
         @Parameter(description = "조회할 개수", example = "10")
-        @RequestParam(defaultValue = "10") int limit,
-        @Parameter(description = "조회할 작업 유형 (WEATHER, TOKEN, ALL)", example = "ALL")
-        @RequestParam(defaultValue = "ALL") String jobType
+        @RequestParam(defaultValue = "10") int count
     ) {
-        log.info("[Admin] 배치 작업 이력 조회 요청 - limit: {}, jobType: {}", limit, jobType);
+        Map<String, Object> response = new HashMap<>();
 
         try {
-            Map<String, Object> response = new HashMap<>();
+            if (jobName != null) {
+                List<JobExecution> executions = jobExplorer.findJobInstancesByJobName(jobName, 0, count)
+                    .stream()
+                    .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
+                    .toList();
 
-            // 도메인별 이력 조회
-            if ("ALL".equals(jobType) || "WEATHER".equals(jobType)) {
-                response.put("weatherCleanupHistory", getJobHistory("weatherDataCleanupJob", limit));
+                response.put("jobName", jobName);
+                response.put("executions", mapJobExecutions(executions));
+            } else {
+                // 모든 작업의 최근 실행 이력
+                Map<String, List<JobExecution>> allExecutions = new HashMap<>();
+
+                String[] jobNames = {"weatherDataCleanupJob", "expiredTokenCleanupJob", "weatherCacheUpdateJob"};
+                for (String name : jobNames) {
+                    List<JobExecution> executions = jobExplorer.findJobInstancesByJobName(name, 0, 5)
+                        .stream()
+                        .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
+                        .toList();
+                    allExecutions.put(name, executions);
+                }
+
+                response.put("allExecutions", allExecutions);
             }
 
-            if ("ALL".equals(jobType) || "TOKEN".equals(jobType)) {
-                response.put("tokenCleanupHistory", getJobHistory("expiredTokenCleanupJob", limit));
-            }
-
-            response.put("success", true);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("[Admin] 배치 작업 이력 조회 실패", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("배치 이력 조회 실패", e));
+            log.error("배치 작업 실행 이력 조회 실패", e);
+            response.put("error", "배치 작업 실행 이력 조회 실패: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
-     * 특정 배치 작업 상태 조회
+     * 특정 배치 작업 실행 상세 조회
      */
-    @GetMapping("/status/{jobExecutionId}")
-    public ResponseEntity<Map<String, Object>> getBatchStatus(
-        @Parameter(description = "Job Execution ID")
-        @PathVariable Long jobExecutionId
+    @GetMapping("/executions/{executionId}")
+    public ResponseEntity<Map<String, Object>> getJobExecutionDetail(
+        @PathVariable Long executionId
     ) {
-        log.info("[Admin] 배치 작업 상태 조회 요청 - Job Execution ID: {}", jobExecutionId);
+        Map<String, Object> response = new HashMap<>();
 
         try {
-            JobExecution jobExecution = jobExplorer.getJobExecution(jobExecutionId);
-
-            if (jobExecution == null) {
+            JobExecution execution = jobExplorer.getJobExecution(executionId);
+            if (execution == null) {
+                response.put("error", "실행 ID를 찾을 수 없습니다: " + executionId);
                 return ResponseEntity.notFound().build();
             }
 
-            Map<String, Object> response = jobExecutionToMap(jobExecution);
-            response.put("success", true);
+            response.put("executionId", execution.getId());
+            response.put("jobName", execution.getJobInstance().getJobName());
+            response.put("status", execution.getStatus().toString());
+            response.put("startTime", execution.getStartTime());
+            response.put("endTime", execution.getEndTime());
+            response.put("exitStatus", execution.getExitStatus().toString());
+
+            // ExecutionContext 정보
+            ExecutionContext context = execution.getExecutionContext();
+            Map<String, Object> contextData = new HashMap<>();
+            context.entrySet().forEach(entry ->
+                contextData.put(entry.getKey(), entry.getValue())
+            );
+            response.put("executionContext", contextData);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("[Admin] 배치 작업 상태 조회 실패", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("배치 상태 조회 실패", e));
+            log.error("배치 작업 실행 상세 조회 실패", e);
+            response.put("error", "배치 작업 실행 상세 조회 실패: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
-     * 실행 중인 배치 작업 조회
-     */
-    @GetMapping("/running")
-    public ResponseEntity<Map<String, Object>> getRunningJobs() {
-        log.info("[Admin] 실행 중인 배치 작업 조회 요청");
-
-        try {
-            Map<String, Object> response = new HashMap<>();
-
-            // 실행 중인 Job 조회
-            List<String> runningJobs = jobExplorer.getJobNames().stream()
-                .flatMap(jobName -> jobExplorer.getJobInstances(jobName, 0, 100).stream())
-                .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
-                .filter(execution -> execution.isRunning())
-                .map(execution -> execution.getJobInstance().getJobName())
-                .distinct()
-                .toList();
-
-            response.put("runningJobs", runningJobs);
-            response.put("count", runningJobs.size());
-            response.put("success", true);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("[Admin] 실행 중인 배치 작업 조회 실패", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("실행 중인 작업 조회 실패", e));
-        }
-    }
-
-    /**
-     * 배치 시스템 상태 요약
-     */
-    @GetMapping("/summary")
-    public ResponseEntity<Map<String, Object>> getBatchSummary() {
-        log.info("[Admin] 배치 시스템 상태 요약 조회 요청");
-
-        try {
-            Map<String, Object> response = new HashMap<>();
-
-            // 최근 실행 상태
-            Map<String, Object> weatherStatus = getLatestJobStatus("weatherDataCleanupJob");
-            Map<String, Object> tokenStatus = getLatestJobStatus("expiredTokenCleanupJob");
-
-            response.put("weatherCleanup", weatherStatus);
-            response.put("tokenCleanup", tokenStatus);
-            response.put("success", true);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("[Admin] 배치 시스템 상태 요약 조회 실패", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("상태 요약 조회 실패", e));
-        }
-    }
-
-
-    /**
-     * 배치 작업 실행 공통 메서드
+     * 공통 배치 실행 메서드
      */
     private ResponseEntity<Map<String, Object>> executeJob(
         JobLauncher launcher,
         Job job,
-        String jobType,
-        String description
+        String triggerType,
+        String jobDescription
     ) {
+        Map<String, Object> response = new HashMap<>();
+
         try {
             JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
-                .addString("jobType", jobType)
-                .addString("triggeredBy", "admin")
+                .addString("triggerType", triggerType)
                 .toJobParameters();
 
-            JobExecution jobExecution = launcher.run(job, jobParameters);
+            JobExecution execution = launcher.run(job, jobParameters);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", description + "가 시작되었습니다.");
-            response.put("jobId", jobExecution.getId());
-            response.put("jobName", jobExecution.getJobInstance().getJobName());
-            response.put("status", jobExecution.getStatus().toString());
+            response.put("jobName", job.getName());
+            response.put("jobDescription", jobDescription);
+            response.put("executionId", execution.getId());
+            response.put("status", execution.getStatus().toString());
+            response.put("message", jobDescription + " 시작됨");
 
-            log.info("[Admin] {} 시작 완료 - Job ID: {}", description, jobExecution.getId());
+            log.info("{} 시작 - 실행 ID: {}", jobDescription, execution.getId());
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("[Admin] {} 실행 실패", description, e);
-            return ResponseEntity.badRequest().body(createErrorResponse("배치 실행 실패", e));
+            log.error("{} 실행 실패", jobDescription, e);
+            response.put("error", jobDescription + " 실행 실패: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
-     * 특정 Job의 실행 이력 조회
+     * JobExecution 리스트를 Map으로 변환
      */
-    private List<Map<String, Object>> getJobHistory(String jobName, int limit) {
-        try {
-            return jobExplorer.getJobInstances(jobName, 0, limit)
-                .stream()
-                .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
-                .sorted((a, b) -> b.getStartTime().compareTo(a.getStartTime()))
-                .limit(limit)
-                .map(this::jobExecutionToMap)
-                .toList();
-        } catch (Exception e) {
-            log.warn("[Admin] Job 이력 조회 실패 - Job Name: {}", jobName, e);
-            return List.of();
-        }
-    }
-
-    /**
-     * 최신 Job 상태 조회
-     */
-    private Map<String, Object> getLatestJobStatus(String jobName) {
-        try {
-            return jobExplorer.getJobInstances(jobName, 0, 1)
-                .stream()
-                .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
-                .findFirst()
-                .map(this::jobExecutionToMap)
-                .orElse(Map.of("status", "NEVER_RUN"));
-        } catch (Exception e) {
-            log.warn("[Admin] 최신 Job 상태 조회 실패 - Job Name: {}", jobName, e);
-            return Map.of("status", "ERROR", "message", e.getMessage());
-        }
-    }
-
-    /**
-     * 에러 응답 생성 유틸리티
-     */
-    private Map<String, Object> createErrorResponse(String message, Exception e) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("success", false);
-        errorResponse.put("message", message + (e != null ? ": " + e.getMessage() : ""));
-        if (e != null) {
-            errorResponse.put("error", e.getClass().getSimpleName());
-        }
-        return errorResponse;
-    }
-
-    /**
-     * JobExecution을 Map으로 변환하는 유틸리티 메서드
-     */
-    private Map<String, Object> jobExecutionToMap(JobExecution jobExecution) {
-        Map<String, Object> jobInfo = new HashMap<>();
-        jobInfo.put("jobExecutionId", jobExecution.getId());
-        jobInfo.put("jobName", jobExecution.getJobInstance().getJobName());
-        jobInfo.put("status", jobExecution.getStatus().toString());
-        jobInfo.put("startTime", jobExecution.getStartTime());
-        jobInfo.put("endTime", jobExecution.getEndTime());
-        // 실행 결과 정보
-        ExecutionContext executionContext = jobExecution.getExecutionContext();
-        Map<String, Object> results = new HashMap<>();
-
-        if (executionContext.containsKey("deletedWeatherCount")) {
-            results.put("deletedWeatherCount", executionContext.getInt("deletedWeatherCount"));
-        }
-        if (executionContext.containsKey("deletedTokenCount")) {
-            results.put("deletedTokenCount", executionContext.getInt("deletedTokenCount"));
-        }
-
-        jobInfo.put("results", results);
-        return jobInfo;
+    private List<Map<String, Object>> mapJobExecutions(List<JobExecution> executions) {
+        return executions.stream().map(execution -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("executionId", execution.getId());
+            map.put("status", execution.getStatus().toString());
+            map.put("startTime", execution.getStartTime());
+            map.put("endTime", execution.getEndTime());
+            map.put("exitStatus", execution.getExitStatus().toString());
+            return map;
+        }).toList();
     }
 }
