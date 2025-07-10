@@ -5,8 +5,10 @@ import com.fourthread.ozang.module.domain.user.repository.custom.UserCustomRepos
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, UUID>, UserCustomRepository {
 
@@ -19,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, UserCustomRep
   Optional<User> findByName(String name);
 
   List<User> findAllByIdIn(Collection<UUID> ids);
+  
+  @Query("SELECT u.id FROM User u")
+  Set<UUID> findAllUserIds();
 }

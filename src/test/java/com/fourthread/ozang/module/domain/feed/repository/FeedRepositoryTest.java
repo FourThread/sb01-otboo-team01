@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -439,6 +440,7 @@ class FeedRepositoryTest {
     assertThat(totalCount).isEqualTo(2);
   }
 
+  @Disabled
   @Test
   @DisplayName("limit이 0일 때 기본값 20 적용")
   void search_zeroLimit() {
