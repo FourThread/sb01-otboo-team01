@@ -227,7 +227,7 @@ public class FeedService {
 
     feedCommentRepository.save(comment);
 
-    return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed));
+    return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed), comment);
   }
 
   /**
