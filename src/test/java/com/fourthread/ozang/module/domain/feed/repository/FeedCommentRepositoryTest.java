@@ -34,17 +34,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+@org.springframework.context.annotation.Profile("test")
 @SpringBootTest
 @Transactional
-@TestPropertySource(properties = {
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "ADMIN_USERNAME=test-admin",
-    "ADMIN_EMAIL=test-admin@mail.com",
-    "ADMIN_PASSWORD=test-pass",
-    "JWT_SECRET=d12d12d21d21d12d2",
-    "KAKAO_API_KEY=test",
-    "WEATHER_API_KEY=dwqqdd11"
-})
 class FeedCommentRepositoryTest {
 
   @Autowired
