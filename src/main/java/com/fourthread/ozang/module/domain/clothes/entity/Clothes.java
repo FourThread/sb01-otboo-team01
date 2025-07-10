@@ -15,6 +15,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @AllArgsConstructor
+@Table(name = "clothes")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Clothes extends BaseUpdatableEntity {
     
