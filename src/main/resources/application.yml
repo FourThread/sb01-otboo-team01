@@ -81,7 +81,7 @@ batch:
       token-cleanup:
         enabled: true  # JWT 토큰 정리 스케줄러 활성화
 
-# Spring Batch 기본 설정
+  # Spring Batch 기본 설정
   batch:
     job:
       enabled: false #애플리케이션 시작 시 배치 작업 자동 실행 여부
@@ -171,4 +171,3 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
-
