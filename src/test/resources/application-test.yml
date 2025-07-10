@@ -10,6 +10,7 @@ spring:
   # Elasticsearch 완전 비활성화
   elasticsearch:
     uris: http://localhost:9200
+    enable: false
   data:
     elasticsearch:
       repositories:
