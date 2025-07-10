@@ -3,7 +3,9 @@ package com.fourthread.ozang.module.domain.weather.dto;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record WeatherDto(
     UUID id,
     LocalDateTime forecastedAt, //예보된 시간
@@ -14,4 +16,5 @@ public record WeatherDto(
     HumidityDto humidity,
     TemperatureDto temperature,
     WindSpeedDto windSpeed
-) {}
+) {
+}
