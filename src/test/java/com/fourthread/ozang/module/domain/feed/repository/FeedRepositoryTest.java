@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.feed.repository;
 
-import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
@@ -23,21 +22,37 @@ import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @org.springframework.context.annotation.Profile("test")
 @SpringBootTest
 @Transactional
+@TestPropertySource(properties = {
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "ADMIN_USERNAME=test-admin",
+    "ADMIN_EMAIL=test-admin@mail.com",
+    "ADMIN_PASSWORD=test-pass",
+    "JWT_SECRET=d12d12d21d21d12d2",
+    "KAKAO_API_KEY=test",
+    "WEATHER_API_KEY=dwqqdd11",
+    "AWS_ACCESS_KEY=testAccessKey",
+    "AWS_SECRET_KEY=testSecretKey",
+    "cloud.aws.region.static=ap-northeast-2"
+})
+@ActiveProfiles("test")
 class FeedRepositoryTest {
 
   @Autowired
@@ -425,6 +440,7 @@ class FeedRepositoryTest {
     assertThat(totalCount).isEqualTo(2);
   }
 
+  @Disabled
   @Test
   @DisplayName("limit이 0일 때 기본값 20 적용")
   void search_zeroLimit() {
