@@ -1,0 +1,162 @@
+{
+  "index": {
+    "number_of_replicas": 0,
+    "max_ngram_diff": 10
+  },
+  "analysis": {
+    "analyzer": {
+      "kr_analyzer": {
+        "type": "custom",
+        "tokenizer": "nori_tokenizer",
+        "char_filter": [],
+        "filter": [
+          "nori_part_of_speech",
+          "nori_readingform",
+          "lowercase",
+          "stop",
+          "stemmer"
+        ]
+      },
+      "ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "optimized_ngram_tokenizer",
+        "filter": [
+          "lowercase"
+        ]
+      },
+      "jamo_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_jamo"
+        ]
+      },
+      "chosung_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_chosung"
+        ]
+      },
+      "hantoeng_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_hantoeng"
+        ]
+      },
+      "engtohan_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_engtohan"
+        ]
+      },
+      "chosung_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_chosung",
+          "optimized_chosung_ngram_filter"
+        ]
+      },
+      "jamo_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_jamo",
+          "optimized_jamo_ngram_filter"
+        ]
+      },
+      "engtohan_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_engtohan",
+          "optimized_engtohan_ngram_filter"
+        ]
+      },
+      "hantoeng_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_hantoeng",
+          "optimized_hantoeng_ngram_filter"
+        ]
+      },
+      "chosung_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_chosung"
+        ]
+      },
+      "engtohan_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_engtohan"
+        ]
+      },
+      "hantoeng_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_hantoeng"
+        ]
+      },
+      "jamo_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "hanhinsam_jamo"
+        ]
+      }
+    },
+    "filter": {
+      "optimized_chosung_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 4,
+        "side": "front"
+      },
+      "optimized_jamo_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 4,
+        "side": "front"
+      },
+      "optimized_hantoeng_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 4,
+        "side": "front"
+      },
+      "optimized_engtohan_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 4,
+        "side": "front"
+      }
+    },
+    "tokenizer": {
+      "optimized_ngram_tokenizer": {
+        "type": "ngram",
+        "min_gram": 2,
+        "max_gram": 4
+      }
+    }
+  }
+}

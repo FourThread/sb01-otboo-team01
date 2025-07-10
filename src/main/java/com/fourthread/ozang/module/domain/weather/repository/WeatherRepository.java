@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.weather.repository;
 
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,4 +52,6 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate
     );
+
+  List<Weather> findALlByIdIn(Collection<UUID> ids);
 }

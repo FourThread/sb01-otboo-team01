@@ -18,7 +18,9 @@ import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequ
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
 import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
@@ -41,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -52,6 +55,7 @@ public class FeedService {
   private final FeedLikeRepository feedLikeRepository;
   private final FeedCommentRepository feedCommentRepository;
   private final FeedClothesRepository feedClothesRepository;
+  private final FeedSearchService feedSearchService;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
@@ -80,7 +84,10 @@ public class FeedService {
         .likeCount(new AtomicInteger(0))
         .commentCount(new AtomicInteger(0))
         .build();
-    feedRepository.save(feed);
+
+    Feed savedFeed = feedRepository.save(feed);
+    saveFeedClothes(ootds, savedFeed);
+    feedSearchService.create(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user, weather, ootds);
@@ -94,6 +101,16 @@ public class FeedService {
   * @Description: 피드 목록 조회
   **/
   public FeedData retrieveFeed(FeedPaginationRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    return (StringUtils.hasText(request.keywordLike())
+        ? feedSearchService.elasticSearch(request)
+        : defaultPaging(request));
+  }
+
+  private FeedData defaultPaging(FeedPaginationRequest request) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
@@ -309,5 +326,16 @@ public class FeedService {
             getClothesAttributeWithDefDtos(feedClothes.getClothes())
         ))
         .toList();
+  }
+
+  private void saveFeedClothes(List<OotdDto> ootds, Feed feed) {
+    List<UUID> clothesIds = ootds.stream()
+        .map(OotdDto::clothesId)
+        .toList();
+    List<Clothes> clothes = clothesRepository.findAllByIdIn(clothesIds);
+    clothes.forEach(cloth -> {
+      FeedClothes feedClothes = new FeedClothes(cloth, feed);
+      feedClothesRepository.saveAndFlush(feedClothes);
+    });
   }
 }

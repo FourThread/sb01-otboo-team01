@@ -6,9 +6,11 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-    
+
+  # Elasticsearch 완전 비활성화
   elasticsearch:
     uris: http://localhost:9200
+    enable: false
   data:
     elasticsearch:
       repositories:
@@ -17,12 +19,13 @@ spring:
       host: localhost
       port: 6379
       database: 0
-    
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
 
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
@@ -43,12 +46,14 @@ spring:
 
 logging:
   level:
-    root: info
+    root: warn
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql: trace
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: DEBUG
-    com.discodeit: debug
+    com.fourthread.ozang: debug
+    org.springframework.data.elasticsearch: off
+    org.elasticsearch: off
 
 weather:
   api:
