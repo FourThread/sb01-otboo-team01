@@ -80,11 +80,10 @@ public class NotificationService {
     }
 
 
-
     @Transactional
     public void create(UUID receiverId, String title, String content,
-                       NotificationLevel level, UUID targetId) {
-        log.debug("새 알림 생성 시작: receiverId={}, type={}, targetId={}", receiverId, level, targetId);
+                       NotificationLevel level) {
+        log.debug("새 알림 생성 시작: receiverId={}, type={}", receiverId, level);
 
         Notification notification = new Notification(
                 receiverId,
@@ -98,14 +97,14 @@ public class NotificationService {
         NotificationDto dto = notificationMapper.toDto(notification);
         eventPublisher.publishEvent(new NotificationCreatedEvent(dto));
 
-        log.info("새 알림 생성 완료: id={}, receiverId={}, targetId={}",
-                notification.getId(), receiverId, targetId);
+        log.info("새 알림 생성 완료: id={}, receiverId={}",
+                notification.getId(), receiverId);
     }
 
     @Transactional
     public void createAll(Set<UUID> receiverIds, String title, String content,
-                          NotificationLevel level, UUID targetId) {
-        log.debug("여러 알림 생성 시작: receiverIds={}, type={}, targetId={}", receiverIds, level, targetId);
+                          NotificationLevel level) {
+        log.debug("여러 알림 생성 시작: receiverIds={}, type={}", receiverIds, level);
 
         List<Notification> notifications = receiverIds.stream()
                 .map(receiverId -> new Notification(
@@ -120,6 +119,6 @@ public class NotificationService {
         List<NotificationDto> dtos = notificationMapper.toDtoList(notifications);
         eventPublisher.publishEvent(new MultipleNotificationCreatedEvent(dtos));
 
-        log.info("여러 알림 생성 완료: count={}, targetId={}", dtos.size(), targetId);
+        log.info("여러 알림 생성 완료: count={}", dtos.size());
     }
 }
