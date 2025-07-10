@@ -31,6 +31,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
     "AWS_SECRET_KEY=testSecretKey",
     "cloud.aws.region.static=ap-northeast-2"
 })
+@ActiveProfiles("test")
 class FeedCommentRepositoryTest {
 
   @Autowired
