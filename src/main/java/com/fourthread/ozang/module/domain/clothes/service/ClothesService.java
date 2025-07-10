@@ -14,6 +14,8 @@ import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDef
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
 import com.fourthread.ozang.module.domain.storage.ImageService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import com.fourthread.ozang.module.domain.user.exception.UserException;
+import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
 @Service
 public class ClothesService {
 
+    private final UserRepository userRepository;
     private final ClothesRepository clothesRepository;
     private final ClothesAttributeDefinitionRepository definitionRepository;
     private final ClothesMapper clothesMapper;
@@ -36,11 +39,13 @@ public class ClothesService {
 
     public ClothesService(
         ClothesRepository clothesRepository,
+        UserRepository userRepository,
         ClothesAttributeDefinitionRepository definitionRepository,
         ClothesMapper clothesMapper,
         @Qualifier("clothesImageService") ImageService imageService
     ) {
         this.clothesRepository = clothesRepository;
+        this.userRepository = userRepository;
         this.definitionRepository = definitionRepository;
         this.clothesMapper = clothesMapper;
         this.imageService = imageService;
@@ -49,7 +54,9 @@ public class ClothesService {
     @Transactional
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
 
-        //TODO ownerId 존재 검증
+        if (!userRepository.existsById(request.ownerId())) {
+            throw new UserException(USER_NOT_FOUND, this.getClass().getSimpleName(), USER_NOT_FOUND.getMessage());
+        }
 
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
@@ -78,9 +85,9 @@ public class ClothesService {
         Clothes clothes = clothesRepository.findById(clothesId)
                 .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
 
-        clothes.updateNameAndType(request.name(), request.type());
-        clothes.clearAttributes();
+        updateNameAndType(clothes, request.name(), request.type());
 
+        clothes.clearAttributes();
         addAttributesToClothes(clothes, request.attributes());
 
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -100,6 +107,16 @@ public class ClothesService {
         }
 
         return clothesMapper.toDto(clothes);
+    }
+
+    private void updateNameAndType(Clothes clothes, String name, ClothesType type) {
+        if (name != null && !name.isBlank()) {
+            clothes.updateName(name);
+        }
+
+        if (type != null) {
+            clothes.updateType(type);
+        }
     }
 
     private void addAttributesToClothes(Clothes clothes, List<ClothesAttributeDto> attributeDtos) {
