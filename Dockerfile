@@ -23,8 +23,6 @@ RUN apk add --no-cache tzdata && \
     echo "${TZ}" > /etc/timezone && \
     apk del tzdata
 
-RUN mkdir -p /var/log/monew/archive && chmod 755 /var/log/monew/archive
-
 COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 EXPOSE 80
 
