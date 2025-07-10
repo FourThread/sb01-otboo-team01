@@ -5,10 +5,12 @@ import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeD
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
 import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
 import com.fourthread.ozang.module.domain.clothes.service.ClothesAttributeDefinitionService;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +27,11 @@ public class ClothesAttributeDefinitionController {
 
     @PostMapping
     public ResponseEntity<ClothesAttributeDefDto> create(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody @Validated ClothesAttributeDefCreateRequest request) {
 
-        ClothesAttributeDefDto response = definitionService.create(request);
+        UUID userId = userDetails.getPayloadDto().userId();
+        ClothesAttributeDefDto response = definitionService.create(request, userId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -35,10 +39,12 @@ public class ClothesAttributeDefinitionController {
 
     @PatchMapping("/{definitionId}")
     public ResponseEntity<ClothesAttributeDefDto> update(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable @NotNull UUID definitionId,
             @RequestBody @Validated ClothesAttributeDefUpdateRequest request) {
 
-        ClothesAttributeDefDto response = definitionService.update(definitionId, request);
+        UUID userId = userDetails.getPayloadDto().userId();
+        ClothesAttributeDefDto response = definitionService.update(definitionId, request, userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
