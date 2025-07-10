@@ -1,18 +1,3 @@
-drop table clothes_attributes cascade;
-drop table clothes_attribute_definition cascade;
-drop table direct_messages cascade;
-drop table feed_clothes cascade;
-drop table clothes cascade;
-drop table feed_comments cascade;
-drop table feed_likes cascade;
-drop table feeds cascade;
-drop table weathers cascade;
-drop table profile_location_names cascade;
-drop table profiles cascade;
-drop table user_oauth_providers cascade;
-drop table notifications cascade;
-drop table users cascade;
-
 -- 사용자 테이블
 CREATE TABLE users (
                        id UUID NOT NULL,
@@ -227,13 +212,3 @@ CREATE TABLE notifications (
 -- CREATE INDEX idx_direct_messages_sender_receiver ON direct_messages(sender_id, receiver_id);
 -- CREATE INDEX idx_weathers_forecast_at ON weathers(forecast_at);
 -- CREATE INDEX idx_notifications_receiver_id ON notifications(receiver_id);
-
-
---  주요 변경 사항 요약
--- 1. 테이블명 정규화: weather → weathers, feed → feeds, profile → profiles
--- 2. 외래키 참조 수정: 올바른 테이블명으로 참조하도록 수정
--- 3. 제약조건명 정규화: 일관된 네이밍 컨벤션 적용
--- 4. 누락된 세미콜론 추가
--- 5. 누락된 notifications 테이블 추가
--- 6. 성능 최적화를 위한 인덱스 추가
--- 7. CASCADE 옵션 및 DEFAULT 값 명시적 추가
