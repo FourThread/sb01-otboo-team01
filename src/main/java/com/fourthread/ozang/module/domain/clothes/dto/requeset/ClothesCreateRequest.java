@@ -22,7 +22,6 @@ public record ClothesCreateRequest(
         ClothesType type,
 
         @NotNull(message = "속성 목록은 필수입니다.")
-        @Size(min = 1, message = "적어도 하나 이상의 속성이 필요합니다.")
         @Validated
         List<ClothesAttributeDto> attributes
 ) {

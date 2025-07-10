@@ -40,7 +40,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-
+@org.springframework.context.annotation.Profile("test")
 @Transactional
 @SpringBootTest(
     webEnvironment = WebEnvironment.RANDOM_PORT,

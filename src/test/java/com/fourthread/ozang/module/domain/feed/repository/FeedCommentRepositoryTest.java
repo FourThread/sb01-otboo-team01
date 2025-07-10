@@ -35,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+@org.springframework.context.annotation.Profile("test")
 @SpringBootTest
 @Transactional
 @TestPropertySource(properties = {
