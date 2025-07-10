@@ -7,6 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fourthread.ozang.module.domain.feed.controller.FeedController;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.type.Role;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -55,6 +58,13 @@ public class SecurityTest {
   private UserRepository userRepository;
   @MockitoBean
   private AuthenticationManager authenticationManager;
+
+  @MockitoBean
+  private FeedSearchService feedSearchService;
+  @MockitoBean
+  private FeedElasticsearchRepository feedElasticsearchRepository;
+  @MockitoBean
+  private FeedController feedController;
 
   @Test
   @DisplayName("[인증 실페] 인증된 사용자 없이 엔드포인트를 호출할 수 없습니다 - 401 Unauthorized 에러 발생")
