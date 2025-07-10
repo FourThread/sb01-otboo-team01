@@ -47,7 +47,16 @@ logging:
     org.springframework.batch: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
+    # ↓ 소켓 핸드셰이크·프레임 처리
+    org.springframework.web.socket: DEBUG
+    org.springframework.web.socket.server: DEBUG
+    org.springframework.web.socket.client: DEBUG
+    # ↓ STOMP 메시지 라우팅·브로커
+    org.springframework.messaging.simp: TRACE
+    org.springframework.web.socket.messaging: TRACE
+    org.springframework.messaging.support: TRACE
+    # ↓ SockJS fallback 사용 시
+    org.springframework.web.socket.sockjs: DEBUG
 cloud:
   aws:
     s3:

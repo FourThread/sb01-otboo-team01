@@ -11,6 +11,7 @@ import com.fourthread.ozang.module.domain.dm.entity.DirectMessage;
 import com.fourthread.ozang.module.domain.dm.repository.DirectMessageRepository;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -45,12 +46,26 @@ public class DirectMessageService {
     dmRepository.save(dm);
     log.info("DM 생성 완료: {}", dm.getId());
 
-    DirectMessageDto dmDto = new DirectMessageDto(sender.getId(), receiver.getId(),
-        request.content());
+    DirectMessageDto dmDto = getDirectMessageDto(sender, receiver, dm);
 
     messagingTemplate.convertAndSend(DirectMessageURI.SEND.getUri() + getDmKey(sender, receiver), dmDto);
     log.info("DM 전송: {}", dmDto);
 
+    return dmDto;
+  }
+
+  private DirectMessageDto getDirectMessageDto(User sender, User receiver, DirectMessage dm) {
+    UserSummary senderSummary = new UserSummary(
+        sender.getId(), sender.getName(), sender.getProfile().getProfileImageUrl());
+    UserSummary receiverSummary = new UserSummary(
+        receiver.getId(), receiver.getName(), receiver.getProfile().getProfileImageUrl());
+    DirectMessageDto dmDto = new DirectMessageDto(
+        dm.getId(),
+        dm.getCreatedAt(),
+        senderSummary,
+        receiverSummary,
+        dm.getContent()
+    );
     return dmDto;
   }
 
