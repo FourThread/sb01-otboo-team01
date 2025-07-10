@@ -16,7 +16,7 @@ public class RedisDao {
   }
 
   // 만료 시간이 있는 데이터 저장
-  public void setValues(String key, String value, Duration ttl) {
+  public void setValue(String key, String value, Duration ttl) {
     if (ttl != null && !ttl.isNegative() && !ttl.isZero()) {
       redisTemplate.opsForValue().set(key, value, ttl);
     } else {
