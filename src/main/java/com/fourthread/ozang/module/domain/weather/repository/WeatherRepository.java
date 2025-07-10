@@ -51,4 +51,50 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate
     );
+
+    /**
+     * 특정 위치와 예보 시간으로 최신 날씨 데이터 조회
+     */
+    @Query("""
+        SELECT w FROM Weather w
+        WHERE w.location.x = :gridX
+        AND w.location.y = :gridY
+        AND FUNCTION('DATE_FORMAT', w.forecastAt, '%Y%m%d') = :baseDate
+        AND FUNCTION('DATE_FORMAT', w.forecastAt, '%H%i') = :forecastTime
+        ORDER BY w.createdAt DESC
+        """)
+    Optional<Weather> findLatestByLocationAndForecastTime(
+        @Param("gridX") Integer gridX,
+        @Param("gridY") Integer gridY,
+        @Param("baseDate") String baseDate,
+        @Param("forecastTime") String forecastTime
+    );
+
+    /**
+     * 최근 조회된 지역들의 날씨 데이터 조회 (캐시 업데이트용)
+     */
+    @Query("""
+        SELECT DISTINCT w FROM Weather w
+        WHERE w.createdAt >= :cutoffDate
+        ORDER BY w.createdAt DESC
+        """)
+    List<Weather> findRecentlyAccessedLocations(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    /**
+     * 특정 Grid 좌표의 최신 날씨 데이터 조회
+     */
+    @Query("""
+        SELECT w FROM Weather w
+        WHERE w.location.x = :gridX
+        AND w.location.y = :gridY
+        AND w.createdAt >= :cutoffDate
+        ORDER BY w.forecastAt DESC
+        LIMIT 1
+        """)
+    Optional<Weather> findLatestByGridCoordinate(
+        @Param("gridX") Integer gridX,
+        @Param("gridY") Integer gridY,
+        @Param("cutoffDate") LocalDateTime cutoffDate
+    );
+
 }
