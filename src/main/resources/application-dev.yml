@@ -1,4 +1,10 @@
 batch:
+  jdbc:
+    initialize-schema: always
+    platform: postgresql
+    schema: classpath:org/springframework/batch/core/schema-postgresql.sql
+    job:
+      enabled: false
   weather:
     retention-days: 3  # 개발환경에서는 3일만 보관
   scheduler:
