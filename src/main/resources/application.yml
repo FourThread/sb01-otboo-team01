@@ -80,8 +80,12 @@ batch:
         enabled: true  # 날씨 데이터 정리 스케줄러 활성화
       token-cleanup:
         enabled: true  # JWT 토큰 정리 스케줄러 활성화
+      weather-cache:
+        enabled: true  # 날씨 캐시 업데이트 스케줄러 활성화
+        cron: "0 0 * * * ?"  # 매 시간 정각에 실행
+        warmup-cron: "0 30 5 * * ?"  # 매일 오전 5시 30분에 워밍업
 
-# Spring Batch 기본 설정
+  # Spring Batch 기본 설정
   batch:
     job:
       enabled: false #애플리케이션 시작 시 배치 작업 자동 실행 여부
@@ -105,6 +109,11 @@ weather:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
       url: ${weather.api.base-url}/getVilageFst
+  cache:
+    ttl: 3600  # 캐시 TTL (초) - 1시간
+    batch:
+      thread-pool-size: 5  # 배치 업데이트 시 사용할 스레드 풀 크기
+      recent-days: 7  # 최근 N일 동안 조회된 지역 캐싱
 
 kakao:
   api:
