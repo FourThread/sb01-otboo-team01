@@ -1,4 +1,9 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-public record FollowingFeedCreatedEvent() {
+import java.util.UUID;
+
+public record FollowingFeedCreatedEvent(
+        UUID userId,
+        String content
+) {
 }
