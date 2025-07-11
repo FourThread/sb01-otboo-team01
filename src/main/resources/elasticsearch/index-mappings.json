@@ -1,0 +1,73 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "feedId": {
+      "type": "keyword"
+    },
+    "authorId": {
+      "type": "keyword"
+    },
+    "weatherId": {
+      "type": "keyword"
+    },
+    "likeCount": {
+      "type": "long"
+    },
+    "commentCount": {
+      "type": "integer"
+    },
+    "createdAt": {
+      "type": "date",
+      "format": "yyyy-MM-dd'T'HH:mm:ss"
+    },
+    "clothesIds": {
+      "type": "keyword"
+    },
+    "skyStatus": {
+      "type": "keyword"
+    },
+    "precipitationType": {
+      "type": "keyword"
+    },
+    "content": {
+      "type": "text",
+      "analyzer": "kr_analyzer",
+      "copy_to": [
+        "content_jamo",
+        "content_chosung",
+        "content_hantoeng",
+        "content_engtohan"
+      ],
+      "fields": {
+        "ngram": {
+          "type": "text",
+          "analyzer": "ngram_analyzer"
+        }
+      }
+    },
+    "content_jamo": {
+      "type": "text",
+      "analyzer": "jamo_ngram_analyzer",
+      "search_analyzer": "jamo_search_analyzer"
+    },
+    "content_chosung": {
+      "type": "text",
+      "analyzer": "chosung_ngram_analyzer",
+      "search_analyzer": "chosung_search_analyzer"
+    },
+    "content_hantoeng": {
+      "type": "text",
+      "store": true,
+      "analyzer": "hantoeng_ngram_analyzer",
+      "search_analyzer": "hantoeng_search_analyzer"
+    },
+    "content_engtohan": {
+      "type": "text",
+      "store": true,
+      "analyzer": "engtohan_ngram_analyzer",
+      "search_analyzer": "engtohan_search_analyzer"
+    }
+  }
+}

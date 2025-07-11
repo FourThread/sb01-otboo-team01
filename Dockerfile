@@ -1,29 +1,29 @@
-FROM gradle:7.6.0-jdk17 AS builder
-
+FROM amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
+COPY gradlew .
+COPY gradle/ gradle/
 COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
-
-COPY gradlew ./
-RUN chmod +x ./gradlew
-
 RUN ./gradlew dependencies --no-daemon
 
-COPY src ./src
-
+COPY src/ src/
 RUN ./gradlew clean build -x test --no-daemon
 
-FROM eclipse-temurin:17-jdk-jammy
-
-ENV PROJECT_NAME=duckhu
-ENV PROJECT_VERSION=1.2-M8
-ENV JVM_OPTS=""
-
+FROM amazoncorretto:17-alpine
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
+ENV PROJECT_NAME=O-ZANG
+ARG VERSION=v1.0.0
+ENV PROJECT_VERSION=${VERSION}
+ENV TZ=Asia/Seoul
+ENV JAVA_OPTS="-Xmx768m -Xms512m -XX:MaxMetaspaceSize=256m -XX:MetaspaceSize=96m -XX:+UseG1GC -XX:+ClassUnloadingWithConcurrentMark -XX:MaxGCPauseMillis=200 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+UseCompressedOops -XX:+ExitOnOutOfMemoryError"
 
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    echo "${TZ}" > /etc/timezone && \
+    apk del tzdata
+
+COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 EXPOSE 80
 
-ENTRYPOINT ["sh","-c","java -Duser.timezone=Asia/Seoul $JVM_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS} -Duser.timezone=Asia/Seoul -jar app.jar --server.port=80 --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod}"]
