@@ -19,7 +19,7 @@ public interface UserService {
 
   UserDto createUser(UserCreateRequest request);
 
-  UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request);
+  UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request, UUID requesterId);
 
   void updateUserPassword(UUID userId,  ChangePasswordRequest request);
 
