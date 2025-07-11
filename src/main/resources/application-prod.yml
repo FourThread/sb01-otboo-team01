@@ -89,3 +89,17 @@ file:
 
 server:
   port: 80
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  server:
+    port: 80
