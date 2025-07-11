@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "clothes_attributes")
 public class ClothesAttribute extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

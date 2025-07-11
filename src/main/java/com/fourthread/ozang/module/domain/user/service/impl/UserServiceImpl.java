@@ -6,9 +6,12 @@ import com.fourthread.ozang.module.domain.notification.event.RoleChangedEvent;
 import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.ProfileUpdateRequest;
+import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
 import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
@@ -21,14 +24,11 @@ import com.fourthread.ozang.module.domain.user.mapper.ProfileMapper;
 import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
 import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.module.domain.user.service.MailService;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -150,9 +150,9 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new UserException(ErrorCode.PROFILE_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
 
-    if (profile.getLocation() != null && profile.getLocation().getLocationNames() != null) {
-      profile.getLocation().getLocationNames().size();
-    }
+//    if (profile.getLocation() != null && profile.getLocation().getLocationNames() != null) {
+//      profile.getLocation().getLocationNames().size();
+//    }
 
     return profileMapper.toDto(profile);
   }

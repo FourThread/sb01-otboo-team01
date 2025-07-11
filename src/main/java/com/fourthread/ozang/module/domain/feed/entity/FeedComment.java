@@ -7,6 +7,7 @@ import com.fourthread.ozang.module.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,7 @@ import org.hibernate.annotations.OnDelete;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Table(name = "feed_comments")
 public class FeedComment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
