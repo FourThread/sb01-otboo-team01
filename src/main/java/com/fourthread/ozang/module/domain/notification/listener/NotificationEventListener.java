@@ -100,7 +100,14 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FollowingFeedCreatedEvent event) {
+/*        UUID requesterId = event.userId();
 
+        notificationService.createAll(
+                null,
+                "%s님이 새로운 피드를 작성했어요.",
+                String.format(event.content()),
+                NotificationLevel.INFO
+        );*/
     }
 
     // 내가 팔로우 당함
