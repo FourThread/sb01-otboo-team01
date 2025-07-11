@@ -37,6 +37,7 @@ import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,9 @@ public class FeedService {
   private final FeedLikeRepository feedLikeRepository;
   private final FeedCommentRepository feedCommentRepository;
   private final FeedClothesRepository feedClothesRepository;
-  private final FeedSearchService feedSearchService;
+  /// Optional로 변경하여 Elasticsearch 비활성화 시 null 허용
+  private final Optional<FeedSearchService> feedSearchService;
+//  private final FeedSearchService feedSearchService;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
@@ -87,7 +90,14 @@ public class FeedService {
 
     Feed savedFeed = feedRepository.save(feed);
     saveFeedClothes(ootds, savedFeed);
-    feedSearchService.create(feed);
+    /// Elasticsearch 서비스가 존재할 때만 호출
+    feedSearchService.ifPresentOrElse(
+        service -> {
+          service.create(feed);
+          log.info("피드가 Elasticsearch에 저장되었습니다: feed id={}", feed.getId());
+        },
+        () -> log.info("Elasticsearch가 비활성화되어 있어 검색 인덱스에 저장하지 않습니다: feed id={}", feed.getId())
+    );
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user, weather, ootds);
@@ -105,9 +115,10 @@ public class FeedService {
       throw new IllegalArgumentException();
     }
 
-    return (StringUtils.hasText(request.keywordLike())
-        ? feedSearchService.elasticSearch(request)
-        : defaultPaging(request));
+    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
+    return (StringUtils.hasText(request.keywordLike()) && feedSearchService.isPresent())
+        ? feedSearchService.get().elasticSearch(request)
+        : defaultPaging(request);
   }
 
   private FeedData defaultPaging(FeedPaginationRequest request) {
