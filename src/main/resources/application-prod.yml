@@ -38,6 +38,14 @@ spring:
           max-idle: 4
           min-idle: 1
 
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
+    autoconfigure:
+      exclude:
+        - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+        - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+        - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+
 batch:
   weather:
     retention-days: 14
