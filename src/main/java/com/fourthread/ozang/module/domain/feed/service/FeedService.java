@@ -30,6 +30,8 @@ import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreatedEvent;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -41,6 +43,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -60,6 +63,7 @@ public class FeedService {
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
   private final FeedMapper feedMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * @methodName : register
@@ -89,6 +93,8 @@ public class FeedService {
     saveFeedClothes(ootds, savedFeed);
     feedSearchService.create(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
+
+    eventPublisher.publishEvent(new FollowingFeedCreatedEvent(user.getId(), feed.getContent()));
 
     return feedMapper.toDto(feed, user, weather, ootds);
   }
