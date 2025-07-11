@@ -29,7 +29,12 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(RoleChangedEvent event) {
-
+        notificationService.create(
+                event.userDto().id(),
+                "권한이 변경 되었어요.",
+                String.format("관리자가 당신의 권한을 [%s]으로 변경하였습니다.", event.userDto().role().name()),
+                NotificationLevel.INFO
+        );
     }
 
     // 의상 속성 추가 이벤트
@@ -40,7 +45,7 @@ public class NotificationEventListener {
         Set<UUID> allUserIds = userRepository.findAllUserIds();
 
         Set<UUID> otherUserIds = allUserIds.stream()
-                .filter(id -> !id.equals(event.ownerId()))
+                .filter(id -> !id.equals(event.requesterId()))
                 .collect(Collectors.toSet());
 
         notificationService.createAll(
@@ -58,7 +63,7 @@ public class NotificationEventListener {
         Set<UUID> allUserIds = userRepository.findAllUserIds();
 
         Set<UUID> otherUserIds = allUserIds.stream()
-                .filter(id -> !id.equals(event.ownerId()))
+                .filter(id -> !id.equals(event.requesterId()))
                 .collect(Collectors.toSet());
 
         notificationService.createAll(
@@ -74,6 +79,13 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FeedLikedEvent event) {
+//        notificationService.create(
+//                event.feedDto().author().userId(),
+//                String.format("%s님이 내 피드를 좋아합니다.", ),
+//                "새로운 의상 속성이 변경되었어요.",
+//                String.format("[%s] 속성을 확인해보세요.", event.clothesAttributeDefDto().name()),
+//                NotificationLevel.INFO
+//        );
 
     }
 
