@@ -78,7 +78,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-/// =============== Elasticsearch 활성화 조건 추가 ===============
+///  Elasticsearch 활성화 조건 추가
 @ConditionalOnProperty(name = "elasticsearch.enabled", havingValue = "true", matchIfMissing = false)
 public class FeedSearchService {
 
