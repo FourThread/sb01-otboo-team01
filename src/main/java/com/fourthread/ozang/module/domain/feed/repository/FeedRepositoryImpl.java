@@ -5,6 +5,7 @@ import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttribut
 import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.clothesAttributeDefinition;
 import static com.fourthread.ozang.module.domain.feed.entity.QFeed.feed;
 import static com.fourthread.ozang.module.domain.feed.entity.QFeedClothes.feedClothes;
+import static com.fourthread.ozang.module.domain.feed.entity.QFeedLike.feedLike;
 import static com.fourthread.ozang.module.domain.user.entity.QUser.user;
 import static com.fourthread.ozang.module.domain.weather.entity.QWeather.weather;
 import static com.querydsl.core.group.GroupBy.groupBy;
@@ -30,6 +31,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -47,11 +49,11 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<FeedDto> search(FeedPaginationRequest request) {
+  public List<FeedDto> search(FeedPaginationRequest request, UUID likeByUserId) {
     Map<UUID, List<OotdDto>> clothesMap = new HashMap<>();
     Map<UUID, List<ClothesAttributeWithDefDto>> attributeMap = new HashMap<>();
 
-    List<FeedDto> feeds = getFeeds(request);
+    List<FeedDto> feeds = getFeeds(request, likeByUserId);
 
     List<UUID> feedIds = feeds.stream()
         .map(FeedDto::id)
@@ -155,7 +157,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         .fetch();
   }
 
-  private List<FeedDto> getFeeds(FeedPaginationRequest request) {
+  private List<FeedDto> getFeeds(FeedPaginationRequest request, UUID likeByUserId) {
     return queryFactory
         .select(Projections.constructor(FeedDto.class,
             feed.id,
@@ -167,7 +169,13 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             feed.content,
             numberTemplate(Long.class, "{0}", feed.likeCount),
             numberTemplate(Integer.class, "{0}", feed.commentCount),
-            Expressions.constant(true)
+            JPAExpressions.selectOne()
+                .from(feedLike)
+                .where(
+                    feedLike.feed.id.eq(feed.id)
+                        .and(feedLike.user.id.eq(likeByUserId))
+                )
+                .exists()
         ))
         .from(feed)
         .leftJoin(feed.author, user)

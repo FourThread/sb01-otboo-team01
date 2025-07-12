@@ -145,7 +145,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(5);
@@ -168,7 +168,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(2);
@@ -192,7 +192,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(2);
@@ -216,7 +216,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(2);
@@ -237,7 +237,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(3);
@@ -259,7 +259,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(3);
@@ -281,7 +281,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(4); // limit + 1 for hasNext check
@@ -300,7 +300,7 @@ class FeedRepositoryTest {
         .sortDirection(SortDirection.DESCENDING)
         .build();
 
-    List<FeedDto> firstPage = feedRepository.search(firstRequest);
+    List<FeedDto> firstPage = feedRepository.search(firstRequest, null);
 
     // 두 번째 페이지
     FeedDto lastFeedFromFirstPage = firstPage.get(1); // limit만큼만 사용
@@ -313,7 +313,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> secondPage = feedRepository.search(secondRequest);
+    List<FeedDto> secondPage = feedRepository.search(secondRequest, null);
 
     // Then
     assertThat(firstPage).hasSize(3); // limit + 1
@@ -345,7 +345,7 @@ class FeedRepositoryTest {
         .sortDirection(SortDirection.ASCENDING)
         .build();
 
-    List<FeedDto> firstPage = feedRepository.search(firstRequest);
+    List<FeedDto> firstPage = feedRepository.search(firstRequest, null);
 
     // 두 번째 페이지
     FeedDto lastFeedFromFirstPage = firstPage.get(1); // limit만큼만 사용
@@ -358,7 +358,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> secondPage = feedRepository.search(secondRequest);
+    List<FeedDto> secondPage = feedRepository.search(secondRequest, null);
 
     // Then
     assertThat(firstPage).hasSize(3); // limit + 1
@@ -395,13 +395,33 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(1);
     assertThat(result.get(0).content()).contains("Beautiful sunny day");
     assertThat(result.get(0).author().userId()).isEqualTo(author1.getId());
     assertThat(result.get(0).weather().skyStatus()).isEqualTo(SkyStatus.CLEAR);
+  }
+
+  @Test
+  @DisplayName("특정 사용자가 좋아요한 피드 조회")
+  void search_withLikeByUserId() {
+    // Given
+    createTestFeeds(3);
+
+    FeedPaginationRequest request = FeedPaginationRequest.builder()
+        .limit(10)
+        .sortBy(SortBy.createdAt)
+        .sortDirection(SortDirection.DESCENDING)
+        .build();
+
+    // When
+    List<FeedDto> result = feedRepository.search(request, author1.getId());
+
+    // Then
+    assertThat(result).hasSize(3);
+    // 실제 좋아요 여부는 FeedDto의 isLiked 필드나 관련 로직에 따라 검증
   }
 
   @Test
@@ -454,7 +474,7 @@ class FeedRepositoryTest {
         .build();
 
     // When
-    List<FeedDto> result = feedRepository.search(request);
+    List<FeedDto> result = feedRepository.search(request, null);
 
     // Then
     assertThat(result).hasSize(5); // 전체 5개 (20 + 1보다 적음)
