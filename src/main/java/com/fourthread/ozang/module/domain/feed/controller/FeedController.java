@@ -12,9 +12,11 @@ import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.service.FeedService;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,8 +55,10 @@ public class FeedController {
   * @Description: 피드 조회
   **/
   @GetMapping
-  public FeedData findAllFeed(@Validated @ModelAttribute FeedPaginationRequest request) {
-    return feedService.retrieveFeed(request);
+  public FeedData findAllFeed(
+      @Validated @ModelAttribute FeedPaginationRequest request,
+      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    return feedService.retrieveFeed(request, userDetails.getPayloadDto().userId());
   }
 
   /**
@@ -88,19 +92,26 @@ public class FeedController {
    * @Description: 피드 좋아요
    **/
   @PostMapping("/{feedId}/like")
-  public FeedDto like(@PathVariable @NotNull UUID feedId) {
-    return feedService.like(feedId);
+  public FeedDto like(
+      @PathVariable @NotNull UUID feedId,
+      @AuthenticationPrincipal UserDetailsImpl userDetails
+      ) {
+
+    return feedService.like(feedId, userDetails.getPayloadDto().userId());
   }
 
   /**
-  * @methodName : undoLike
-  * @date : 2025-06-24 오전 11:14
-  * @author : wongil
-  * @Description: 피드 좋아요 취소
-  **/
+   * @methodName : undoLike
+   * @date : 2025-06-24 오전 11:14
+   * @author : wongil
+   * @Description: 피드 좋아요 취소
+   **/
   @DeleteMapping("/{feedId}/like")
-  public FeedDto undoLike(@PathVariable UUID feedId) {
-    return feedService.unLike(feedId);
+  public FeedDto undoLike(
+      @PathVariable UUID feedId,
+      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+    return feedService.unLike(feedId, userDetails.getPayloadDto().userId());
   }
 
   /**

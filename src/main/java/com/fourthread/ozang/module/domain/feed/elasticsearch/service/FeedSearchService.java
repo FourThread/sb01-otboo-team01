@@ -108,7 +108,7 @@ public class FeedSearchService {
    * @author : wongil
    * @Description: 피드 검색
    **/
-  public FeedData elasticSearch(FeedPaginationRequest request) {
+  public FeedData elasticSearch(FeedPaginationRequest request, UUID likeByUserId) {
     SearchHits<FeedDocument> searchHits = searchFeedDocument(request);
 
     return toFeedData(searchHits, request);
