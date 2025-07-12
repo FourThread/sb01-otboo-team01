@@ -26,6 +26,14 @@ spring:
       port: 6379
       database: 0
 
+# Elasticsearch 설정 추가 (선택적 활성화)
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
+# Elasticsearch 기능 활성화 플래그 추가
+# 환경변수로 ELASTICSEARCH_ENABLED=true 설정하면 활성화, 기본값은 false
+elasticsearch:
+  enabled: ${ELASTICSEARCH_ENABLED:false}
+
 batch:
   weather:
     retention-days: 3

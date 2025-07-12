@@ -4,6 +4,13 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5             # 유휴 연결 수 유지
+      connection-timeout: 30000   # 연결 획득 타임아웃(30초)
+      idle-timeout: 300000        # 유휴 연결 제거 시간(5분)
+      max-lifetime: 1200000       # 연결 최대 수명(20분)
+      leak-detection-threshold: 60000  # 연결 누수 감지(60초)
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -25,6 +32,25 @@ spring:
       host: ${REDIS_HOST}
       port: 6379
       database: 0
+      lettuce:
+        pool:
+          max-active: 4
+          max-idle: 4
+          min-idle: 1
+# Elasticsearch 비활성화
+    elasticsearch:
+      repositories:
+        enabled: false
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+# Elasticsearch 기능 활성화 플래그
+elasticsearch:
+  enabled: false
 
 batch:
   weather:
@@ -63,3 +89,17 @@ file:
 
 server:
   port: 80
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  server:
+    port: 80

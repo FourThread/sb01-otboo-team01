@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.config;
 
 import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
+import java.util.Optional;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,5 +44,12 @@ public class TestConfig {
   @ConditionalOnMissingBean
   public ElasticsearchOperations mockElasticsearchOperations() {
     return Mockito.mock(ElasticsearchOperations.class);
+  }
+
+  // 테스트 환경에서 FeedSearchService Optional 제공
+  @Bean
+  @Primary
+  public Optional<FeedSearchService> feedSearchServiceOptional(FeedSearchService feedSearchService) {
+    return Optional.of(feedSearchService);
   }
 }
