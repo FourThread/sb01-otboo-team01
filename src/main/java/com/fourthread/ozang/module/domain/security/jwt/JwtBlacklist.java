@@ -15,16 +15,21 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtBlacklist {
 
+  private static final String PREFIX = "blacklist:";
+
   private final RedisDao redisDao;
 
   public void put(String token, Instant expirationTime) {
     Duration ttl = Duration.between(Instant.now(), expirationTime);
-    redisDao.setValue("blackList:" + token, token, ttl);
-    log.info("[JwtBlacklist] 블랙리스트 등록 - 만료 시간: {}", expirationTime);
+    redisDao.setValue(generateKey(token), token, ttl);
+    log.info("[JwtBlacklist] 블랙리스트 등록 - 만료 시간: {}, TTL: {}", expirationTime, ttl);
   }
 
   public boolean contains(String token) {
-    return redisDao.getValue("blacklist:" + token) != null;
+    return redisDao.getValue(generateKey(token)) != null;
+  }
+
+  private String generateKey(String token) {
+    return PREFIX + token;
   }
 }
-
