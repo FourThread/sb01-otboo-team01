@@ -169,13 +169,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
             feed.content,
             numberTemplate(Long.class, "{0}", feed.likeCount),
             numberTemplate(Integer.class, "{0}", feed.commentCount),
-            JPAExpressions.selectOne()
-                .from(feedLike)
-                .where(
-                    feedLike.feed.id.eq(feed.id)
-                        .and(feedLike.user.id.eq(likeByUserId))
-                )
-                .exists()
+            likeByMe(likeByUserId)
         ))
         .from(feed)
         .leftJoin(feed.author, user)
@@ -190,6 +184,20 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
         .orderBy(order(request.sortBy(), request.sortDirection()))
         .limit(pagingLimit(request.limit() + 1))
         .fetch();
+  }
+
+  private BooleanExpression likeByMe(UUID likeByUserId) {
+    if (likeByUserId == null) {
+      return Expressions.FALSE;
+    }
+
+    return JPAExpressions.selectOne()
+        .from(feedLike)
+        .where(
+            feedLike.feed.id.eq(feed.id)
+                .and(feedLike.user.id.eq(likeByUserId))
+        )
+        .exists();
   }
 
   @Override
