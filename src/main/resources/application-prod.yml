@@ -48,6 +48,7 @@ spring:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
 # Elasticsearch 기능 활성화 플래그
 elasticsearch:
   enabled: false
@@ -70,6 +71,13 @@ logging:
     root: WARN
     org.springframework.batch: WARN
     com.fourthread.ozang: INFO
+    org.springframework.web: INFO
+    org.springframework.boot: INFO
+    org.hibernate: WARN
+    com.zaxxer.hikari: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
 
 cloud:
   aws:
@@ -89,17 +97,55 @@ file:
 
 server:
   port: 80
+  tomcat:
+    accept-count: 100
+    max-connections: 8192
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    keep-alive-timeout: 20000
+    max-keep-alive-requests: 100
+    mbeanregistry:
+      enabled: true
+    shutdown: graceful
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
       base-path: /actuator
   endpoint:
     health:
       show-details: always
+      show-components: always
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db,redis
+        liveness:
+          include: livenessState,ping
+      redis:
+        enabled: false
+      elasticsearch:
+        enabled: false
   server:
     port: 80
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+    health:
+      db:
+        enabled: true
+      redis:
+        enabled: true
+      diskspace:
+        enabled: true
+      ping:
+        enabled: true
