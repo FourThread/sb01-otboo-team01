@@ -124,7 +124,7 @@ management:
         enabled: true
       group:
         readiness:
-          include: readinessState,db,redis
+          include: readinessState,db,diskSpace,ping
         liveness:
           include: livenessState,ping
       redis:
@@ -144,7 +144,9 @@ management:
       db:
         enabled: true
       redis:
-        enabled: true
+        enabled: false
+      elasticsearch:
+        enabled: false
       diskspace:
         enabled: true
       ping:
