@@ -44,11 +44,19 @@ spring:
 
   autoconfigure:
     exclude:
+      # Elasticsearch Data AutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
+      # Elasticsearch Client AutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
+
+
 # Elasticsearch 기능 활성화 플래그
 elasticsearch:
   enabled: false
@@ -127,10 +135,43 @@ management:
           include: readinessState,db,diskSpace,ping
         liveness:
           include: livenessState,ping
-      redis:
-        enabled: false
-      elasticsearch:
-        enabled: false
+        basic:
+          include: db,diskSpace,ping
+          show-details: always
+  health:
+    defaults:
+      enabled: true
+    # 안전한 health indicator만 활성화
+    diskspace:
+      enabled: true
+    db:
+      enabled: true
+    ping:
+      enabled: true
+    # 외부 의존성 health indicator 비활성화
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    # 기타 외부 의존성도 비활성화
+    rabbit:
+      enabled: false
+    mongo:
+      enabled: false
+    cassandra:
+      enabled: false
+    neo4j:
+      enabled: false
+    influxdb:
+      enabled: false
+    ldap:
+      enabled: false
+    jms:
+      enabled: false
+    mail:
+      enabled: false
+    solr:
+      enabled: false
   server:
     port: 80
   info:
