@@ -127,10 +127,43 @@ management:
           include: readinessState,db,diskSpace,ping
         liveness:
           include: livenessState,ping
-      redis:
-        enabled: false
-      elasticsearch:
-        enabled: false
+        basic:
+          include: db,diskSpace,ping
+          show-details: always
+  health:
+    defaults:
+      enabled: true
+    # 안전한 health indicator만 활성화
+    diskspace:
+      enabled: true
+    db:
+      enabled: true
+    ping:
+      enabled: true
+    # 외부 의존성 health indicator 비활성화
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    # 기타 외부 의존성도 비활성화
+    rabbit:
+      enabled: false
+    mongo:
+      enabled: false
+    cassandra:
+      enabled: false
+    neo4j:
+      enabled: false
+    influxdb:
+      enabled: false
+    ldap:
+      enabled: false
+    jms:
+      enabled: false
+    mail:
+      enabled: false
+    solr:
+      enabled: false
   server:
     port: 80
   info:
