@@ -1,10 +1,13 @@
 package com.fourthread.ozang.module.domain.security.redis;
 
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SslOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
@@ -30,7 +33,21 @@ public class SecurityRedisConfig {
     redisStandaloneConfiguration.setPort(port);
     redisStandaloneConfiguration.setDatabase(database);
 
-    return new LettuceConnectionFactory(redisStandaloneConfiguration);
+    SslOptions sslOptions = SslOptions.builder()
+        .jdkSslProvider() // JDK SSL Provider 사용
+        .build();
+
+    ClientOptions clientOptions = ClientOptions.builder()
+        .sslOptions(sslOptions)
+        .build();
+
+    LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+        .useSsl() // SSL 활성화
+        .and()
+        .clientOptions(clientOptions)
+        .build();
+
+    return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
   }
 
   @Bean
