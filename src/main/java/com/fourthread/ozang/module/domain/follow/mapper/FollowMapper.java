@@ -4,7 +4,9 @@ import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.user.entity.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FollowMapper {
 
     public FollowDto toDto(Follow follow) {
