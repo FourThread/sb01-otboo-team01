@@ -24,8 +24,8 @@ public class FollowController {
             @RequestBody FollowCreateRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        UUID followerId = userDetails.getUserDto().id(); // 로그인 사용자 기준
-        FollowDto dto = followService.createFollow(followerId, request.getFolloweeId());
+        UUID requesterId = userDetails.getPayloadDto().userId();
+        FollowDto dto = followService.createFollow(requesterId, request.followeeId());
         return ResponseEntity.status(201).body(dto);
     }
 
@@ -35,8 +35,9 @@ public class FollowController {
             @RequestParam UUID userId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        UUID currentUserId = userDetails.getUserDto().id();
-        FollowSummaryDto summary = followService.getFollowSummary(userId, currentUserId);
+        UUID requesterId = userDetails.getPayloadDto().userId();
+
+        FollowSummaryDto summary = followService.getFollowSummary(userId, requesterId);
         return ResponseEntity.ok(summary);
     }
 
@@ -46,7 +47,8 @@ public class FollowController {
             @PathVariable UUID followId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        followService.deleteFollow(followId, userDetails.getUserDto().id());
+        UUID requesterId = userDetails.getPayloadDto().userId();
+        followService.deleteFollow(followId, requesterId);
         return ResponseEntity.noContent().build();
     }
 }
