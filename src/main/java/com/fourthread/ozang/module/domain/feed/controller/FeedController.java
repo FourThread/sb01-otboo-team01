@@ -14,6 +14,7 @@ import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
 import com.fourthread.ozang.module.domain.feed.service.FeedService;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -53,7 +54,7 @@ public class FeedController {
   * @Description: 피드 조회
   **/
   @GetMapping
-  public FeedData findAllFeed(@Validated @ModelAttribute FeedPaginationRequest request) {
+  public CompletableFuture<FeedData> findAllFeed(@Validated @ModelAttribute FeedPaginationRequest request) {
     return feedService.retrieveFeed(request);
   }
 

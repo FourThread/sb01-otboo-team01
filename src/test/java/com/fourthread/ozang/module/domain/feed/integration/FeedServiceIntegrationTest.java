@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -161,19 +162,19 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData result = feedService.retrieveFeed(request);
-    List<FeedDto> dataList = result.data();
-    boolean hasNext = result.hasNext();
-    String nextCursor = result.nextCursor();
-    UUID nextId = result.nextIdAfter();
-    long totalCount = result.totalCount();
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<List<FeedDto>> dataList = result.thenApply(FeedData::data);
+    CompletableFuture<Boolean> hasNext = result.thenApply(FeedData::hasNext);
+    CompletableFuture<String> nextCursor = result.thenApply(FeedData::nextCursor);
+    CompletableFuture<UUID> nextId = result.thenApply(FeedData::nextIdAfter);
+    CompletableFuture<Long> totalCount = result.thenApply(FeedData::totalCount);
 
     assertThat(result).isNotNull();
-    assertThat(dataList.size()).isEqualTo(1);
-    assertThat(hasNext).isFalse();
-    assertThat(nextCursor).isNull();
-    assertThat(nextId).isNull();
-    assertThat(totalCount).isEqualTo(1);
+    assertThat(dataList.join().size()).isEqualTo(1);
+    assertThat(hasNext.join()).isFalse();
+    assertThat(nextCursor.join()).isNull();
+    assertThat(nextId.join()).isNull();
+    assertThat(totalCount.join()).isEqualTo(1);
   }
 
   @Test
@@ -205,19 +206,18 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData result = feedService.retrieveFeed(request);
-    List<FeedDto> dataList = result.data();
-    boolean hasNext = result.hasNext();
-    String nextCursor = result.nextCursor();
-    UUID nextId = result.nextIdAfter();
-    long totalCount = result.totalCount();
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<List<FeedDto>> dataList = result.thenApply(FeedData::data);
+    CompletableFuture<Boolean> hasNext = result.thenApply(FeedData::hasNext);
+    CompletableFuture<String> nextCursor = result.thenApply(FeedData::nextCursor);
+    CompletableFuture<UUID> nextId = result.thenApply(FeedData::nextIdAfter);
+    CompletableFuture<Long> totalCount = result.thenApply(FeedData::totalCount);
 
     assertThat(result).isNotNull();
-    assertThat(dataList.size()).isEqualTo(4);
-    assertThat(hasNext).isTrue();
+    assertThat(hasNext.join()).isTrue();
     assertThat(nextCursor).isNotNull();
     assertThat(nextId).isNotNull();
-    assertThat(totalCount).isEqualTo(5);
+    assertThat(totalCount.join()).isEqualTo(5);
   }
 
   @Test
@@ -253,21 +253,21 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData firstResult = feedService.retrieveFeed(firstRequest);
+    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest);
 
-    for (FeedDto feedDto : firstResult.data()) {
+    for (FeedDto feedDto : firstResult.join().data()) {
       System.out.println("createdAt = " + feedDto.createdAt());
     }
-    System.out.println(firstResult.nextCursor());
-    System.out.println(firstResult.nextIdAfter());
-    System.out.println(firstResult.hasNext());
-    System.out.println(firstResult.totalCount());
+    System.out.println(firstResult.join().nextCursor());
+    System.out.println(firstResult.join().nextIdAfter());
+    System.out.println(firstResult.join().hasNext());
+    System.out.println(firstResult.join().totalCount());
 
-    assertThat(firstResult.hasNext()).isTrue();
+    assertThat(firstResult.join().hasNext()).isTrue();
 
     FeedPaginationRequest secondRequest = FeedPaginationRequest.builder()
-        .cursor(firstResult.nextCursor())
-        .idAfter(firstResult.nextIdAfter().toString())
+        .cursor(firstResult.join().nextCursor())
+        .idAfter(firstResult.join().nextIdAfter().toString())
         .limit(3)
         .sortBy(SortBy.createdAt)
         .sortDirection(SortDirection.DESCENDING)
@@ -277,22 +277,22 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData secondResult = feedService.retrieveFeed(secondRequest);
-    for (FeedDto feedDto : secondResult.data()) {
+    CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest);
+    for (FeedDto feedDto : secondResult.join().data()) {
       System.out.println("createdAt = " + feedDto.createdAt());
     }
-    System.out.println(secondResult.nextCursor());
-    System.out.println(secondResult.nextIdAfter());
-    System.out.println(secondResult.hasNext());
-    System.out.println(secondResult.totalCount());
+    System.out.println(secondResult.join().nextCursor());
+    System.out.println(secondResult.join().nextIdAfter());
+    System.out.println(secondResult.join().hasNext());
+    System.out.println(secondResult.join().totalCount());
 
     assertThat(secondResult).isNotNull();
-    assertThat(secondResult.hasNext()).isTrue();
+    assertThat(secondResult.join().hasNext()).isTrue();
 
-    List<UUID> firstPageIds = firstResult.data().stream()
+    List<UUID> firstPageIds = firstResult.join().data().stream()
         .map(FeedDto::id)
         .toList();
-    List<UUID> secondPageIds = secondResult.data().stream()
+    List<UUID> secondPageIds = secondResult.join().data().stream()
         .map(FeedDto::id)
         .toList();
 
@@ -328,14 +328,14 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
 
     assertThat(result).isNotNull();
-    assertThat(result.data().size()).isEqualTo(3);
-    assertThat(result.hasNext()).isFalse();
-    assertThat(result.nextCursor()).isNull();
-    assertThat(result.nextIdAfter()).isNull();
-    assertThat(result.totalCount()).isEqualTo(3);
+    assertThat(result.join().data().size()).isEqualTo(3);
+    assertThat(result.join().hasNext()).isFalse();
+    assertThat(result.join().nextCursor()).isNull();
+    assertThat(result.join().nextIdAfter()).isNull();
+    assertThat(result.join().totalCount()).isEqualTo(3);
   }
 
   @Test
@@ -394,26 +394,26 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    FeedData firstResult = feedService.retrieveFeed(firstRequest);
+    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest);
 
     System.out.println("첫 번째 페이지 결과:");
-    System.out.println("데이터 개수: " + firstResult.data().size());
-    System.out.println("hasNext: " + firstResult.hasNext());
-    System.out.println("nextCursor: " + firstResult.nextCursor());
-    System.out.println("nextIdAfter: " + firstResult.nextIdAfter());
-    System.out.println("totalCount: " + firstResult.totalCount());
+    System.out.println("데이터 개수: " + firstResult.join().data().size());
+    System.out.println("hasNext: " + firstResult.join().hasNext());
+    System.out.println("nextCursor: " + firstResult.join().nextCursor());
+    System.out.println("nextIdAfter: " + firstResult.join().nextIdAfter());
+    System.out.println("totalCount: " + firstResult.join().totalCount());
 
-    firstResult.data().forEach(feedDto -> {
+    firstResult.join().data().forEach(feedDto -> {
       System.out.println("  - ID: " + feedDto.id() +
           ", Content: " + feedDto.content() +
           ", CreatedAt: " + feedDto.createdAt());
     });
 
-    if (firstResult.hasNext()) {
+    if (firstResult.join().hasNext()) {
       // 두 번째 페이지
       FeedPaginationRequest secondRequest = FeedPaginationRequest.builder()
-          .cursor(firstResult.nextCursor())
-          .idAfter(firstResult.nextIdAfter().toString())
+          .cursor(firstResult.join().nextCursor())
+          .idAfter(firstResult.join().nextIdAfter().toString())
           .limit(3)
           .sortBy(SortBy.createdAt)
           .sortDirection(direction)
@@ -423,13 +423,13 @@ public class FeedServiceIntegrationTest {
           .authorIdEqual(null)
           .build();
 
-      FeedData secondResult = feedService.retrieveFeed(secondRequest);
+      CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest);
 
       System.out.println("두 번째 페이지 결과:");
-      System.out.println("데이터 개수: " + secondResult.data().size());
-      System.out.println("hasNext: " + secondResult.hasNext());
+      System.out.println("데이터 개수: " + secondResult.join().data().size());
+      System.out.println("hasNext: " + secondResult.join().hasNext());
 
-      secondResult.data().forEach(feedDto -> {
+      secondResult.join().data().forEach(feedDto -> {
         System.out.println("  - ID: " + feedDto.id() +
             ", Content: " + feedDto.content() +
             ", CreatedAt: " + feedDto.createdAt());
