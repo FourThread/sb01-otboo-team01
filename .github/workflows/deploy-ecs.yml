@@ -13,6 +13,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: public.ecr.aws/o8x2e2q0
   ECR_REPOSITORY: ozang-app
   ECS_SERVICE: ozang-service
   ECS_CLUSTER: ozang-cluster2
@@ -68,12 +69,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR Public
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+          echo "registry=public.ecr.aws/o8x2e2q0" >> $GITHUB_OUTPUT
+          echo "Successfully logged in to Public ECR"
 
-      # 이미지 캐시 확인
-      - name: Check for existing image
+      # 퍼블릭 ECR 이미지 캐시 확인
+      - name: Check for existing image in Public ECR
         id: check-image
         if: github.event.inputs.force_deploy != 'true'
         continue-on-error: true
@@ -81,12 +85,12 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          if aws ecr describe-images \
+          if aws ecr-public describe-images \
             --repository-name ${{ env.ECR_REPOSITORY }} \
             --image-ids imageTag=${IMAGE_TAG} \
-            --region ${{ env.AWS_REGION }} > /dev/null 2>&1; then
+            --region us-east-1 > /dev/null 2>&1; then
             echo "image_exists=true" >> $GITHUB_OUTPUT
-            echo "🎯 IMAGE EXISTS: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}"
+            echo "IMAGE EXISTS: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}"
           else
             echo "image_exists=false" >> $GITHUB_OUTPUT
             echo "🔨 IMAGE NOT FOUND: Building new image"
@@ -143,16 +147,15 @@ jobs:
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:latest" 
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}"
 
-      #  기존 이미지 재사용
-      - name: Use existing image
+      - name: Use existing image from Public ECR
         id: use-existing-image
         if: steps.check-image.outputs.image_exists == 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "Using existing image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "Using existing image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
 
       # 최종 이미지 URI 설정
       - name: Set final image URI
@@ -173,7 +176,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # version 정보 재설정
       - name: Set version from build job
         run: |
           echo "VERSION=${{ needs.build-and-push.outputs.version }}" >> $GITHUB_ENV
@@ -410,16 +412,18 @@ jobs:
             echo "상태: ${{ steps.verify-deployment.outputs.deployment_status }}"
             echo "접속 URL: http://${{ env.ALB_DNS }}"
           
-            # 배포 성공시 이전 이미지 정리 (최대 5개 유지)
-            echo "Cleaning up old images..."
-            aws ecr describe-images \
+            # 배포 성공시 이전 이미지 정리 (퍼블릭 ECR용, 최대 5개 유지)
+            echo "Cleaning up old images in Public ECR..."
+            aws ecr-public describe-images \
               --repository-name ${{ env.ECR_REPOSITORY }} \
+              --region us-east-1 \
               --query 'sort_by(imageDetails,&imagePushedAt)[:-5].[imageDigest]' \
               --output text | \
             while read digest; do
               if [ -n "$digest" ] && [ "$digest" != "None" ]; then
-                aws ecr batch-delete-image \
+                aws ecr-public batch-delete-image \
                   --repository-name ${{ env.ECR_REPOSITORY }} \
+                  --region us-east-1 \
                   --image-ids imageDigest=$digest || true
               fi
             done
