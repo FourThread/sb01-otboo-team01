@@ -111,9 +111,9 @@ public class FeedService {
       throw new IllegalArgumentException();
     }
 
-    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용(비동기)
+    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
     return (StringUtils.hasText(request.keywordLike()) && asyncFeedSearchService.isPresent())
-//        ? feedSearchService.get().elasticSearch(request)
+//        ? feedSearchService.get().elasticSearch(request) // 동기
         ? asyncFeedSearchService.get().asyncElasticSearch(request) // 비동기
         : defaultPaging(request);
   }

@@ -122,5 +122,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       SecurityMatchers.REFRESH
   };
 
+  @Override
+  protected boolean shouldNotFilterAsyncDispatch() {
+    return false;
+  }
+
   private static final PathPatternParser patternParser = new PathPatternParser();
 }
