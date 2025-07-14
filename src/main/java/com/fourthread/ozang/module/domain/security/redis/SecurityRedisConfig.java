@@ -26,6 +26,12 @@ public class SecurityRedisConfig {
   @Value("${spring.data.redis.database:0}")
   private int database;
 
+  @Value("${spring.data.redis.ssl.enabled:false}")
+  private boolean sslEnabled;
+
+  @Value("${spring.data.redis.timeout:2000}")
+  private long timeout;
+
   @Bean
   public RedisConnectionFactory redisConnectionFactory() {
     RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
@@ -33,19 +39,35 @@ public class SecurityRedisConfig {
     redisStandaloneConfiguration.setPort(port);
     redisStandaloneConfiguration.setDatabase(database);
 
-    SslOptions sslOptions = SslOptions.builder()
-        .jdkSslProvider() // JDK SSL Provider 사용
-        .build();
+    LettuceClientConfiguration.LettuceClientConfigurationBuilder configBuilder =
+        LettuceClientConfiguration.builder();
 
-    ClientOptions clientOptions = ClientOptions.builder()
-        .sslOptions(sslOptions)
-        .build();
+    if (sslEnabled) {
+      SslOptions sslOptions = SslOptions.builder()
+          .jdkSslProvider() // JDK SSL Provider 사용
+          .build();
 
-    LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-        .useSsl() // SSL 활성화
-        .and()
-        .clientOptions(clientOptions)
-        .build();
+      ClientOptions clientOptions = ClientOptions.builder()
+          .sslOptions(sslOptions)
+          .build();
+
+      configBuilder
+          .useSsl() // SSL 활성화
+          .and()
+          .clientOptions(clientOptions);
+    } else {
+      ClientOptions clientOptions = ClientOptions.builder()
+          .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+          .autoReconnect(true)
+          .build();
+
+      configBuilder.clientOptions(clientOptions);
+    }
+
+    // =============== 공통 타임아웃 설정 추가 ===============
+    configBuilder.commandTimeout(java.time.Duration.ofMillis(timeout));
+
+    LettuceClientConfiguration clientConfig = configBuilder.build();
 
     return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
   }
