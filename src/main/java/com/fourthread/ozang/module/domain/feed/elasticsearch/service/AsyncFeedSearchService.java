@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -17,6 +18,7 @@ public class AsyncFeedSearchService {
 
   private final FeedSearchService feedSearchService;
 
+  @Transactional(readOnly = true)
   @Async("feedSearchExecutor")
   public CompletableFuture<FeedData> asyncElasticSearch(FeedPaginationRequest request) {
     log.info("feed 비동기 검색 시작: {}", request);

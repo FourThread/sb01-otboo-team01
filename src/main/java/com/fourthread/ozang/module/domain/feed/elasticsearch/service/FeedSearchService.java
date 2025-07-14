@@ -59,6 +59,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -173,6 +174,10 @@ public class FeedSearchService {
         .map(document -> {
           User user = users.get(UUID.fromString(document.getAuthorId()));
           Weather weather = weathers.get(UUID.fromString(document.getWeatherId()));
+          if (user == null || weather == null) {
+            return null;
+          }
+
           List<OotdDto> ootds = getOotds(document);
 
           return new FeedDto(
@@ -188,6 +193,7 @@ public class FeedSearchService {
               null
           );
         })
+        .filter(Objects::nonNull)
         .toList();
   }
 
