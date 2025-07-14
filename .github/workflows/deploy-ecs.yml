@@ -47,14 +47,13 @@ jobs:
           distribution: 'corretto'
           cache: 'gradle'
 
-      # =============== build.gradle에서 version 추출 ===============
       - name: Extract Version from build.gradle
         id: extract_version
         run: |
           VERSION=$(grep "version = " build.gradle | sed "s/version = '\(.*\)'/\1/")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "xtracted version: $VERSION"
+          echo "Extracted version: $VERSION"
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -76,7 +75,6 @@ jobs:
           echo "registry=public.ecr.aws/o8x2e2q0" >> $GITHUB_OUTPUT
           echo "Successfully logged in to Public ECR"
 
-      # 퍼블릭 ECR 이미지 캐시 확인
       - name: Check for existing image in Public ECR
         id: check-image
         if: github.event.inputs.force_deploy != 'true'
@@ -96,7 +94,6 @@ jobs:
             echo "🔨 IMAGE NOT FOUND: Building new image"
           fi
 
-      # t3.small 최적화된 Docker 빌드
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         if: steps.check-image.outputs.image_exists != 'true'
@@ -111,9 +108,9 @@ jobs:
           CACHE_FLAG=""
           if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
             CACHE_FLAG="--no-cache"
-            echo "🔄 Force deploy enabled: Building without cache"
+            echo "Force deploy enabled: Building without cache"
           else
-            echo "⚡ Using build cache for faster build"
+            echo "Using build cache for faster build"
           fi
           
           docker build \
@@ -157,7 +154,6 @@ jobs:
           echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "Using existing image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
 
-      # 최종 이미지 URI 설정
       - name: Set final image URI
         id: final-image
         run: |
@@ -188,7 +184,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 배포 전 상태 백업
       - name: Get current deployment state
         id: current-state
         run: |
@@ -248,7 +243,6 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ needs.build-and-push.outputs.image_uri }}
 
-      # 프리티어 환경 고려 - 서비스 중지
       - name: Stop ECS service (Free Tier consideration)
         run: |
           echo "Stopping ECS service for safe deployment..."
@@ -264,7 +258,6 @@ jobs:
           
           echo "Service stopped successfully"
 
-      # 새 태스크 정의로 ECS 배포
       - name: Deploy Amazon ECS task definition
         id: deploy-task-def
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
@@ -283,14 +276,13 @@ jobs:
             --service ${{ env.ECS_SERVICE }} \
             --desired-count ${{ steps.current-state.outputs.current_desired_count }}
           
-          echo "⏳ Waiting for service stability..."
+          echo "Waiting for service stability..."
           timeout 900 aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
           
           echo "Service started successfully"
 
-      # ALB 헬스체크 대기
       - name: Wait for ALB health check
         run: |
           echo "Waiting for ALB health check..."
@@ -299,7 +291,7 @@ jobs:
           ATTEMPT=1
           
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "🔍 Health check attempt $ATTEMPT/$MAX_ATTEMPTS"
+            echo "Health check attempt $ATTEMPT/$MAX_ATTEMPTS"
           
             # ALB 헬스체크 상태 확인
             HEALTHY_TARGETS=$(aws elbv2 describe-target-health \
@@ -322,12 +314,11 @@ jobs:
               exit 1
             fi
           
-            echo "⏳ Waiting 30 seconds before retry..."
+            echo "Waiting 30 seconds before retry..."
             sleep 30
             ATTEMPT=$((ATTEMPT + 1))
           done
 
-      # 배포 검증
       - name: Verify deployment
         id: verify-deployment
         run: |
@@ -368,7 +359,6 @@ jobs:
             exit 1
           fi
 
-      # 배포 실패시 롤백
       - name: Rollback on failure
         if: failure() && steps.current-state.outputs.current_task_def != ''
         run: |
@@ -390,7 +380,6 @@ jobs:
           
           echo "Rollback completed successfully"
 
-      #  배포 결과 알림
       - name: Deployment notification
         if: always()
         run: |
@@ -432,11 +421,10 @@ jobs:
             echo "실패 이유를 확인하고 다시 시도해주세요."
           
             if [ "${{ steps.current-state.outputs.current_task_def }}" != "" ]; then
-              echo "⏪ 이전 버전으로 롤백되었습니다."
+              echo "이전 버전으로 롤백되었습니다."
             fi
           fi
 
-      # 배포 메트릭 수집
       - name: Collect deployment metrics
         if: always()
         run: |
