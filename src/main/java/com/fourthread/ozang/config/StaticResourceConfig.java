@@ -10,21 +10,39 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class StaticResourceConfig implements WebMvcConfigurer {
 
-    @Value("${cdn.base-url:}")
+    @Value("${app.cdn.base-url:}")
     private String cdnBaseUrl;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        System.out.println("CDN Configuration: " + cdnBaseUrl);
+
         if (!cdnBaseUrl.isEmpty()) {
-            // /static/** 요청을 CDN으로 리다이렉트
+            // CDN을 통한 정적 파일 서빙
             registry.addResourceHandler("/static/**")
                 .addResourceLocations(cdnBaseUrl + "/")
                 .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)));
+
+            registry.addResourceHandler("/assets/**")
+                .addResourceLocations(cdnBaseUrl + "/assets/")
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)));
+
+            System.out.println("CDN handlers configured: " + cdnBaseUrl);
         }
 
-        // Fallback
-        registry.addResourceHandler("/**")
+
+        registry.addResourceHandler("/static/**")
             .addResourceLocations("classpath:/static/")
             .setCacheControl(CacheControl.maxAge(Duration.ofMinutes(5)));
+
+        registry.addResourceHandler("/assets/**")
+            .addResourceLocations("classpath:/static/assets/")
+            .setCacheControl(CacheControl.maxAge(Duration.ofMinutes(5)));
+
+        registry.addResourceHandler("/favicon.ico")
+            .addResourceLocations("classpath:/static/favicon.ico")
+            .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)));
+
+        System.out.println("Fallback handlers configured");
     }
 }
