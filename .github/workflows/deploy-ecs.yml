@@ -100,26 +100,32 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo "Building Docker image optimized for t3.small"
-          echo "Build specs: 2 vCPU, 1.8GB RAM limit"
+          echo "Building Docker image for t3.small deployment"
+          echo "Build environment: GitHub Actions (sufficient resources)"
+          echo "Target platform: linux/amd64"
           
-          # t3.small(2GB RAM)에 최적화된 Docker 빌드
+          CACHE_FLAG=""
+          if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+            CACHE_FLAG="--no-cache"
+            echo "🔄 Force deploy enabled: Building without cache"
+          else
+            echo "⚡ Using build cache for faster build"
+          fi
+          
           docker build \
             --build-arg VERSION=${{ env.VERSION }} \
             --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --build-arg VCS_REF=${{ github.sha }} \
-            --memory=1800m \
-            --memory-swap=3600m \
-            --cpus="2" \
-            --shm-size=512m \
-            --ulimit nofile=65536:65536 \
             --platform linux/amd64 \
+            --progress=plain \
+            ${CACHE_FLAG} \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }} \
             --label "instance-type=t3.small" \
             --label "git-commit=${{ github.sha }}" \
             --label "version=${{ env.VERSION }}" \
+            --label "build-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             .
           
           echo "Pushing images to ECR..."
@@ -129,9 +135,13 @@ jobs:
           
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
           
-          # 이미지 크기 확인
+          # 이미지 크기 및 정보 확인
           IMAGE_SIZE=$(docker images $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --format "{{.Size}}")
           echo "Built image size: ${IMAGE_SIZE}"
+          echo "Image tags:"
+          echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:latest" 
+          echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}"
 
       #  기존 이미지 재사용
       - name: Use existing image
@@ -252,7 +262,7 @@ jobs:
           
           echo "Service stopped successfully"
 
-      # =============== 새 태스크 정의로 ECS 배포 ===============
+      # 새 태스크 정의로 ECS 배포
       - name: Deploy Amazon ECS task definition
         id: deploy-task-def
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
