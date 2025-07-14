@@ -113,8 +113,8 @@ public class FeedService {
 
     /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
     return (StringUtils.hasText(request.keywordLike()) && asyncFeedSearchService.isPresent())
-        ? asyncFeedSearchService.get().asyncElasticSearch(request) // 비동기
-        : defaultPaging(request);
+        ? asyncFeedSearchService.get().asyncElasticSearch(request, likeByUserId) // 비동기
+        : defaultPaging(request, likeByUserId);
   }
 
   private CompletableFuture<FeedData> defaultPaging(FeedPaginationRequest request, UUID likeByUserId) {
