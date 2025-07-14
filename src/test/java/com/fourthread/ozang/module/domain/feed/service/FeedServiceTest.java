@@ -1,6 +1,5 @@
 package com.fourthread.ozang.module.domain.feed.service;
 
-import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,15 +17,16 @@ import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
-import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
+import com.fourthread.ozang.module.domain.feed.entity.SortBy;
+import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.exception.FeedNotFoundException;
 import com.fourthread.ozang.module.domain.feed.mapper.FeedMapper;
 import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
@@ -41,11 +41,13 @@ import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -62,6 +64,9 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FeedServiceTest {
+
+  @Mock
+  private FeedElasticsearchRepository feedElasticsearchRepository;
 
   @Mock
   private FeedRepository feedRepository;
@@ -178,7 +183,7 @@ class FeedServiceTest {
   @Test
   @DisplayName("피드 목록 조회 실패 - request가 잘못 들어옴")
   void retrieveFeedNullRequest() {
-    assertThrows(IllegalArgumentException.class, () -> feedService.retrieveFeed(null));
+    assertThrows(IllegalArgumentException.class, () -> feedService.retrieveFeed(null, null));
   }
 
   @Test
@@ -193,20 +198,20 @@ class FeedServiceTest {
     FeedDto dto2 = mock(FeedDto.class);
     List<FeedDto> data = List.of(dto1, dto2);
 
-    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.search(request, null)).thenReturn(data);
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+    
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
 
-    FeedData result = feedService.retrieveFeed(request);
+    assertFalse(result.join().hasNext());
+    assertEquals(data, result.join().data());
+    assertNull(result.join().nextCursor());
+    assertNull(result.join().nextIdAfter());
+    assertEquals(2L, result.join().totalCount());
+    assertEquals(SortBy.createdAt, result.join().sortBy());
+    assertEquals(SortDirection.ASCENDING, result.join().sortDirection());
 
-    assertFalse(result.hasNext());
-    assertEquals(data, result.data());
-    assertNull(result.nextCursor());
-    assertNull(result.nextIdAfter());
-    assertEquals(2L, result.totalCount());
-    assertEquals(SortBy.createdAt, result.sortBy());
-    assertEquals(SortDirection.ASCENDING, result.sortDirection());
-
-    verify(feedRepository).search(request);
+    verify(feedRepository).search(request, null);
     verify(feedRepository).feedTotalCount(request);
   }
 
@@ -232,22 +237,51 @@ class FeedServiceTest {
     when(dto2.createdAt()).thenReturn(ts1.plusMinutes(1));
 
     List<FeedDto> data = List.of(dto1, dto2);
-    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.search(request, userId)).thenReturn(data);
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
 
     // 실행
-    FeedData result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, userId);
 
     // 검증
-    assertTrue(result.hasNext());
-    assertEquals(List.of(dto1), result.data());
-    assertEquals(ts1.toString(), result.nextCursor());
-    assertEquals(id1, result.nextIdAfter());
-    assertEquals(2L, result.totalCount());
-    assertEquals(SortBy.createdAt, result.sortBy());
-    assertEquals(SortDirection.DESCENDING, result.sortDirection());
+    assertTrue(result.join().hasNext());
+    assertEquals(List.of(dto1), result.join().data());
+    assertEquals(ts1.toString(), result.join().nextCursor());
+    assertEquals(id1, result.join().nextIdAfter());
+    assertEquals(2L, result.join().totalCount());
+    assertEquals(SortBy.createdAt, result.join().sortBy());
+    assertEquals(SortDirection.DESCENDING, result.join().sortDirection());
 
-    verify(feedRepository).search(request);
+    verify(feedRepository).search(request, userId);
+    verify(feedRepository).feedTotalCount(request);
+  }
+
+  @Test
+  @DisplayName("피드 목록 조회 - 좋아요한 사용자 ID로 조회")
+  void retrieveFeedWithLikeByUserId() {
+    // 준비
+    FeedPaginationRequest request = mock(FeedPaginationRequest.class);
+    when(request.limit()).thenReturn(2);
+    when(request.sortBy()).thenReturn(SortBy.createdAt);
+    when(request.sortDirection()).thenReturn(SortDirection.DESCENDING);
+
+    FeedDto dto1 = mock(FeedDto.class);
+    FeedDto dto2 = mock(FeedDto.class);
+    List<FeedDto> data = List.of(dto1, dto2);
+
+    UUID likeByUserId = UUID.randomUUID();
+    when(feedRepository.search(request, likeByUserId)).thenReturn(data);
+    when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+
+    // 실행
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, likeByUserId);
+
+    // 검증
+    assertFalse(result.join().hasNext());
+    assertEquals(data, result.join().data());
+    assertEquals(2L, result.join().totalCount());
+
+    verify(feedRepository).search(request, likeByUserId);
     verify(feedRepository).feedTotalCount(request);
   }
 
@@ -302,10 +336,31 @@ class FeedServiceTest {
 
     when(feedRepository.findById(any()))
         .thenReturn(Optional.of(feed));
+    when(userRepository.findById(userId))
+        .thenReturn(Optional.of(user));
+    when(feedMapper.toDto(any(), any(), any(), any()))
+        .thenReturn(expectedFeedDto);
 
-    feedService.like(feedId);
+    FeedDto result = feedService.like(feedId, userId);
 
     assertThat(feed.getLikeCount().intValue()).isEqualTo(1);
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  @Disabled
+  @DisplayName("피드 좋아요 - likeByUserId null")
+  void likeWithNullUserId() {
+
+    when(feedRepository.findById(any()))
+        .thenReturn(Optional.of(feed));
+    when(feedMapper.toDto(any(), any(), any(), any()))
+        .thenReturn(expectedFeedDto);
+
+    FeedDto result = feedService.like(feedId, null);
+
+    assertThat(feed.getLikeCount().intValue()).isEqualTo(1);
+    assertThat(result).isNotNull();
   }
 
   @Test
@@ -315,7 +370,7 @@ class FeedServiceTest {
     when(feedRepository.findById(any()))
         .thenThrow(new FeedNotFoundException(null, null, null));
 
-    assertThatThrownBy(() -> feedService.like(any()))
+    assertThatThrownBy(() -> feedService.like(feedId, userId))
         .isInstanceOf(FeedNotFoundException.class);
   }
 

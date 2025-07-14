@@ -18,7 +18,10 @@ import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequ
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.service.AsyncFeedSearchService;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
 import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
 import com.fourthread.ozang.module.domain.feed.entity.FeedLike;
 import com.fourthread.ozang.module.domain.feed.exception.FeedLikeNotFoundException;
@@ -35,12 +38,15 @@ import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -52,6 +58,10 @@ public class FeedService {
   private final FeedLikeRepository feedLikeRepository;
   private final FeedCommentRepository feedCommentRepository;
   private final FeedClothesRepository feedClothesRepository;
+  /// Optional로 변경하여 Elasticsearch 비활성화 시 null 허용
+  private final Optional<FeedSearchService> feedSearchService;
+  private final Optional<AsyncFeedSearchService> asyncFeedSearchService;
+//  private final FeedSearchService feedSearchService;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
@@ -80,12 +90,15 @@ public class FeedService {
         .likeCount(new AtomicInteger(0))
         .commentCount(new AtomicInteger(0))
         .build();
-    feedRepository.save(feed);
+
+    Feed savedFeed = feedRepository.save(feed);
+    saveFeedClothes(ootds, savedFeed);
+    /// Elasticsearch 서비스가 존재할 때만 호출
+    elasticsearchIfPresentSearchFeed(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user, weather, ootds);
   }
-
 
   /**
   * @methodName : retrieveFeed
@@ -93,13 +106,24 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 목록 조회
   **/
-  public FeedData retrieveFeed(FeedPaginationRequest request) {
+  public CompletableFuture<FeedData>  retrieveFeed(FeedPaginationRequest request, UUID likeByUserId) {
+    if (request == null) {
+      throw new IllegalArgumentException();
+    }
+
+    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
+    return (StringUtils.hasText(request.keywordLike()) && asyncFeedSearchService.isPresent())
+        ? asyncFeedSearchService.get().asyncElasticSearch(request, likeByUserId) // 비동기
+        : defaultPaging(request, likeByUserId);
+  }
+
+  private CompletableFuture<FeedData> defaultPaging(FeedPaginationRequest request, UUID likeByUserId) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
 
     Integer pageSize = request.limit();
-    List<FeedDto> data = feedRepository.search(request);
+    List<FeedDto> data = feedRepository.search(request, likeByUserId);
     boolean hasNext = data.size() > pageSize;
 
     List<FeedDto> pagedFeeds = hasNext ? data.subList(0, pageSize) : data;
@@ -115,7 +139,7 @@ public class FeedService {
 
     Long totalCount = feedRepository.feedTotalCount(request);
 
-    return new FeedData(
+    FeedData feedData = new FeedData(
         pagedFeeds,
         nextCursor,
         nextIdAfter,
@@ -124,6 +148,8 @@ public class FeedService {
         request.sortBy(),
         request.sortDirection()
     );
+
+    return CompletableFuture.completedFuture(feedData);
   }
 
   /**
@@ -162,11 +188,12 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 좋아요
   **/
-  public FeedDto like(UUID feedId) {
+  public FeedDto like(UUID feedId, UUID likeByUserId) {
 
     Feed feed = getFeed(feedId);
     feed.increaseLike();
-    FeedLike feedLike = new FeedLike(feed, feed.getAuthor());
+
+    FeedLike feedLike = new FeedLike(feed, getUser(likeByUserId));
     feedLikeRepository.save(feedLike);
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
@@ -178,11 +205,14 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 좋아요 취소
   **/
-  public FeedDto unLike(UUID feedId) {
+  public FeedDto unLike(UUID feedId, UUID likeByUserId) {
 
     Feed feed = getFeed(feedId);
-    feed.decreaseLike();
-    FeedLike feedLike = getFeedLike(feed);
+    if (!(feed.getLikeCount().get() < 0)) {
+      feed.decreaseLike();
+    }
+
+    FeedLike feedLike = getFeedLike(feed, likeByUserId);
     feedLikeRepository.delete(feedLike);
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
@@ -210,7 +240,7 @@ public class FeedService {
 
     feedCommentRepository.save(comment);
 
-    return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed));
+    return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed), comment);
   }
 
   /**
@@ -248,9 +278,8 @@ public class FeedService {
     );
   }
 
-  private FeedLike getFeedLike(Feed feed) {
-    return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
-            feed.getAuthor().getId())
+  private FeedLike getFeedLike(Feed feed, UUID likeByUserId) {
+    return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(), likeByUserId)
         .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getCode(),
             FEED_LIKE_NOT_FOUND.getMessage(),
             new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));
@@ -309,5 +338,26 @@ public class FeedService {
             getClothesAttributeWithDefDtos(feedClothes.getClothes())
         ))
         .toList();
+  }
+
+  private void saveFeedClothes(List<OotdDto> ootds, Feed feed) {
+    List<UUID> clothesIds = ootds.stream()
+        .map(OotdDto::clothesId)
+        .toList();
+    List<Clothes> clothes = clothesRepository.findAllByIdIn(clothesIds);
+    clothes.forEach(cloth -> {
+      FeedClothes feedClothes = new FeedClothes(cloth, feed);
+      feedClothesRepository.saveAndFlush(feedClothes);
+    });
+  }
+
+  private void elasticsearchIfPresentSearchFeed(Feed feed) {
+    feedSearchService.ifPresentOrElse(
+        service -> {
+          service.create(feed);
+          log.info("피드가 Elasticsearch에 저장되었습니다: feed id={}", feed.getId());
+        },
+        () -> log.info("Elasticsearch가 비활성화되어 있어 검색 인덱스에 저장하지 않습니다: feed id={}", feed.getId())
+    );
   }
 }

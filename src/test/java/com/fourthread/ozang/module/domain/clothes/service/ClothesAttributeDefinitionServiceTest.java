@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -34,10 +35,13 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class ClothesAttributeDefinitionServiceTest {
 
+    private UUID userId;
     private UUID ClothesAttributeDefinitionId;
     private ClothesAttributeDefinition clothesAttributeDefinition;
     private ClothesAttributeDefDto clothesAttributeDefDto;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private ClothesAttributeDefinitionRepository repository;
@@ -51,6 +55,8 @@ class ClothesAttributeDefinitionServiceTest {
 
     @BeforeEach
     void setUp() {
+
+        userId = UUID.randomUUID();
         ClothesAttributeDefinitionId = UUID.randomUUID();
 
         clothesAttributeDefinition = new ClothesAttributeDefinition("두께감", List.of("얇음", "보통", "두꺼움"));
@@ -67,6 +73,7 @@ class ClothesAttributeDefinitionServiceTest {
     @Test
     void ClothesAttributeDefCreate() {
         //given
+
         String name = "두께감";
         List<String> selectableValues = List.of("얇음", "보통", "두꺼움");
         ClothesAttributeDefCreateRequest request = new ClothesAttributeDefCreateRequest(name, selectableValues);
@@ -75,7 +82,7 @@ class ClothesAttributeDefinitionServiceTest {
         given(mapper.toDto(clothesAttributeDefinition)).willReturn(clothesAttributeDefDto);
 
         //when
-        ClothesAttributeDefDto result = service.create(request);
+        ClothesAttributeDefDto result = service.create(request, userId);
 
         //then
         assertThat(result).isEqualTo(clothesAttributeDefDto);
@@ -92,7 +99,7 @@ class ClothesAttributeDefinitionServiceTest {
         given(repository.existsByName(name)).willReturn(true);
 
         // when then
-        assertThatThrownBy(() -> service.create(request))
+        assertThatThrownBy(() -> service.create(request, userId))
                 .isInstanceOf(ClothesAttributeDefinitionException.class);
         then(repository).should(never()).save(any());
     }
@@ -109,7 +116,7 @@ class ClothesAttributeDefinitionServiceTest {
         given(mapper.toDto(clothesAttributeDefinition)).willReturn(clothesAttributeDefDto);
 
         //when
-        ClothesAttributeDefDto result = service.update(id, request);
+        ClothesAttributeDefDto result = service.update(id, request, userId);
 
         //then
         assertThat(result).isEqualTo(clothesAttributeDefDto);
@@ -125,7 +132,7 @@ class ClothesAttributeDefinitionServiceTest {
         given(repository.findById(id)).willReturn(Optional.empty());
 
         //when then
-        assertThatThrownBy(() -> service.update(id, request))
+        assertThatThrownBy(() -> service.update(id, request, userId))
                 .isInstanceOf(ClothesAttributeDefinitionException.class);
     }
 
@@ -140,7 +147,7 @@ class ClothesAttributeDefinitionServiceTest {
         given(repository.existsByNameAndIdNot("촉감", id)).willReturn(true);
 
         //when then
-        assertThatThrownBy(() -> service.update(id, request))
+        assertThatThrownBy(() -> service.update(id, request, userId))
                 .isInstanceOf(ClothesAttributeDefinitionException.class);
     }
 

@@ -18,6 +18,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "clothes_attribute_definitions")
 public class ClothesAttributeDefinition extends BaseUpdatableEntity {
 
     @Column(nullable = false, unique = true)

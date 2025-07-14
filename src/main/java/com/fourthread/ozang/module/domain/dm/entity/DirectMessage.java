@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "direct_messages")
 public class DirectMessage extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -28,10 +30,12 @@ public class DirectMessage extends BaseEntity {
   private String dmKey;
 
   public static String generatedDmKey(User sender, User receiver) {
-    if (sender.getId().compareTo(receiver.getId()) < 0) {
-      return sender.getId() + "_" + receiver.getId();
-    }
+    String senderId = sender.getId().toString();
+    String receiverId = receiver.getId().toString();
 
-    return receiver.getId() + "_" + sender.getId();
+    if (senderId.compareTo(receiverId) < 0) {
+      return senderId + "_" + receiverId;
+    }
+    return receiverId + "_" + senderId;
   }
 }

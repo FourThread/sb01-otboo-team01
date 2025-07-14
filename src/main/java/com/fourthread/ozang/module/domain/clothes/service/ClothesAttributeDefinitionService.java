@@ -12,7 +12,10 @@ import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinit
 import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeUpdatedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +31,10 @@ public class ClothesAttributeDefinitionService {
 
     private final ClothesAttributeDefinitionRepository definitionRepository;
     private final ClothesAttributeDefinitionMapper definitionMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public ClothesAttributeDefDto create(ClothesAttributeDefCreateRequest request) {
+    public ClothesAttributeDefDto create(ClothesAttributeDefCreateRequest request, UUID userId) {
         if (definitionRepository.existsByName(request.name())) {
             throw new ClothesAttributeDefinitionException(DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION,
                     this.getClass().getSimpleName(),
@@ -38,11 +42,15 @@ public class ClothesAttributeDefinitionService {
         }
         ClothesAttributeDefinition clothesAttributeDefinition = new ClothesAttributeDefinition(request.name(), request.selectableValues());
         ClothesAttributeDefinition save = definitionRepository.save(clothesAttributeDefinition);
-        return definitionMapper.toDto(save);
+
+        ClothesAttributeDefDto dto = definitionMapper.toDto(save);
+        eventPublisher.publishEvent(new ClothesAttributeAddedEvent(dto, userId));
+
+        return dto;
     }
 
     @Transactional
-    public ClothesAttributeDefDto update(UUID definitionId, ClothesAttributeDefUpdateRequest request) {
+    public ClothesAttributeDefDto update(UUID definitionId, ClothesAttributeDefUpdateRequest request, UUID userId) {
         ClothesAttributeDefinition definition = definitionRepository.findById(definitionId)
                 .orElseThrow(() -> new ClothesAttributeDefinitionException(CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND,
                         this.getClass().getSimpleName(),
@@ -55,7 +63,11 @@ public class ClothesAttributeDefinitionService {
         }
 
         definition.update(request.name(), request.selectableValues());
-        return definitionMapper.toDto(definition);
+
+        ClothesAttributeDefDto dto = definitionMapper.toDto(definition);
+        eventPublisher.publishEvent(new ClothesAttributeUpdatedEvent(dto, userId));
+
+        return dto;
     }
 
     @Transactional

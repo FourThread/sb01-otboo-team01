@@ -97,4 +97,6 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
         @Param("cutoffDate") LocalDateTime cutoffDate
     );
 
+
+  List<Weather> findALlByIdIn(Collection<UUID> ids);
 }

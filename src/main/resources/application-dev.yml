@@ -1,3 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ozang_db
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      ssl:
+        enabled: false
+        timeout: 2000ms
+        lettuce:
+          pool:
+            max-active: 8
+            max-idle: 8
+            min-idle: 0
+            max-wait: 1000ms
+          shutdown-timeout: 100ms
+
+# Elasticsearch 설정 추가 (선택적 활성화)
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
+# Elasticsearch 기능 활성화 플래그 추가
+# 환경변수로 ELASTICSEARCH_ENABLED=true 설정하면 활성화, 기본값은 false
+elasticsearch:
+  enabled: ${ELASTICSEARCH_ENABLED:false}
+
 batch:
   jdbc:
     initialize-schema: always
@@ -6,37 +52,74 @@ batch:
     job:
       enabled: false
   weather:
-    retention-days: 3  # 개발환경에서는 3일만 보관
+    retention-days: 3
   scheduler:
     weather-cleanup:
       enabled: true
     token-cleanup:
       enabled: true
+  job:
+    enabled: false
+  jdbc:
+    initialize-schema: embedded
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    redis:
+      enabled: true
+    elasticsearch:
+      enabled: ${elasticsearch.enabled:false}
+    # 로컬에서 Redis 연결 실패 시 애플리케이션 전체를 DOWN으로 표시하지 않음
+    defaults:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+    ping:
+      enabled: true
 
 logging:
   level:
-    com.fourthread.ozang.module.config.batch: DEBUG
-
+    root: INFO
+    com.fourthread.ozang: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.batch: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: INFO
+    # ↓ 소켓 핸드셰이크·프레임 처리
+    org.springframework.web.socket: DEBUG
+    org.springframework.web.socket.server: DEBUG
+    org.springframework.web.socket.client: DEBUG
+    # ↓ STOMP 메시지 라우팅·브로커
+    org.springframework.messaging.simp: TRACE
+    org.springframework.web.socket.messaging: TRACE
+    org.springframework.messaging.support: TRACE
+    # ↓ SockJS fallback 사용 시
+    org.springframework.web.socket.sockjs: DEBUG
 cloud:
   aws:
     s3:
       bucket: ozang-dev-bucket
 
-# 파일 업로드 설정
 file:
   upload:
     clothes:
       path: dev/clothes/images/
       allowed-extensions: jpg,jpeg,png,gif,webp
-      max-size: 10485760  # 10MB
+      max-size: 10485760
     profiles:
       path: dev/profiles/images/
       allowed-extensions: jpg,jpeg,png,gif,webp
-      max-size: 10485760  # 10MB
-
-
-spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-size: 10485760

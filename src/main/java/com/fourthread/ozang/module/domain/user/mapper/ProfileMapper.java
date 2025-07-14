@@ -25,16 +25,12 @@ public class ProfileMapper {
   public LocationDto toLocationDto(Location location) {
     if (location == null) return null;
 
-    List<String> locationNames = location.getLocationNames() == null
-        ? List.of()
-        : new ArrayList<>(location.getLocationNames());
-
     return new LocationDto(
         location.getLatitude(),
         location.getLongitude(),
         location.getX(),
         location.getY(),
-        locationNames
+        location.getLocationNamesList()
     );
   }
 }
