@@ -197,3 +197,6 @@ management:
         enabled: true
       ping:
         enabled: true
+
+cdn:
+  base-url: "https://d1f4rrle5he99b.cloudfront.net"
