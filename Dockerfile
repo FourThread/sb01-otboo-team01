@@ -1,4 +1,3 @@
-# =============== t3.small 최적화 Dockerfile ===============
 FROM amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
@@ -20,21 +19,29 @@ WORKDIR /app
 
 # 환경 변수 설정
 ENV PROJECT_NAME=O-ZANG
-ARG VERSION=v1.0.0
+ARG VERSION
+ARG BUILD_DATE
+ARG VCS_REF
 ENV PROJECT_VERSION=${VERSION}
 ENV TZ=Asia/Seoul
 
+# 빌드 정보를 레이블로 추가
+LABEL maintainer="fourthread" \
+      version="${VERSION}" \
+      build-date="${BUILD_DATE}" \
+      vcs-ref="${VCS_REF}" \
+      description="O-ZANG Application optimized for t3.small" \
+      instance-type="t3.small" \
+      cpu="2-vcpu" \
+      memory="2gb"
+
+# t3.small 최적화된 JAVA_OPTS
 ENV JAVA_OPTS="-Xmx1024m \
     -Xms512m \
     -XX:MaxMetaspaceSize=256m \
     -XX:MetaspaceSize=128m \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
-    -XX:G1HeapRegionSize=16m \
-    -XX:G1NewSizePercent=20 \
-    -XX:G1MaxNewSizePercent=40 \
-    -XX:G1MixedGCCountTarget=8 \
-    -XX:G1OldCSetRegionThreshold=10 \
     -XX:+UseCompressedOops \
     -XX:+UseCompressedClassPointers \
     -XX:+HeapDumpOnOutOfMemoryError \
@@ -70,16 +77,25 @@ RUN addgroup -g 1001 -S appgroup && \
 RUN mkdir -p /app/logs /app/data /app/tmp && \
     chown -R appuser:appgroup /app
 
-# =============== 빌드된 JAR 파일 복사 ===============
-COPY --from=builder --chown=appuser:appgroup /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
+COPY --from=builder --chown=appuser:appgroup /app/build/libs/*.jar app.jar
 
-# 애플리케이션 정보 파일 생성
+# 애플리케이션 정보 파일 생성 (동적 정보 포함)
 RUN echo "Application: ${PROJECT_NAME}" > /app/app-info.txt && \
-    echo "Version: ${PROJECT_VERSION}" >> /app/app-info.txt && \
-    echo "Build Date: $(date)" >> /app/app-info.txt && \
+    echo "Version: ${PROJECT_VERSION:-unknown}" >> /app/app-info.txt && \
+    echo "Build Date: ${BUILD_DATE:-unknown}" >> /app/app-info.txt && \
+    echo "Git Commit: ${VCS_REF:-unknown}" >> /app/app-info.txt && \
     echo "Java Version: $(java -version 2>&1 | head -n 1)" >> /app/app-info.txt && \
     echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/app-info.txt && \
+    echo "Build Time: $(date)" >> /app/app-info.txt && \
     chown appuser:appgroup /app/app-info.txt
+
+# 빌드 검증 (JAR 파일 존재 확인)
+RUN if [ ! -f app.jar ]; then \
+        echo "ERROR: app.jar not found!" && \
+        ls -la /app/build/libs/ && \
+        exit 1; \
+    fi && \
+    echo "✅ JAR file validated: $(ls -lh app.jar)"
 
 # 사용자 전환
 USER appuser
@@ -89,7 +105,21 @@ EXPOSE 80
 
 # 헬스체크 설정
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f http://localhost:80/actuator/health || exit 1
+    CMD curl -f --max-time 8 --connect-timeout 5 http://localhost:80/actuator/health/readiness || \
+        curl -f --max-time 5 --connect-timeout 3 http://localhost:80/actuator/health || \
+        exit 1
 
-# 애플리케이션 실행
-ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS} -jar app.jar --server.port=80 --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod}"]
+# 애플리케이션 실행 (환경변수 검증 포함)
+ENTRYPOINT ["sh", "-c", "\
+    echo 'Starting O-ZANG Application...'; \
+    echo 'Version: '${PROJECT_VERSION:-unknown}; \
+    echo 'Instance: t3.small (2vCPU, 2GB RAM)'; \
+    echo 'Java Options: '${JAVA_OPTS}; \
+    echo 'Profile: '${SPRING_PROFILES_ACTIVE:-prod}; \
+    echo ''; \
+    exec java ${JAVA_OPTS} -jar app.jar \
+    --server.port=80 \
+    --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} \
+    --spring.application.name=${PROJECT_NAME} \
+    --spring.application.version=${PROJECT_VERSION:-unknown} \
+"]
