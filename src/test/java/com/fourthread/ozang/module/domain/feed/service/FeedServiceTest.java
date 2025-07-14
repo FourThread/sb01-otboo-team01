@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -199,16 +200,16 @@ class FeedServiceTest {
 
     when(feedRepository.search(request, null)).thenReturn(data);
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+    
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
 
-    FeedData result = feedService.retrieveFeed(request, null);
-
-    assertFalse(result.hasNext());
-    assertEquals(data, result.data());
-    assertNull(result.nextCursor());
-    assertNull(result.nextIdAfter());
-    assertEquals(2L, result.totalCount());
-    assertEquals(SortBy.createdAt, result.sortBy());
-    assertEquals(SortDirection.ASCENDING, result.sortDirection());
+    assertFalse(result.join().hasNext());
+    assertEquals(data, result.join().data());
+    assertNull(result.join().nextCursor());
+    assertNull(result.join().nextIdAfter());
+    assertEquals(2L, result.join().totalCount());
+    assertEquals(SortBy.createdAt, result.join().sortBy());
+    assertEquals(SortDirection.ASCENDING, result.join().sortDirection());
 
     verify(feedRepository).search(request, null);
     verify(feedRepository).feedTotalCount(request);
@@ -240,16 +241,16 @@ class FeedServiceTest {
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
 
     // 실행
-    FeedData result = feedService.retrieveFeed(request, userId);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, userId);
 
     // 검증
-    assertTrue(result.hasNext());
-    assertEquals(List.of(dto1), result.data());
-    assertEquals(ts1.toString(), result.nextCursor());
-    assertEquals(id1, result.nextIdAfter());
-    assertEquals(2L, result.totalCount());
-    assertEquals(SortBy.createdAt, result.sortBy());
-    assertEquals(SortDirection.DESCENDING, result.sortDirection());
+    assertTrue(result.join().hasNext());
+    assertEquals(List.of(dto1), result.join().data());
+    assertEquals(ts1.toString(), result.join().nextCursor());
+    assertEquals(id1, result.join().nextIdAfter());
+    assertEquals(2L, result.join().totalCount());
+    assertEquals(SortBy.createdAt, result.join().sortBy());
+    assertEquals(SortDirection.DESCENDING, result.join().sortDirection());
 
     verify(feedRepository).search(request, userId);
     verify(feedRepository).feedTotalCount(request);

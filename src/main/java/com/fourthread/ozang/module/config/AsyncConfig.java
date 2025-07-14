@@ -17,9 +17,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class AsyncConfig {
 
     /**
-     * 외부 API 호출용 ThreadPool
-     * 기상청 API와 카카오 API 병렬 호출에 사용
-     * I/O 집약적 작업 - 코어 스레드 수 높게 설정
+     * 외부 API 호출용 ThreadPool 기상청 API와 카카오 API 병렬 호출에 사용 I/O 집약적 작업 - 코어 스레드 수 높게 설정
      */
     @Bean(name = "apiCallExecutor")
     public Executor apiCallExecutor() {
@@ -53,6 +51,20 @@ public class AsyncConfig {
 
         log.info("API 호출용 ThreadPool 설정 완료 - Core={}, Max={}, Queue={}",
             corePoolSize, maxPoolSize, executor.getQueueCapacity());
+
+        return executor;
+    }
+
+    @Bean(name = "feedSearchExecutor")
+    public ThreadPoolTaskExecutor esExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(500);
+        executor.setKeepAliveSeconds(60);
+        executor.setThreadNamePrefix("elasticsearch-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
 
         return executor;
     }

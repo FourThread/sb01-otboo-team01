@@ -15,6 +15,7 @@ import com.fourthread.ozang.module.domain.feed.service.FeedService;
 import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -55,9 +56,10 @@ public class FeedController {
   * @Description: 피드 조회
   **/
   @GetMapping
-  public FeedData findAllFeed(
+  public CompletableFuture<FeedData> findAllFeed(
       @Validated @ModelAttribute FeedPaginationRequest request,
       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+  
     return feedService.retrieveFeed(request, userDetails.getPayloadDto().userId());
   }
 
