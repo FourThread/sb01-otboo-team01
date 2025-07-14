@@ -51,7 +51,7 @@ public class AsyncConfig {
 
         executor.initialize();
 
-        log.info("API 호출용 ThreadPoll 설정 완료 - Core={}, Max={}, Queue={}",
+        log.info("API 호출용 ThreadPool 설정 완료 - Core={}, Max={}, Queue={}",
             corePoolSize, maxPoolSize, executor.getQueueCapacity());
 
         return executor;

@@ -43,3 +43,4 @@ out/
 
 # 프로메테우스 data 폴더 무시
 /infra/monitoring-example/data/
+/ozang.env
