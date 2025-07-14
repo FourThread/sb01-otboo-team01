@@ -106,25 +106,24 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 목록 조회
   **/
-  public CompletableFuture<FeedData> retrieveFeed(FeedPaginationRequest request) {
+  public CompletableFuture<FeedData>  retrieveFeed(FeedPaginationRequest request, UUID likeByUserId) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
 
     /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
     return (StringUtils.hasText(request.keywordLike()) && asyncFeedSearchService.isPresent())
-//        ? feedSearchService.get().elasticSearch(request) // 동기
         ? asyncFeedSearchService.get().asyncElasticSearch(request) // 비동기
         : defaultPaging(request);
   }
 
-  private CompletableFuture<FeedData> defaultPaging(FeedPaginationRequest request) {
+  private CompletableFuture<FeedData> defaultPaging(FeedPaginationRequest request, UUID likeByUserId) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
 
     Integer pageSize = request.limit();
-    List<FeedDto> data = feedRepository.search(request);
+    List<FeedDto> data = feedRepository.search(request, likeByUserId);
     boolean hasNext = data.size() > pageSize;
 
     List<FeedDto> pagedFeeds = hasNext ? data.subList(0, pageSize) : data;
@@ -189,11 +188,12 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 좋아요
   **/
-  public FeedDto like(UUID feedId) {
+  public FeedDto like(UUID feedId, UUID likeByUserId) {
 
     Feed feed = getFeed(feedId);
     feed.increaseLike();
-    FeedLike feedLike = new FeedLike(feed, feed.getAuthor());
+
+    FeedLike feedLike = new FeedLike(feed, getUser(likeByUserId));
     feedLikeRepository.save(feedLike);
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
@@ -205,11 +205,14 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 좋아요 취소
   **/
-  public FeedDto unLike(UUID feedId) {
+  public FeedDto unLike(UUID feedId, UUID likeByUserId) {
 
     Feed feed = getFeed(feedId);
-    feed.decreaseLike();
-    FeedLike feedLike = getFeedLike(feed);
+    if (!(feed.getLikeCount().get() < 0)) {
+      feed.decreaseLike();
+    }
+
+    FeedLike feedLike = getFeedLike(feed, likeByUserId);
     feedLikeRepository.delete(feedLike);
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
@@ -275,9 +278,8 @@ public class FeedService {
     );
   }
 
-  private FeedLike getFeedLike(Feed feed) {
-    return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(),
-            feed.getAuthor().getId())
+  private FeedLike getFeedLike(Feed feed, UUID likeByUserId) {
+    return feedLikeRepository.findByFeed_IdAndUser_Id(feed.getId(), likeByUserId)
         .orElseThrow(() -> new FeedLikeNotFoundException(FEED_LIKE_NOT_FOUND.getCode(),
             FEED_LIKE_NOT_FOUND.getMessage(),
             new ErrorDetails(this.getClass().getSimpleName(), FEED_LIKE_NOT_FOUND.getMessage())));

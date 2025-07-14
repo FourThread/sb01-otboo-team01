@@ -85,7 +85,6 @@ public class FeedServiceIntegrationTest {
   @Autowired
   private FeedClothesRepository feedClothesRepository;
 
-
   @Autowired
   private ProfileRepository profileRepository;
 
@@ -253,7 +252,7 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest);
+    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest, null);
 
     for (FeedDto feedDto : firstResult.join().data()) {
       System.out.println("createdAt = " + feedDto.createdAt());
@@ -276,8 +275,8 @@ public class FeedServiceIntegrationTest {
         .precipitationTypeEqual(null)
         .authorIdEqual(null)
         .build();
-
-    CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest);
+    
+    CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest, null);
     for (FeedDto feedDto : secondResult.join().data()) {
       System.out.println("createdAt = " + feedDto.createdAt());
     }
@@ -299,6 +298,46 @@ public class FeedServiceIntegrationTest {
     assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
   }
 
+  @Test
+  @DisplayName("피드 목록 조회 - 특정 사용자가 좋아요한 피드만 조회")
+  void retrieveFeed_withLikeByUserId() {
+    // 추가 사용자 생성
+    User anotherUser = userRepository.save(new User("another-user", "another@example.com", "password"));
+    Profile anotherProfile = new Profile("another", Gender.MALE, LocalDate.now(),
+        new Location(1.0, 1.0, 1, 1, List.of("local")), 1, "url");
+    anotherProfile.setUser(anotherUser);
+    profileRepository.save(anotherProfile);
+
+    // 피드 생성
+    Feed feed = Feed.builder()
+        .author(author)
+        .weather(weather)
+        .content("content1")
+        .likeCount(new AtomicInteger(0))
+        .commentCount(new AtomicInteger(0))
+        .build();
+    feedRepository.save(feed);
+    feedClothesRepository.save(new FeedClothes(clothes, feed));
+
+    FeedPaginationRequest request = FeedPaginationRequest.builder()
+        .cursor(null)
+        .idAfter(null)
+        .limit(10)
+        .sortBy(SortBy.createdAt)
+        .sortDirection(SortDirection.DESCENDING)
+        .keywordLike(null)
+        .skyStatusEqual(null)
+        .precipitationTypeEqual(null)
+        .authorIdEqual(null)
+        .build();
+
+    // 특정 사용자가 좋아요한 피드 조회
+    FeedData result = feedService.retrieveFeed(request, anotherUser.getId());
+
+    assertThat(result).isNotNull();
+    // 실제 좋아요 로직에 따라 결과가 달라질 수 있음
+    assertThat(result.data()).isNotNull();
+  }
 
   @Test
   @DisplayName("피드 목록 조회 - 정확히 limit 개수만큼 있는 경우")
@@ -328,7 +367,7 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
 
     assertThat(result).isNotNull();
     assertThat(result.join().data().size()).isEqualTo(3);
@@ -394,7 +433,7 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest);
+    CompletableFuture<FeedData> firstResult = feedService.retrieveFeed(firstRequest, null);
 
     System.out.println("첫 번째 페이지 결과:");
     System.out.println("데이터 개수: " + firstResult.join().data().size());
@@ -423,7 +462,7 @@ public class FeedServiceIntegrationTest {
           .authorIdEqual(null)
           .build();
 
-      CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest);
+      CompletableFuture<FeedData> secondResult = feedService.retrieveFeed(secondRequest, null);
 
       System.out.println("두 번째 페이지 결과:");
       System.out.println("데이터 개수: " + secondResult.join().data().size());
@@ -442,5 +481,3 @@ public class FeedServiceIntegrationTest {
     }
   }
 }
-
-

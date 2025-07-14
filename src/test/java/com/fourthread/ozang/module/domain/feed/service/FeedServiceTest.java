@@ -183,7 +183,7 @@ class FeedServiceTest {
   @Test
   @DisplayName("피드 목록 조회 실패 - request가 잘못 들어옴")
   void retrieveFeedNullRequest() {
-    assertThrows(IllegalArgumentException.class, () -> feedService.retrieveFeed(null));
+    assertThrows(IllegalArgumentException.class, () -> feedService.retrieveFeed(null, null));
   }
 
   @Test
@@ -198,10 +198,10 @@ class FeedServiceTest {
     FeedDto dto2 = mock(FeedDto.class);
     List<FeedDto> data = List.of(dto1, dto2);
 
-    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.search(request, null)).thenReturn(data);
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
-
-    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
 
     assertFalse(result.join().hasNext());
     assertEquals(data, result.join().data());
@@ -211,7 +211,7 @@ class FeedServiceTest {
     assertEquals(SortBy.createdAt, result.join().sortBy());
     assertEquals(SortDirection.ASCENDING, result.join().sortDirection());
 
-    verify(feedRepository).search(request);
+    verify(feedRepository).search(request, null);
     verify(feedRepository).feedTotalCount(request);
   }
 
@@ -237,11 +237,11 @@ class FeedServiceTest {
     when(dto2.createdAt()).thenReturn(ts1.plusMinutes(1));
 
     List<FeedDto> data = List.of(dto1, dto2);
-    when(feedRepository.search(request)).thenReturn(data);
+    when(feedRepository.search(request, userId)).thenReturn(data);
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
 
     // 실행
-    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, userId);
 
     // 검증
     assertTrue(result.join().hasNext());
@@ -252,7 +252,36 @@ class FeedServiceTest {
     assertEquals(SortBy.createdAt, result.join().sortBy());
     assertEquals(SortDirection.DESCENDING, result.join().sortDirection());
 
-    verify(feedRepository).search(request);
+    verify(feedRepository).search(request, userId);
+    verify(feedRepository).feedTotalCount(request);
+  }
+
+  @Test
+  @DisplayName("피드 목록 조회 - 좋아요한 사용자 ID로 조회")
+  void retrieveFeedWithLikeByUserId() {
+    // 준비
+    FeedPaginationRequest request = mock(FeedPaginationRequest.class);
+    when(request.limit()).thenReturn(2);
+    when(request.sortBy()).thenReturn(SortBy.createdAt);
+    when(request.sortDirection()).thenReturn(SortDirection.DESCENDING);
+
+    FeedDto dto1 = mock(FeedDto.class);
+    FeedDto dto2 = mock(FeedDto.class);
+    List<FeedDto> data = List.of(dto1, dto2);
+
+    UUID likeByUserId = UUID.randomUUID();
+    when(feedRepository.search(request, likeByUserId)).thenReturn(data);
+    when(feedRepository.feedTotalCount(request)).thenReturn(2L);
+
+    // 실행
+    FeedData result = feedService.retrieveFeed(request, likeByUserId);
+
+    // 검증
+    assertFalse(result.hasNext());
+    assertEquals(data, result.data());
+    assertEquals(2L, result.totalCount());
+
+    verify(feedRepository).search(request, likeByUserId);
     verify(feedRepository).feedTotalCount(request);
   }
 
@@ -307,10 +336,31 @@ class FeedServiceTest {
 
     when(feedRepository.findById(any()))
         .thenReturn(Optional.of(feed));
+    when(userRepository.findById(userId))
+        .thenReturn(Optional.of(user));
+    when(feedMapper.toDto(any(), any(), any(), any()))
+        .thenReturn(expectedFeedDto);
 
-    feedService.like(feedId);
+    FeedDto result = feedService.like(feedId, userId);
 
     assertThat(feed.getLikeCount().intValue()).isEqualTo(1);
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  @Disabled
+  @DisplayName("피드 좋아요 - likeByUserId null")
+  void likeWithNullUserId() {
+
+    when(feedRepository.findById(any()))
+        .thenReturn(Optional.of(feed));
+    when(feedMapper.toDto(any(), any(), any(), any()))
+        .thenReturn(expectedFeedDto);
+
+    FeedDto result = feedService.like(feedId, null);
+
+    assertThat(feed.getLikeCount().intValue()).isEqualTo(1);
+    assertThat(result).isNotNull();
   }
 
   @Test
@@ -320,7 +370,7 @@ class FeedServiceTest {
     when(feedRepository.findById(any()))
         .thenThrow(new FeedNotFoundException(null, null, null));
 
-    assertThatThrownBy(() -> feedService.like(any()))
+    assertThatThrownBy(() -> feedService.like(feedId, userId))
         .isInstanceOf(FeedNotFoundException.class);
   }
 
