@@ -18,6 +18,7 @@ import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequ
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.service.AsyncFeedSearchService;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
 import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
@@ -39,6 +40,7 @@ import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +60,7 @@ public class FeedService {
   private final FeedClothesRepository feedClothesRepository;
   /// Optional로 변경하여 Elasticsearch 비활성화 시 null 허용
   private final Optional<FeedSearchService> feedSearchService;
+  private final Optional<AsyncFeedSearchService> asyncFeedSearchService;
 //  private final FeedSearchService feedSearchService;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
@@ -91,18 +94,11 @@ public class FeedService {
     Feed savedFeed = feedRepository.save(feed);
     saveFeedClothes(ootds, savedFeed);
     /// Elasticsearch 서비스가 존재할 때만 호출
-    feedSearchService.ifPresentOrElse(
-        service -> {
-          service.create(feed);
-          log.info("피드가 Elasticsearch에 저장되었습니다: feed id={}", feed.getId());
-        },
-        () -> log.info("Elasticsearch가 비활성화되어 있어 검색 인덱스에 저장하지 않습니다: feed id={}", feed.getId())
-    );
+    elasticsearchIfPresentSearchFeed(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     return feedMapper.toDto(feed, user, weather, ootds);
   }
-
 
   /**
   * @methodName : retrieveFeed
@@ -110,18 +106,19 @@ public class FeedService {
   * @author : wongil
   * @Description: 피드 목록 조회
   **/
-  public FeedData retrieveFeed(FeedPaginationRequest request) {
+  public CompletableFuture<FeedData> retrieveFeed(FeedPaginationRequest request) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
 
-    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용
-    return (StringUtils.hasText(request.keywordLike()) && feedSearchService.isPresent())
-        ? feedSearchService.get().elasticSearch(request)
+    /// Elasticsearch 사용 가능하고 키워드 검색인 경우에만 Elasticsearch 사용(비동기)
+    return (StringUtils.hasText(request.keywordLike()) && asyncFeedSearchService.isPresent())
+//        ? feedSearchService.get().elasticSearch(request)
+        ? asyncFeedSearchService.get().asyncElasticSearch(request) // 비동기
         : defaultPaging(request);
   }
 
-  private FeedData defaultPaging(FeedPaginationRequest request) {
+  private CompletableFuture<FeedData> defaultPaging(FeedPaginationRequest request) {
     if (request == null) {
       throw new IllegalArgumentException();
     }
@@ -143,7 +140,7 @@ public class FeedService {
 
     Long totalCount = feedRepository.feedTotalCount(request);
 
-    return new FeedData(
+    FeedData feedData = new FeedData(
         pagedFeeds,
         nextCursor,
         nextIdAfter,
@@ -152,6 +149,8 @@ public class FeedService {
         request.sortBy(),
         request.sortDirection()
     );
+
+    return CompletableFuture.completedFuture(feedData);
   }
 
   /**
@@ -348,5 +347,15 @@ public class FeedService {
       FeedClothes feedClothes = new FeedClothes(cloth, feed);
       feedClothesRepository.saveAndFlush(feedClothes);
     });
+  }
+
+  private void elasticsearchIfPresentSearchFeed(Feed feed) {
+    feedSearchService.ifPresentOrElse(
+        service -> {
+          service.create(feed);
+          log.info("피드가 Elasticsearch에 저장되었습니다: feed id={}", feed.getId());
+        },
+        () -> log.info("Elasticsearch가 비활성화되어 있어 검색 인덱스에 저장하지 않습니다: feed id={}", feed.getId())
+    );
   }
 }
