@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.feed.elasticsearch.service;
 
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +21,11 @@ public class AsyncFeedSearchService {
 
   @Transactional(readOnly = true)
   @Async("feedSearchExecutor")
-  public CompletableFuture<FeedData> asyncElasticSearch(FeedPaginationRequest request) {
+  public CompletableFuture<FeedData> asyncElasticSearch(FeedPaginationRequest request, UUID likeByUserId) {
     log.info("feed 비동기 검색 시작: {}", request);
 
     try {
-      FeedData feedData = feedSearchService.elasticSearch(request);
+      FeedData feedData = feedSearchService.elasticSearch(request, likeByUserId);
       log.info("feed 비동기 검색 성공: {}", feedData);
       return CompletableFuture.completedFuture(feedData);
     } catch (Exception e) {

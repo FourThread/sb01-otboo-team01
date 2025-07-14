@@ -161,7 +161,7 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
     CompletableFuture<List<FeedDto>> dataList = result.thenApply(FeedData::data);
     CompletableFuture<Boolean> hasNext = result.thenApply(FeedData::hasNext);
     CompletableFuture<String> nextCursor = result.thenApply(FeedData::nextCursor);
@@ -205,7 +205,7 @@ public class FeedServiceIntegrationTest {
         .authorIdEqual(null)
         .build();
 
-    CompletableFuture<FeedData> result = feedService.retrieveFeed(request);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, null);
     CompletableFuture<List<FeedDto>> dataList = result.thenApply(FeedData::data);
     CompletableFuture<Boolean> hasNext = result.thenApply(FeedData::hasNext);
     CompletableFuture<String> nextCursor = result.thenApply(FeedData::nextCursor);
@@ -332,11 +332,11 @@ public class FeedServiceIntegrationTest {
         .build();
 
     // 특정 사용자가 좋아요한 피드 조회
-    FeedData result = feedService.retrieveFeed(request, anotherUser.getId());
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, anotherUser.getId());
 
     assertThat(result).isNotNull();
     // 실제 좋아요 로직에 따라 결과가 달라질 수 있음
-    assertThat(result.data()).isNotNull();
+    assertThat(result.join().data()).isNotNull();
   }
 
   @Test

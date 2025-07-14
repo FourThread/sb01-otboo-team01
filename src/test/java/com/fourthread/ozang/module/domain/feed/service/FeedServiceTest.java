@@ -274,12 +274,12 @@ class FeedServiceTest {
     when(feedRepository.feedTotalCount(request)).thenReturn(2L);
 
     // 실행
-    FeedData result = feedService.retrieveFeed(request, likeByUserId);
+    CompletableFuture<FeedData> result = feedService.retrieveFeed(request, likeByUserId);
 
     // 검증
-    assertFalse(result.hasNext());
-    assertEquals(data, result.data());
-    assertEquals(2L, result.totalCount());
+    assertFalse(result.join().hasNext());
+    assertEquals(data, result.join().data());
+    assertEquals(2L, result.join().totalCount());
 
     verify(feedRepository).search(request, likeByUserId);
     verify(feedRepository).feedTotalCount(request);
