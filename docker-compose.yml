@@ -35,26 +35,28 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - ELASTICSEARCH_HOST=elastic
+      - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
     ports:
       - "8080:80"
     depends_on:
       - db
       - redis
-      - elastic
+      - elasticsearch
 
-  elastic:
+  elasticsearch:
     build:
       context: .
       dockerfile: DockerfileEs
     container_name: elasticsearch
     restart: unless-stopped
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.http.ssl.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=password
     ports:
       - "9200:9200"
     volumes:
@@ -65,11 +67,13 @@ services:
     container_name: kibana
     restart: unless-stopped
     environment:
-      - ELASTICSEARCH_HOSTS=http://elastic:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
     ports:
       - "5601:5601"
     depends_on:
-      - elastic
+      - elasticsearch
 
 volumes:
   pgdata:

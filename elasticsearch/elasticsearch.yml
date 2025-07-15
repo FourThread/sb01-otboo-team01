@@ -2,7 +2,13 @@ discovery.type: single-node
 cluster.name: ozang-cluster
 node.name: ozang-node
 network.host: 0.0.0.0
-bootstrap.memory_lock: true
+bootstrap.memory_lock: false
+
+## 성능
+ingest.geoip.downloader.enabled: false
+xpack.ml.enabled: false
+indices.memory.index_buffer_size: 10%
+thread_pool.search.size: 2
 
 # 보안 설정
 xpack.security.enabled: true
