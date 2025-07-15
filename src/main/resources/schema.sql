@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS feeds;
 DROP TABLE IF EXISTS clothes;
 DROP TABLE IF EXISTS profiles;
 DROP TABLE IF EXISTS clothes_attribute_definitions;
+DROP TABLE IF EXISTS follows;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS weathers;
 
@@ -52,6 +53,20 @@ CREATE TABLE profiles
     CONSTRAINT uk_profiles_user_id UNIQUE (user_id),
     CONSTRAINT profiles_gender_check CHECK (gender IN ('MALE', 'FEMALE', 'ETC')),
     CONSTRAINT fk_profiles_user_id FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- 팔로우 테이블
+CREATE TABLE follows
+(
+    id           UUID         NOT NULL,
+    created_at   TIMESTAMP(6) NOT NULL,
+    follower_id  UUID         NOT NULL,
+    followee_id  UUID         NOT NULL,
+
+    CONSTRAINT follows_pkey PRIMARY KEY (id),
+    CONSTRAINT follows_unique_pair UNIQUE (follower_id, followee_id),
+    CONSTRAINT fk_follows_follower_id FOREIGN KEY (follower_id) REFERENCES users (id),
+    CONSTRAINT fk_follows_followee_id FOREIGN KEY (followee_id) REFERENCES users (id)
 );
 
 -- 의상 속성 정의 테이블
@@ -234,3 +249,6 @@ CREATE TABLE notifications
 -- CREATE INDEX idx_direct_messages_sender_receiver ON direct_messages (sender_id, receiver_id);
 -- CREATE INDEX idx_weathers_forecast_at ON weathers (forecast_at);
 -- CREATE INDEX idx_notifications_receiver_id ON notifications (receiver_id);
+-- CREATE INDEX idx_follows_follower_id ON follows(follower_id);
+-- CREATE INDEX idx_follows_followee_id ON follows(followee_id);
+-- CREATE INDEX idx_follows_created_at ON follows(created_at);
