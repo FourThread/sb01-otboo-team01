@@ -21,7 +21,7 @@ env:
   ECS_TASK_DEFINITION: .aws/task-definition.json
   CONTAINER_NAME_APP: ozang-app
   CONTAINER_NAME_ES: elasticsearch
-  JAVA_OPTS: "-Xmx800m -Xms400m -XX:MaxMetaspaceSize=200m -XX:MetaspaceSize=100m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=20.0"
+  JAVA_OPTS: "-Xmx512m -Xms256m -XX:MaxMetaspaceSize=128m -XX:MetaspaceSize=64m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0 -XX:InitialRAMPercentage=12.5"
   SPRING_PROFILES_ACTIVE: "prod"
   ALB_DNS: "ozang-alb-1134583714.ap-northeast-2.elb.amazonaws.com"
 
@@ -368,26 +368,49 @@ jobs:
           wait-for-service-stability: false
 
       - name: Verify task definition deployment
+        if: always()
         run: |
           echo "Verifying task definition was deployed..."
           
-          # 새로운 태스크 정의 ARN 확인
-          NEW_TASK_DEF=$(aws ecs describe-services \
+          # 현재 서비스에서 사용 중인 태스크 정의 ARN 확인
+          CURRENT_TASK_DEF=$(aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
             --query 'services[0].taskDefinition' \
             --output text)
           
-          echo "New task definition: $NEW_TASK_DEF"
+          echo "Current task definition in service: $CURRENT_TASK_DEF"
+          
+          # 배포된 태스크 정의 ARN 확인
+          DEPLOYED_TASK_DEF="${{ steps.deploy-task-def.outputs.task-definition-arn }}"
+          echo "Deployed task definition: $DEPLOYED_TASK_DEF"
+          
+          # 태스크 정의가 일치하는지 확인
+          if [ "$CURRENT_TASK_DEF" != "$DEPLOYED_TASK_DEF" ]; then
+            echo "WARNING: Task definition mismatch!"
+            echo "Service is using: $CURRENT_TASK_DEF"
+            echo "Expected: $DEPLOYED_TASK_DEF"
+            echo "Forcing service update with correct task definition..."
+          
+            aws ecs update-service \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service ${{ env.ECS_SERVICE }} \
+              --task-definition "$DEPLOYED_TASK_DEF" \
+              --force-new-deployment
+          else
+            echo "Task definition matches successfully!"
+          fi
           
           # 태스크 정의 상세 정보 확인
           aws ecs describe-task-definition \
-            --task-definition $NEW_TASK_DEF \
+            --task-definition $CURRENT_TASK_DEF \
             --query 'taskDefinition.{
               Family: family,
               Revision: revision,
               Status: status,
               ContainerCount: length(containerDefinitions),
+              TotalCPU: cpu,
+              TotalMemory: memory,
               Containers: containerDefinitions[].{
                 Name: name,
                 Image: image,
@@ -396,7 +419,7 @@ jobs:
               }
             }'
 
-      - name: Start ECS service
+      - name: Start ECS service with force new deployment
         run: |
           echo "Starting ECS service with force new deployment..."
           aws ecs update-service \
