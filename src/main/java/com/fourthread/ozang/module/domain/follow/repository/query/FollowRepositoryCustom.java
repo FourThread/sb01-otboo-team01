@@ -19,4 +19,15 @@ public interface FollowRepositoryCustom {
                                                      SortDirection direction);
 
     int countFollowings(UUID followerId, String nameLike);
+
+
+    List<Follow> findAllFollowersByCondition(UUID followeeId,
+                                                    String cursor,
+                                                    UUID idAfter,
+                                                    int limit,
+                                                    String nameLike,
+                                                    String sortBy,
+                                                    SortDirection direction);
+
+    int countFollowers(UUID followeeId, String nameLike);
 }

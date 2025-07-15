@@ -3,8 +3,6 @@ package com.fourthread.ozang.module.domain.follow.repository.query;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.entity.QFollow;
-import com.fourthread.ozang.module.domain.user.entity.QUser;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -59,7 +57,6 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
                 .fetchOne();
     }
 
-
     @Override
     public List<Follow> findAllFollowingsByCondition(UUID followerId,
                                                      String cursor,
@@ -73,7 +70,7 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
                 .join(follow.followee, user).fetchJoin()
                 .where(
                         follow.follower.id.eq(followerId),
-                        nameContains(nameLike),
+                        nameContainsFollowee(nameLike),
                         cursorCondition(cursor, idAfter, sortBy, direction)
                 )
                 .orderBy(getOrderSpecifiers(sortBy, direction))
@@ -81,8 +78,33 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
                 .fetch();
     }
 
-    private BooleanExpression nameContains(String nameLike) {
+    private BooleanExpression nameContainsFollowee(String nameLike) {
         return nameLike != null ? follow.followee.name.containsIgnoreCase(nameLike) : null;
+    }
+
+    @Override
+    public List<Follow> findAllFollowersByCondition(UUID followeeId,
+                                                    String cursor,
+                                                    UUID idAfter,
+                                                    int limit,
+                                                    String nameLike,
+                                                    String sortBy,
+                                                    SortDirection direction) {
+        return queryFactory
+                .selectFrom(follow)
+                .join(follow.follower, user).fetchJoin()
+                .where(
+                        follow.followee.id.eq(followeeId),
+                        nameContainsFollower(nameLike),
+                        cursorCondition(cursor, idAfter, sortBy, direction)
+                )
+                .orderBy(getOrderSpecifiers(sortBy, direction))
+                .limit(limit)
+                .fetch();
+    }
+
+    private BooleanExpression nameContainsFollower(String nameLike) {
+        return nameLike != null ? follow.follower.name.containsIgnoreCase(nameLike) : null;
     }
 
     private BooleanExpression cursorCondition(
@@ -124,6 +146,7 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
         return new OrderSpecifier[0];
     }
 
+
     @Override
     public int countFollowings(UUID followerId, String nameLike) {
         return Math.toIntExact(queryFactory
@@ -131,8 +154,23 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
                 .from(follow)
                 .where(
                         follow.follower.id.eq(followerId),
-                        nameContains(nameLike)
+                        nameContainsFollowee(nameLike)
                 )
                 .fetchOne());
     }
+
+
+    @Override
+    public int countFollowers(UUID followeeId, String nameLike) {
+        return Math.toIntExact(queryFactory
+                .select(follow.count())
+                .from(follow)
+                .where(
+                        follow.followee.id.eq(followeeId),
+                        nameContainsFollower(nameLike)
+                )
+                .fetchOne());
+    }
+
+
 }
