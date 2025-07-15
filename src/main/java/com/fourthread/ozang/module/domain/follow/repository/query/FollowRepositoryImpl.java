@@ -54,6 +54,8 @@ public class FollowRepositoryImpl  implements  FollowRepositoryCustom{
                                 .where(follow.follower.id.eq(targetUserId)
                                         .and(follow.followee.id.eq(currentUserId)))
                 ))
+                .from(follow)
+                .limit(1)
                 .fetchOne();
     }
 
