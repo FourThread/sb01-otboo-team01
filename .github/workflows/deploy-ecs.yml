@@ -21,7 +21,7 @@ env:
   ECS_TASK_DEFINITION: .aws/task-definition.json
   CONTAINER_NAME_APP: ozang-app
   CONTAINER_NAME_ES: elasticsearch
-  JAVA_OPTS: "-Xmx1024m -Xms512m -XX:MaxMetaspaceSize=256m -XX:MetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
+  JAVA_OPTS: "-Xmx800m -Xms400m -XX:MaxMetaspaceSize=200m -XX:MetaspaceSize=100m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=20.0"
   SPRING_PROFILES_ACTIVE: "prod"
   ALB_DNS: "ozang-alb-1134583714.ap-northeast-2.elb.amazonaws.com"
 
@@ -398,11 +398,11 @@ jobs:
 
       - name: Start ECS service
         run: |
-          echo "Starting ECS service..."
+          echo "Starting ECS service with force new deployment..."
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --desired-count ${{ steps.current-state.outputs.current_desired_count }}
+            --desired-count ${{ steps.current-state.outputs.current_desired_count }} \
           
           echo "Waiting for service stability..."
           # 타임아웃을 600초(10분)로 줄이고 더 자세한 로그 추가
@@ -442,7 +442,8 @@ jobs:
                   LastStatus: lastStatus,
                   DesiredStatus: desiredStatus,
                   HealthStatus: healthStatus,
-                  StoppedReason: stoppedReason
+                  StoppedReason: stoppedReason,
+                  TaskDefinitionArn: taskDefinitionArn
                 }'
           
               # 태스크 로그 확인
