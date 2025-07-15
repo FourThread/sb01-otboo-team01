@@ -9,7 +9,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FollowSummaryProjection {
 
-    private final UUID targetUserId;
     private final long followerCount;
     private final long followingCount;
     private final UUID followedByMeId;
