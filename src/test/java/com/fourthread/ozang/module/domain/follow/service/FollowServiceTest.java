@@ -1,6 +1,8 @@
 package com.fourthread.ozang.module.domain.follow.service;
 
+import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
+import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
 import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
@@ -17,6 +19,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -68,17 +72,17 @@ class FollowServiceTest {
     @DisplayName("팔로우를 성공적으로 생성할 수 있다")
     @Test
     void createFollow_success() {
-        // given
+        //given
         given(followRepository.existsByFollowerIdAndFolloweeId(followerId, followeeId)).willReturn(false);
         given(userRepository.findById(followerId)).willReturn(Optional.of(follower));
         given(userRepository.findById(followeeId)).willReturn(Optional.of(followee));
         given(followRepository.save(any())).willReturn(follow);
         given(followMapper.toDto(any())).willReturn(followDto);
 
-        // when
+        //when
         FollowDto result = followService.createFollow(followerId, followeeId);
 
-        // then
+        //then
         assertThat(result).isEqualTo(followDto);
         then(followRepository).should().save(any(Follow.class));
     }
@@ -102,14 +106,14 @@ class FollowServiceTest {
     @DisplayName("팔로우 취소 성공")
     @Test
     void deleteFollow_success() {
-        // given
+        //given
         UUID followId = follow.getId();
         given(followRepository.findById(followId)).willReturn(Optional.of(follow));
 
-        // when
+        //when
         followService.deleteFollow(followId, followerId);
 
-        // then
+        //then
         then(followRepository).should().deleteById(followId);
     }
 
@@ -138,7 +142,6 @@ class FollowServiceTest {
     @Test
     void getFollowSummary_success() {
         UUID currentUserId = UUID.randomUUID();
-        UUID followId = UUID.randomUUID();
 
         given(followRepository.countByFolloweeId(followeeId)).willReturn(3L);
         given(followRepository.countByFollowerId(followeeId)).willReturn(1L);
@@ -153,5 +156,95 @@ class FollowServiceTest {
         assertThat(summary.followedByMe()).isTrue();
         assertThat(summary.followedByMeId()).isEqualTo(follow.getId());
         assertThat(summary.followingMe()).isFalse();
+    }
+
+    @DisplayName("팔로우한 사용자 목록을 커서 기반으로 조회할 수 있다")
+    @Test
+    void findAllFollowings_should_return_cursor_response() {
+        // given
+        String cursor = "2025-07-01T10:00:00";
+        UUID idAfter = null;
+        int limit = 10;
+        String sortBy = "createdAt";
+        String sortDirection = "DESCENDING";
+
+        Follow anotherFollow = new Follow(follower, followee);
+        ReflectionTestUtils.setField(anotherFollow, "id", UUID.randomUUID());
+        ReflectionTestUtils.setField(anotherFollow, "createdAt", LocalDateTime.parse("2025-07-01T09:00:00"));
+
+        List<Follow> mockResult = List.of(anotherFollow);
+
+        given(followRepository.findAllFollowingsByCondition(followerId, cursor, idAfter, limit + 1, "", sortBy, SortDirection.DESCENDING))
+                .willReturn(mockResult);
+
+        given(followRepository.countFollowings(followerId, "")).willReturn(1);
+        given(followMapper.toDto(any())).willReturn(followDto);
+
+        // when
+        FollowListResponse response = followService.findAllFollowings(followerId, cursor, idAfter, limit, "", sortBy, sortDirection);
+
+        // then
+        assertThat(response.data()).hasSize(1);
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.totalCount()).isEqualTo(1);
+        assertThat(response.sortBy()).isEqualTo("CREATEDAT");
+        assertThat(response.sortDirection()).isEqualTo("DESCENDING");
+    }
+
+    @DisplayName("팔로워 목록을 커서 기반으로 조회할 수 있다")
+    @Test
+    void findAllFollowers_should_return_cursor_response() {
+        // given
+        String cursor = "2025-07-01T10:00:00";
+        UUID idAfter = null;
+        int limit = 10;
+        String sortBy = "createdAt";
+        String sortDirection = "DESCENDING";
+
+        Follow anotherFollow = new Follow(follower, followee);
+        ReflectionTestUtils.setField(anotherFollow, "id", UUID.randomUUID());
+        ReflectionTestUtils.setField(anotherFollow, "createdAt", LocalDateTime.parse("2025-07-01T09:00:00"));
+
+        List<Follow> mockResult = List.of(anotherFollow);
+
+        given(followRepository.findAllFollowersByCondition(followeeId, cursor, idAfter, limit + 1, "", sortBy, SortDirection.DESCENDING))
+                .willReturn(mockResult);
+
+        given(followRepository.countFollowers(followeeId, "")).willReturn(1);
+        given(followMapper.toDto(any())).willReturn(followDto);
+
+        //when
+        FollowListResponse response = followService.findAllFollowers(followeeId, cursor, idAfter, limit, "", sortBy, sortDirection);
+
+        //then
+        assertThat(response.data()).hasSize(1);
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.totalCount()).isEqualTo(1);
+        assertThat(response.sortBy()).isEqualTo("CREATEDAT");
+        assertThat(response.sortDirection()).isEqualTo("DESCENDING");
+    }
+
+    @DisplayName("지원하지 않는 정렬 필드로 조회 시 예외가 발생한다 - followings")
+    @Test
+    void findAllFollowings_should_throw_exception_when_sort_by_invalid() {
+        //given
+        String invalidSortBy = "INVALID";
+        String sortDirection = "ASCENDING";
+
+        //when then
+        assertThatThrownBy(() -> followService.findAllFollowings(followerId, null, null, 10, "", invalidSortBy, sortDirection))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @DisplayName("지원하지 않는 정렬 필드로 조회 시 예외가 발생한다 - followers")
+    @Test
+    void findAllFollowers_should_throw_exception_when_sort_by_invalid() {
+        //given
+        String invalidSortBy = "INVALID";
+        String sortDirection = "ASCENDING";
+
+        //when then
+        assertThatThrownBy(() -> followService.findAllFollowers(followeeId, null, null, 10, "", invalidSortBy, sortDirection))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
