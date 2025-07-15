@@ -78,6 +78,7 @@ jobs:
           echo "registry=public.ecr.aws/o8x2e2q0" >> $GITHUB_OUTPUT
           echo "Successfully logged in to Public ECR"
 
+      # App 이미지 체크
       - name: Check for existing App image in Public ECR
         id: check-app-image
         if: github.event.inputs.force_deploy != 'true'
@@ -117,6 +118,7 @@ jobs:
             echo "🔨 ELASTICSEARCH IMAGE NOT FOUND: Building new image"
           fi
 
+      # App 이미지 빌드
       - name: Build, tag, and push App image to Amazon ECR
         id: build-app-image
         if: steps.check-app-image.outputs.app_image_exists != 'true'
@@ -199,6 +201,7 @@ jobs:
           IMAGE_SIZE=$(docker images $ECR_REGISTRY/$ECR_REPOSITORY_ES:$IMAGE_TAG --format "{{.Size}}")
           echo "Built Elasticsearch image size: ${IMAGE_SIZE}"
 
+      # 기존 App 이미지 사용
       - name: Use existing App image from Public ECR
         id: use-existing-app-image
         if: steps.check-app-image.outputs.app_image_exists == 'true'
@@ -220,6 +223,7 @@ jobs:
           echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY_ES }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "Using existing Elasticsearch image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY_ES }}:$IMAGE_TAG"
 
+      # 최종 이미지 URI 설정
       - name: Set final App image URI
         id: final-app-image
         run: |
@@ -227,7 +231,6 @@ jobs:
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "Final App image URI: $IMAGE_URI"
 
-      ## elasticsearch 이미지 uri
       - name: Set final Elasticsearch image URI
         id: final-es-image
         run: |
@@ -325,17 +328,18 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME_APP }}
           image: ${{ needs.build-and-push.outputs.app_image_uri }}
 
-      - name: Debug task definition path
+      - name: Save intermediate task definition
         run: |
-          echo "First render output: ${{ steps.render-app-task-definition.outputs.task-definition }}"
-          echo "File exists check:"
-          ls -la ${{ steps.render-app-task-definition.outputs.task-definition }} || echo "File not found"
+          echo "Saving intermediate task definition..."
+          cp "${{ steps.render-app-task-definition.outputs.task-definition }}" ./intermediate-task-def.json
+          echo "Saved to: $(pwd)/intermediate-task-def.json"
+          ls -la ./intermediate-task-def.json
 
       - name: Fill in the new Elasticsearch image ID in the Amazon ECS task definition
         id: render-es-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.render-app-task-definition.outputs.task-definition }}
+          task-definition: ./intermediate-task-def.json
           container-name: ${{ env.CONTAINER_NAME_ES }}
           image: ${{ needs.build-and-push.outputs.es_image_uri }}
 
@@ -363,6 +367,35 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: false
 
+      - name: Verify task definition deployment
+        run: |
+          echo "Verifying task definition was deployed..."
+          
+          # 새로운 태스크 정의 ARN 확인
+          NEW_TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          
+          echo "New task definition: $NEW_TASK_DEF"
+          
+          # 태스크 정의 상세 정보 확인
+          aws ecs describe-task-definition \
+            --task-definition $NEW_TASK_DEF \
+            --query 'taskDefinition.{
+              Family: family,
+              Revision: revision,
+              Status: status,
+              ContainerCount: length(containerDefinitions),
+              Containers: containerDefinitions[].{
+                Name: name,
+                Image: image,
+                Memory: memory,
+                CPU: cpu
+              }
+            }'
+
       - name: Start ECS service
         run: |
           echo "Starting ECS service..."
@@ -372,9 +405,71 @@ jobs:
             --desired-count ${{ steps.current-state.outputs.current_desired_count }}
           
           echo "Waiting for service stability..."
-          timeout 900 aws ecs wait services-stable \
+          # 타임아웃을 600초(10분)로 줄이고 더 자세한 로그 추가
+          timeout 600 aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }}
+            --services ${{ env.ECS_SERVICE }} || {
+          
+            echo "Service stability timeout reached. Checking current status..."
+          
+            # 서비스 상태 확인
+            aws ecs describe-services \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services ${{ env.ECS_SERVICE }} \
+              --query 'services[0].{
+                Status: status,
+                RunningCount: runningCount,
+                PendingCount: pendingCount,
+                DesiredCount: desiredCount,
+                TaskDefinition: taskDefinition
+              }'
+          
+            # 태스크 목록 확인
+            echo "Checking tasks..."
+            TASK_ARNS=$(aws ecs list-tasks \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service-name ${{ env.ECS_SERVICE }} \
+              --query 'taskArns[]' \
+              --output text)
+          
+            if [ -n "$TASK_ARNS" ]; then
+              echo "Task details:"
+              aws ecs describe-tasks \
+                --cluster ${{ env.ECS_CLUSTER }} \
+                --tasks $TASK_ARNS \
+                --query 'tasks[].{
+                  TaskArn: taskArn,
+                  LastStatus: lastStatus,
+                  DesiredStatus: desiredStatus,
+                  HealthStatus: healthStatus,
+                  StoppedReason: stoppedReason
+                }'
+          
+              # 태스크 로그 확인
+              echo "Checking task logs..."
+              for task_arn in $TASK_ARNS; do
+                task_id=$(echo $task_arn | awk -F'/' '{print $NF}')
+                echo "Logs for task: $task_id"
+                aws logs get-log-events \
+                  --log-group-name /ecs/ozang-app \
+                  --log-stream-name ecs/ozang-app/$task_id \
+                  --limit 20 \
+                  --query 'events[].message' \
+                  --output text || echo "No logs found for ozang-app"
+          
+                aws logs get-log-events \
+                  --log-group-name /ecs/ozang-elasticsearch \
+                  --log-stream-name ecs/elasticsearch/$task_id \
+                  --limit 20 \
+                  --query 'events[].message' \
+                  --output text || echo "No logs found for elasticsearch"
+              done
+            else
+              echo "No tasks found"
+            fi
+          
+            exit 1
+          }
           
           echo "Service started successfully"
 
@@ -493,6 +588,7 @@ jobs:
             echo "상태: ${{ steps.verify-deployment.outputs.deployment_status }}"
             echo "접속 URL: http://${{ env.ALB_DNS }}"
           
+            # 배포 성공시 이전 이미지 정리 (App)
             echo "Cleaning up old App images in Public ECR..."
             aws ecr-public describe-images \
               --repository-name ${{ env.ECR_REPOSITORY_APP }} \
