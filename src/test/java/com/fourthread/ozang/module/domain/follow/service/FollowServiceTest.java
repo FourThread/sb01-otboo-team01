@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
 import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
+import com.fourthread.ozang.module.domain.follow.exception.FollowsException;
 import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
 import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
@@ -91,7 +92,7 @@ class FollowServiceTest {
     @Test
     void createFollow_fail_selfFollow() {
         assertThatThrownBy(() -> followService.createFollow(followerId, followerId))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(FollowsException.class);
     }
 
     @DisplayName("이미 팔로우한 경우 예외가 발생한다")
@@ -100,7 +101,7 @@ class FollowServiceTest {
         given(followRepository.existsByFollowerIdAndFolloweeId(followerId, followeeId)).willReturn(true);
 
         assertThatThrownBy(() -> followService.createFollow(followerId, followeeId))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(FollowsException.class);
     }
 
     @DisplayName("팔로우 취소 성공")
@@ -135,7 +136,7 @@ class FollowServiceTest {
         given(followRepository.findById(followId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> followService.deleteFollow(followId, followerId))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(FollowsException.class);
     }
 
     @DisplayName("팔로우 요약 정보를 정상적으로 조회할 수 있다")
