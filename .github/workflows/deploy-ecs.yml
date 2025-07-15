@@ -15,10 +15,12 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: public.ecr.aws/o8x2e2q0
   ECR_REPOSITORY: ozang-app
+  ECR_REPOSITORY_ES: ozang-elasticsearch
   ECS_SERVICE: ozang-service
   ECS_CLUSTER: ozang-cluster2
   ECS_TASK_DEFINITION: .aws/task-definition.json
   CONTAINER_NAME: ozang-app
+  CONTAINER_NAME_ES: elasticsearch
   JAVA_OPTS: "-Xmx1024m -Xms512m -XX:MaxMetaspaceSize=256m -XX:MetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
   SPRING_PROFILES_ACTIVE: "prod"
   ALB_DNS: "ozang-alb-1134583714.ap-northeast-2.elb.amazonaws.com"
@@ -35,6 +37,7 @@ jobs:
     outputs:
       version: ${{ steps.extract_version.outputs.VERSION }}
       image_uri: ${{ steps.build-image.outputs.image }}
+      es_image_uri: ${{ steps.final-es-image.outputs.image }}
 
     steps:
       - name: Checkout Repository
@@ -94,6 +97,26 @@ jobs:
             echo "🔨 IMAGE NOT FOUND: Building new image"
           fi
 
+      # elasticsearch 이미지 체크
+      - name: Check for existing Elasticsearch image in Public ECR
+        id: check-es-image
+        if: github.event.inputs.force_deploy != 'true'
+        continue-on-error: true
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          if aws ecr-public describe-images \
+            --repository-name ${{ env.ECR_REPOSITORY_ES }} \
+            --image-ids imageTag=${IMAGE_TAG} \
+            --region us-east-1 > /dev/null 2>&1; then
+            echo "es_image_exists=true" >> $GITHUB_OUTPUT
+            echo "ELASTICSEARCH IMAGE EXISTS: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY_ES }}:${IMAGE_TAG}"
+          else
+            echo "es_image_exists=false" >> $GITHUB_OUTPUT
+            echo "ELASTICSEARCH IMAGE NOT FOUND: Building new image"
+          fi
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         if: steps.check-image.outputs.image_exists != 'true'
@@ -144,6 +167,47 @@ jobs:
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:latest" 
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}"
 
+      # elasticsearch 이미지 빌드
+      - name: Build, tag, and push Elasticsearch image to Amazon ECR
+        id: build-es-image
+        if: steps.check-es-image.outputs.es_image_exists != 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "Building Elasticsearch Docker image"
+          
+          CACHE_FLAG=""
+          if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+            CACHE_FLAG="--no-cache"
+          fi
+          
+          docker build \
+            -f DockerfileEs \
+            --build-arg VERSION=${{ env.VERSION }} \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg VCS_REF=${{ github.sha }} \
+            --platform linux/amd64 \
+            --progress=plain \
+            ${CACHE_FLAG} \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY_ES:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY_ES:latest \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY_ES:${{ env.VERSION }} \
+            --label "git-commit=${{ github.sha }}" \
+            --label "version=${{ env.VERSION }}" \
+            --label "build-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            . 
+          
+          echo "Pushing Elasticsearch images to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_ES:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_ES:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_ES:${{ env.VERSION }}
+          
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_ES:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          
+          IMAGE_SIZE=$(docker images $ECR_REGISTRY/$ECR_REPOSITORY_ES:$IMAGE_TAG --format "{{.Size}}")
+          echo "Built Elasticsearch image size: ${IMAGE_SIZE}"
+
       - name: Use existing image from Public ECR
         id: use-existing-image
         if: steps.check-image.outputs.image_exists == 'true'
@@ -154,12 +218,31 @@ jobs:
           echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "Using existing image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
 
+      # 가존 elasticsearch 이미지 사용
+      - name: Use existing Elasticsearch image from Public ECR
+        id: use-existing-es-image
+        if: steps.check-es-image.outputs.es_image_exists == 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY_ES }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "Using existing Elasticsearch image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY_ES }}:$IMAGE_TAG"
+
       - name: Set final image URI
         id: final-image
         run: |
           IMAGE_URI="${{ steps.build-image.outputs.image || steps.use-existing-image.outputs.image }}"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "Final image URI: $IMAGE_URI"
+
+      # elasticsearch 이미지 uri 설정
+      - name: Set final Elasticsearch image URI
+        id: final-es-image
+        run: |
+          IMAGE_URI="${{ steps.build-es-image.outputs.image || steps.use-existing-es-image.outputs.image }}"
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "Final Elasticsearch image URI: $IMAGE_URI"
 
   deploy:
     name: Deploy to ECS
@@ -242,6 +325,14 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ needs.build-and-push.outputs.image_uri }}
+
+      - name: Fill in the new Elasticsearch image ID in the Amazon ECS task definition
+        id: render-es-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-app-task-definition.outputs.task-definition }}
+          container-name: ${{ env.CONTAINER_NAME_ES }}
+          image: ${{ needs.build-and-push.outputs.es_image_uri }}
 
       - name: Stop ECS service (Free Tier consideration)
         run: |
@@ -398,6 +489,7 @@ jobs:
           if [ "${{ job.status }}" == "success" ]; then
             echo "배포가 성공적으로 완료되었습니다!"
             echo "이미지: ${{ needs.build-and-push.outputs.image_uri }}"
+            echo "Elasticsearch 이미지: ${{ needs.build-and-push.outputs.es_image_uri }}"
             echo "상태: ${{ steps.verify-deployment.outputs.deployment_status }}"
             echo "접속 URL: http://${{ env.ALB_DNS }}"
           
@@ -412,6 +504,21 @@ jobs:
               if [ -n "$digest" ] && [ "$digest" != "None" ]; then
                 aws ecr-public batch-delete-image \
                   --repository-name ${{ env.ECR_REPOSITORY }} \
+                  --region us-east-1 \
+                  --image-ids imageDigest=$digest || true
+              fi
+            done
+            ## elasticsaerch 이미지 정리
+            echo "Cleaning up old Elasticsearch images in Public ECR..."
+            aws ecr-public describe-images \
+              --repository-name ${{ env.ECR_REPOSITORY_ES }} \
+              --region us-east-1 \
+              --query 'sort_by(imageDetails,&imagePushedAt)[:-5].[imageDigest]' \
+              --output text | \
+            while read digest; do
+              if [ -n "$digest" ] && [ "$digest" != "None" ]; then
+                aws ecr-public batch-delete-image \
+                  --repository-name ${{ env.ECR_REPOSITORY_ES }} \
                   --region us-east-1 \
                   --image-ids imageDigest=$digest || true
               fi
