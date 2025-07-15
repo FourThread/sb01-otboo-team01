@@ -9,7 +9,6 @@ import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -72,6 +71,22 @@ public class FollowController {
                 followerId, cursor, idAfter, limit, nameLike, sortBy, sortDirection
         );
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/followers")
+    public ResponseEntity<FollowListResponse> findFollowers(
+            @RequestParam UUID followeeId,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) UUID idAfter,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(required = false) String nameLike,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESCENDING") String sortDirection
+    ) {
+        FollowListResponse response = followService.findAllFollowers(
+                followeeId, cursor, idAfter, limit, nameLike, sortBy, sortDirection
+        );
         return ResponseEntity.ok(response);
     }
 }
