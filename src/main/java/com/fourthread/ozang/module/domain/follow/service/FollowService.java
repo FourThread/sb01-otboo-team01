@@ -1,11 +1,13 @@
 package com.fourthread.ozang.module.domain.follow.service;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
 import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
+import com.fourthread.ozang.module.domain.follow.exception.FollowsException;
 import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
 import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
 import com.fourthread.ozang.module.domain.user.entity.User;
@@ -32,12 +34,12 @@ public class FollowService {
     @Transactional
     public FollowDto createFollow(UUID followerId, UUID followeeId) {
         if (followerId.equals(followeeId)) {
-            throw new IllegalArgumentException("자기 자신을 팔로우할 수 없습니다."); //TODO 커스텀 예외처리
+            throw new FollowsException(SELF_FOLLOW_NOT_ALLOWED, this.getClass().getSimpleName(), SELF_FOLLOW_NOT_ALLOWED.getMessage());
         }
 
         boolean alreadyExists = followRepository.existsByFollowerIdAndFolloweeId(followerId, followeeId);
         if (alreadyExists) {
-            throw new IllegalStateException("이미 팔로우 중입니다."); //TODO 커스텀 예외처리
+            throw new FollowsException(ALREADY_FOLLOWING, this.getClass().getSimpleName(), ALREADY_FOLLOWING.getMessage());
         }
 
         User follower = userRepository.findById(followerId)
@@ -80,7 +82,7 @@ public class FollowService {
     @Transactional
     public void deleteFollow(UUID followId, UUID requesterId) {
         Follow follow = followRepository.findById(followId)
-                .orElseThrow(() -> new IllegalArgumentException("팔로우 정보를 찾을 수 없습니다.")); //TODO 커스텀 예외처리
+                .orElseThrow(() -> new FollowsException(FOLLOWS_NOT_FOUND, this.getClass().getSimpleName(), FOLLOWS_NOT_FOUND.getMessage()));
 
         if (!follow.getFollower().getId().equals(requesterId)) {
             throw new SecurityException("본인의 팔로우만 취소할 수 있습니다.");
