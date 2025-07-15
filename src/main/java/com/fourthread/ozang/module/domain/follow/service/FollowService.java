@@ -1,10 +1,10 @@
 package com.fourthread.ozang.module.domain.follow.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
 import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
 import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
+import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
 import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
 import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
@@ -71,9 +71,9 @@ public class FollowService {
 //                targetUserId,
 //                projection.getFollowerCount(),
 //                projection.getFollowingCount(),
-//                projection.getFollowedByMeId() != null,
+//                projection.isFollowedByMe(),
 //                projection.getFollowedByMeId(),
-//                projection.getFollowingMeId() != null
+//                projection.isFollowingMe()
 //        );
     }
 
@@ -128,6 +128,45 @@ public class FollowService {
         );
     }
 
+
+    @Transactional(readOnly = true)
+    public FollowListResponse findAllFollowers(UUID followeeId,
+                                                    String cursor,
+                                                    UUID idAfter,
+                                                    int limit,
+                                                    String nameLike,
+                                                    String sortBy,
+                                                    String sortDirection) {
+        validateSortBy(sortBy);
+        SortDirection direction = SortDirection.from(sortDirection);
+
+        List<Follow> results = followRepository.findAllFollowersByCondition(
+                followeeId, cursor, idAfter, limit + 1, nameLike, sortBy, direction
+        );
+
+        boolean hasNext = results.size() > limit;
+        List<Follow> pageContent = hasNext ? results.subList(0, limit) : results;
+
+        UUID nextId = hasNext ? pageContent.get(pageContent.size() - 1).getId() : null;
+        String nextCursor = hasNext ? getCursorValue(pageContent.get(pageContent.size() - 1), sortBy) : null;
+
+        int totalCount = followRepository.countFollowers(followeeId, nameLike);
+
+        List<FollowDto> dtoList = pageContent.stream()
+                .map(followMapper::toDto)
+                .toList();
+
+        return new FollowListResponse(
+                dtoList,
+                nextCursor,
+                nextId,
+                hasNext,
+                totalCount,
+                sortBy.toUpperCase(),
+                direction.name()
+        );
+    }
+
     private void validateSortBy(String sortBy) {
         if (!"createdAt".equalsIgnoreCase(sortBy)) {
             throw new IllegalArgumentException("지원하지 않는 정렬 기준입니다: " + sortBy);
@@ -141,4 +180,5 @@ public class FollowService {
 
         throw new IllegalArgumentException("지원하지 않는 정렬 기준입니다: " + sortBy);
     }
+
 }
