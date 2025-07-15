@@ -32,11 +32,16 @@ spring:
       host: ${REDIS_HOST}
       port: 6379
       database: 0
+      ssl:
+        enabled: true
       lettuce:
         pool:
           max-active: 4
           max-idle: 4
           min-idle: 1
+        cluster:
+          refresh:
+            adaptive: true
 # Elasticsearch 비활성화
     elasticsearch:
       repositories:
@@ -44,10 +49,19 @@ spring:
 
   autoconfigure:
     exclude:
+      # Elasticsearch Data AutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
+      # Elasticsearch Client AutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
+
+
 # Elasticsearch 기능 활성화 플래그
 elasticsearch:
   enabled: false
@@ -70,6 +84,13 @@ logging:
     root: WARN
     org.springframework.batch: WARN
     com.fourthread.ozang: INFO
+    org.springframework.web: INFO
+    org.springframework.boot: INFO
+    org.hibernate: WARN
+    com.zaxxer.hikari: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
 
 cloud:
   aws:
@@ -89,17 +110,90 @@ file:
 
 server:
   port: 80
+  tomcat:
+    accept-count: 100
+    max-connections: 8192
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    keep-alive-timeout: 20000
+    max-keep-alive-requests: 100
+    mbeanregistry:
+      enabled: true
+    shutdown: graceful
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
       base-path: /actuator
   endpoint:
     health:
       show-details: always
+      show-components: always
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db,diskSpace,ping
+        liveness:
+          include: livenessState,ping
+        basic:
+          include: db,diskSpace,ping
+          show-details: always
+  health:
+    defaults:
+      enabled: true
+    # 안전한 health indicator만 활성화
+    diskspace:
+      enabled: true
+    db:
+      enabled: true
+    ping:
+      enabled: true
+    # 외부 의존성 health indicator 비활성화
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    # 기타 외부 의존성도 비활성화
+    rabbit:
+      enabled: false
+    mongo:
+      enabled: false
+    cassandra:
+      enabled: false
+    neo4j:
+      enabled: false
+    influxdb:
+      enabled: false
+    ldap:
+      enabled: false
+    jms:
+      enabled: false
+    mail:
+      enabled: false
+    solr:
+      enabled: false
   server:
     port: 80
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+    health:
+      db:
+        enabled: true
+      redis:
+        enabled: false
+      elasticsearch:
+        enabled: false
+      diskspace:
+        enabled: true
+      ping:
+        enabled: true

@@ -25,6 +25,16 @@ spring:
       host: localhost
       port: 6379
       database: 0
+      ssl:
+        enabled: false
+        timeout: 2000ms
+        lettuce:
+          pool:
+            max-active: 8
+            max-idle: 8
+            min-idle: 0
+            max-wait: 1000ms
+          shutdown-timeout: 100ms
 
 # Elasticsearch 설정 추가 (선택적 활성화)
   elasticsearch:
@@ -47,6 +57,31 @@ batch:
   jdbc:
     initialize-schema: embedded
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    redis:
+      enabled: true
+    elasticsearch:
+      enabled: ${elasticsearch.enabled:false}
+    # 로컬에서 Redis 연결 실패 시 애플리케이션 전체를 DOWN으로 표시하지 않음
+    defaults:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+    ping:
+      enabled: true
+
 logging:
   level:
     root: INFO
@@ -55,6 +90,8 @@ logging:
     org.springframework.batch: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: INFO
     # ↓ 소켓 핸드셰이크·프레임 처리
     org.springframework.web.socket: DEBUG
     org.springframework.web.socket.server: DEBUG

@@ -55,7 +55,15 @@ public class JwtService {
     JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
-    redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
+    // =============== Redis 연결 실패 시 Graceful Fallback ===============
+    try {
+      redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
+      log.info("[JwtService] Redis에 RefreshToken 저장 완료");
+    } catch (Exception e) {
+      log.warn("[JwtService] Redis 연결 실패 - RefreshToken을 Redis에 저장할 수 없습니다: {}", e.getMessage());
+      log.info("[JwtService] Redis 없이 JWT 토큰 발급을 계속 진행합니다");
+    }
+//    redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return new JwtTokenResponse(accessJwtDto.token(),
@@ -144,19 +152,34 @@ public class JwtService {
 
   @Transactional
   public void invalidateRefreshToken(String refreshToken) {
-    JwtDto jwtDto = parse(refreshToken);
-    String key = "refresh:" + jwtDto.payloadDto().email();
-
-    redisDao.delete(key);
+    try {
+      JwtDto jwtDto = parse(refreshToken);
+      String key = "refresh:" + jwtDto.payloadDto().email();
+      redisDao.delete(key);
+      log.info("[JwtService] RefreshToken 무효화 완료 (Redis)");
+    } catch (Exception e) {
+      log.warn("[JwtService] Redis 연결 실패 - RefreshToken 무효화를 건너뜁니다: {}", e.getMessage());
+      log.info("[JwtService] JWT 토큰은 만료 시간에 의해 자동으로 무효화됩니다");
+    }
   }
 
   @Transactional
   public void invalidateJwtTokenByEmail(String email) {
-    String key = "refresh:" + email;
-    String token = (String) redisDao.getValue(key);
+    log.info("[JwtService] 이메일별 JWT 토큰 무효화 시작: {}", email);
+    try {
+      String key = "refresh:" + email;
+      String token = (String) redisDao.getValue(key);
 
-    if (token != null) {
-      invalidateRefreshToken(token);
+      if (token != null) {
+        invalidateRefreshToken(token);
+        log.info("[JwtService] 기존 토큰 무효화 완료");
+      } else {
+        log.info("[JwtService] 무효화할 기존 토큰이 없습니다");
+      }
+    } catch (Exception e) {
+      log.warn("[JwtService] Redis 연결 실패 - 기존 토큰 무효화를 건너뜁니다: {}", e.getMessage());
+      log.info("[JwtService] 새로운 토큰 발급은 정상적으로 진행됩니다");
+      // Redis 실패해도 계속 진행
     }
   }
 

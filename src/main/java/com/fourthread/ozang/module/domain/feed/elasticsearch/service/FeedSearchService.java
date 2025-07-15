@@ -18,6 +18,7 @@ import static com.fourthread.ozang.module.domain.feed.elasticsearch.entity.Searc
 import static com.fourthread.ozang.module.domain.feed.entity.SortDirection.ASCENDING;
 import static com.fourthread.ozang.module.domain.feed.entity.SortDirection.DESCENDING;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
@@ -58,8 +59,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -88,6 +91,7 @@ public class FeedSearchService {
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
   private final FeedClothesRepository feedClothesRepository;
+  private final Executor feedSearchExecutor;
 
   /**
    * @methodName : create
@@ -95,14 +99,13 @@ public class FeedSearchService {
    * @author : wongil
    * @Description: Elasticsearch에 Feed Document 저장
    **/
-  @Async
+  @Async("feedSearchExecutor")
   public CompletableFuture<FeedDocument> create(Feed feed) {
-    List<String> clothesIds = getClothesIds(feed);
 
-    FeedDocument document = FeedDocument.from(feed, clothesIds);
-    elasticsearchRepository.save(document);
-
-    return CompletableFuture.completedFuture(document);
+    return CompletableFuture.supplyAsync(() -> {
+      FeedDocument document = FeedDocument.from(feed, getClothesIds(feed));
+      return elasticsearchRepository.save(document);
+    }, feedSearchExecutor);
   }
 
   /**
@@ -111,7 +114,7 @@ public class FeedSearchService {
    * @author : wongil
    * @Description: 피드 검색
    **/
-  public FeedData elasticSearch(FeedPaginationRequest request) {
+  public FeedData elasticSearch(FeedPaginationRequest request, UUID likeByUserId) {
     SearchHits<FeedDocument> searchHits = searchFeedDocument(request);
 
     return toFeedData(searchHits, request);
@@ -171,6 +174,10 @@ public class FeedSearchService {
         .map(document -> {
           User user = users.get(UUID.fromString(document.getAuthorId()));
           Weather weather = weathers.get(UUID.fromString(document.getWeatherId()));
+          if (user == null || weather == null) {
+            return null;
+          }
+
           List<OotdDto> ootds = getOotds(document);
 
           return new FeedDto(
@@ -186,6 +193,7 @@ public class FeedSearchService {
               null
           );
         })
+        .filter(Objects::nonNull)
         .toList();
   }
 
@@ -311,10 +319,12 @@ public class FeedSearchService {
 
     // 실제 검색
     try {
+      log.info("피드 검색 완료");
       return elasticsearchOperations.search(searchQuery, FeedDocument.class);
     } catch (UncategorizedElasticsearchException e) {
+      log.error("피드 검색 실패");
       Throwable cause = e.getCause();
-      if (cause instanceof co.elastic.clients.elasticsearch._types.ElasticsearchException esEx) {
+      if (cause instanceof ElasticsearchException esEx) {
         esEx.error().rootCause().forEach(rc ->
             log.error("rootCause type={}, reason={}", rc.type(), rc.reason())
         );
