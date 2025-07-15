@@ -45,26 +45,21 @@ spring:
 # Elasticsearch 비활성화
     elasticsearch:
       repositories:
-        enabled: false
+        enabled: true
+
+  elasticsearch:
+    uris: http://localhost:9200
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
 
   autoconfigure:
     exclude:
-      # Elasticsearch Data AutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
-      # Elasticsearch Client AutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
-      - org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
 
-
 # Elasticsearch 기능 활성화 플래그
 elasticsearch:
-  enabled: false
+  enabled: true
 
 batch:
   weather:
@@ -88,6 +83,8 @@ logging:
     org.springframework.boot: INFO
     org.hibernate: WARN
     com.zaxxer.hikari: INFO
+    org.elasticsearch: WARN
+    org.springframework.data.elasticsearch: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
