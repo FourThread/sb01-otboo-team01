@@ -32,9 +32,21 @@ public class AuthController {
   // 리프레시 토큰을 이용해서 엑세스 토큰을 조회
   @GetMapping("/me")
   public ResponseEntity<String> me(
-      @CookieValue(value = "refresh_token") String refreshToken) {
-    JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
-    return ResponseEntity.status(HttpStatus.OK).body(jwtToken.accessToken());
+      @CookieValue(value = "refresh_token", required = false) String refreshToken) {
+
+    if (refreshToken == null || refreshToken.trim().isEmpty()) {
+      log.warn("[AuthController] refresh_token 쿠키가 없습니다. 로그인이 필요합니다.");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body("Authentication required. Please login first.");
+    }
+
+    try {
+      JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
+      return ResponseEntity.status(HttpStatus.OK).body(jwtToken.accessToken());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body("Invalid refresh token. Please login again.");
+    }
   }
 
   // 리프레시 토큰을 이용해서 리프레시 토큰과 엑세스 토큰을 재발급 받는다

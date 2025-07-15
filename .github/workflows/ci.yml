@@ -36,6 +36,7 @@ jobs:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
 
     steps:
       - name: Checkout code
