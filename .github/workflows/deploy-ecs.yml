@@ -292,6 +292,14 @@ jobs:
 
       - name: Update Task Definition with Environment Variables
         run: |
+          
+          # 파일 존재 확인
+          if [ ! -f "${{ env.ECS_TASK_DEFINITION }}" ]; then
+            echo "Error: Task definition file not found at ${{ env.ECS_TASK_DEFINITION }}"
+            ls -la .aws/
+            exit 1
+          fi
+          
           echo "Updating task definition with environment variables..."
           
           cat ${{ env.ECS_TASK_DEFINITION }} | jq --arg java_opts "${{ env.JAVA_OPTS }}" \
