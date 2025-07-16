@@ -51,7 +51,13 @@ public class WeatherCacheService {
             }
             return cached;
         } catch (Exception e) {
-            log.error("Redis 캐시 조회 실패: {}", key, e);
+            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
+            try {
+                redisTemplate.delete(key);
+                log.info("손상된 캐시 삭제 완료: {}", key);
+            } catch (Exception deleteEx) {
+                log.error("캐시 삭제 실패: {}", key, deleteEx);
+            }
             return null;
         }
     }
@@ -84,7 +90,13 @@ public class WeatherCacheService {
             }
             return cached;
         } catch (Exception e) {
-            log.error("Redis 캐시 조회 실패: {}", key, e);
+            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
+            try {
+                redisTemplate.delete(key);
+                log.info("손상된 캐시 삭제 완료: {}", key);
+            } catch (Exception deleteEx) {
+                log.error("캐시 삭제 실패: {}", key, deleteEx);
+            }
             return null;
         }
     }
@@ -114,7 +126,13 @@ public class WeatherCacheService {
             }
             return cached;
         } catch (Exception e) {
-            log.error("Redis 캐시 조회 실패: {}", key, e);
+            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
+            try {
+                redisTemplate.delete(key);
+                log.info("손상된 캐시 삭제 완료: {}", key);
+            } catch (Exception deleteEx) {
+                log.error("캐시 삭제 실패: {}", key, deleteEx);
+            }
             return null;
         }
     }
