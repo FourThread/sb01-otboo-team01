@@ -398,27 +398,39 @@ public class WeatherServiceImpl implements WeatherService {
         }
     }
 
-    private String calculateBaseDate(LocalDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-    }
-
-    private String calculateBaseTime(LocalDateTime dateTime) {
+    private String[] calculateBaseDateAndTime(LocalDateTime dateTime) {
         int hour = dateTime.getHour();
         int minute = dateTime.getMinute();
 
-        // 발표 시각 배열
+        // 발표 시각 배열 (내림차순)
         int[] baseHours = {23, 20, 17, 14, 11, 8, 5, 2};
 
         for (int baseHour : baseHours) {
             // 해당 시각의 10분 이후라면 그 시각 사용
             if (hour > baseHour || (hour == baseHour && minute >= 10)) {
-                return String.format("%02d00", baseHour);
+                String baseDate = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                String baseTime = String.format("%02d00", baseHour);
+                return new String[]{baseDate, baseTime};
             }
         }
 
         // 02:10 이전이라면 전날 23시
-        return "2300";
+        LocalDateTime yesterday = dateTime.minusDays(1);
+        String baseDate = yesterday.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String baseTime = "2300";
+        return new String[]{baseDate, baseTime};
     }
+
+    private String calculateBaseDate(LocalDateTime dateTime) {
+        String[] dateAndTime = calculateBaseDateAndTime(dateTime);
+        return dateAndTime[0];
+    }
+
+    private String calculateBaseTime(LocalDateTime dateTime) {
+        String[] dateAndTime = calculateBaseDateAndTime(dateTime);
+        return dateAndTime[1];
+    }
+
 
     private List<WeatherDto> processFiveDayForecast(WeatherApiResponse response,
         Double latitude, Double longitude,
