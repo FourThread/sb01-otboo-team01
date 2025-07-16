@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.notification.listener;
 
 import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.*;
 import com.fourthread.ozang.module.domain.notification.service.NotificationService;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -82,13 +79,12 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FeedLikedEvent event) {
-//        notificationService.create(
-//                event.feedDto().author().userId(),
-//                String.format("%s님이 내 피드를 좋아합니다.", ),
-//                "새로운 의상 속성이 변경되었어요.",
-//                String.format("[%s] 속성을 확인해보세요.", event.clothesAttributeDefDto().name()),
-//                NotificationLevel.INFO
-//        );
+        notificationService.create(
+                event.feedUserId(),
+                String.format("%s님이 내 피드를 좋아합니다.", event.likeByUserName()),
+                event.content(),
+                NotificationLevel.INFO
+        );
 
     }
 
