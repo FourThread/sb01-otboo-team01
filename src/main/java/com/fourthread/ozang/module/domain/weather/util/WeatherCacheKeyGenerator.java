@@ -16,7 +16,7 @@ public class WeatherCacheKeyGenerator {
 
     private static final double GRID_SIZE_KM = 5.0; // 5km 그리드
     private static final double KM_PER_LAT_DEGREE = 111.0; // 위도 1도당 약 111km
-    private static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");
+    public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");
 
     /**
      * 현재 날씨 캐시 키 생성
