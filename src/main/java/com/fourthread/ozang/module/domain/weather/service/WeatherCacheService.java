@@ -23,11 +23,13 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class WeatherCacheService {
 
-    @Qualifier("weatherRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final Duration CURRENT_WEATHER_TTL = Duration.ofHours(1);
     private static final Duration FORECAST_WEATHER_TTL = Duration.ofHours(3);
