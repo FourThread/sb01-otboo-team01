@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.notification.listener;
 
+import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
 import com.fourthread.ozang.module.domain.notification.entity.Notification;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.*;
@@ -13,6 +14,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class NotificationEventListener {
 
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
 
     // 권한 변경 이벤트
     @Async("eventTaskExecutor")
@@ -100,20 +103,26 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FollowingFeedCreatedEvent event) {
-/*        UUID requesterId = event.userId();
+        Set<UUID> followerIds = followRepository.findFollowerIdsByFolloweeId(event.user().getId());
 
         notificationService.createAll(
-                null,
-                "%s님이 새로운 피드를 작성했어요.",
-                String.format(event.content()),
+                followerIds,
+                String.format("%s님이 새로운 피드를 작성했어요.",event.user().getName()),
+                event.content(),
                 NotificationLevel.INFO
-        );*/
+        );
     }
 
     // 내가 팔로우 당함
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FollowedEvent event) {
+        notificationService.create(
+                event.dto().followee().userId(),
+                String.format("%s님이 나를 팔로우 했어요", event.dto().follower().name()),
+                "",
+                NotificationLevel.INFO
+        );
 
     }
 
