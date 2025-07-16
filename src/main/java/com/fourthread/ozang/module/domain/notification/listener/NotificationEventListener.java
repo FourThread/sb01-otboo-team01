@@ -99,11 +99,11 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FollowingFeedCreatedEvent event) {
-        Set<UUID> followerIds = followRepository.findFollowerIdsByFolloweeId(event.user().getId());
+        Set<UUID> followerIds = followRepository.findFollowerIdsByFolloweeId(event.userSummary().userId());
 
         notificationService.createAll(
                 followerIds,
-                String.format("%s님이 새로운 피드를 작성했어요.",event.user().getName()),
+                String.format("%s님이 새로운 피드를 작성했어요.",event.userSummary().name()),
                 event.content(),
                 NotificationLevel.INFO
         );
