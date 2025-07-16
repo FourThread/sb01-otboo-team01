@@ -1,4 +1,10 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-public record FeedCommentedEvent() {
+import java.util.UUID;
+
+public record FeedCommentedEvent(
+        UUID feedAuthorUserId,
+        String commentUserName,
+        String content
+) {
 }
