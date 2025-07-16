@@ -32,6 +32,7 @@ import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
 import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FeedLikedEvent;
 import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreatedEvent;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
@@ -101,7 +102,7 @@ public class FeedService {
     elasticsearchIfPresentSearchFeed(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
-    eventPublisher.publishEvent(new FollowingFeedCreatedEvent(user.getId(), feed.getContent()));
+    eventPublisher.publishEvent(new FollowingFeedCreatedEvent(user, feed.getContent()));
 
     return feedMapper.toDto(feed, user, weather, ootds);
   }
@@ -199,8 +200,12 @@ public class FeedService {
     Feed feed = getFeed(feedId);
     feed.increaseLike();
 
-    FeedLike feedLike = new FeedLike(feed, getUser(likeByUserId));
+    User likeByUser = getUser(likeByUserId);
+
+    FeedLike feedLike = new FeedLike(feed, likeByUser);
     feedLikeRepository.save(feedLike);
+
+    eventPublisher.publishEvent(new FeedLikedEvent(feedLike.getId(), feed.getAuthor().getId(), feed.getContent(), likeByUser.getName()));
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }
