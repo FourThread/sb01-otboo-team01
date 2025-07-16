@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.notification.service;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
 import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
@@ -7,6 +8,7 @@ import com.fourthread.ozang.module.domain.notification.entity.Notification;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
 import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
+import com.fourthread.ozang.module.domain.notification.execption.NotificationException;
 import com.fourthread.ozang.module.domain.notification.mapper.NotificationMapper;
 import com.fourthread.ozang.module.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
 
 
 @Slf4j
@@ -33,6 +37,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public NotificationCursorResponse findAllByReceiver(UUID receiverId, String cursor, UUID idAfter, int limit) {
+        log.debug("알림 목록 조회 시작: receiverId={}, cursor={}, idAfter={}, limit={}", receiverId, cursor, idAfter, limit);
         SortDirection direction = SortDirection.DESCENDING; // 현재는 고정된 정렬 방향 (DESC)
 
         List<Notification> results = notificationRepository.findAllByCondition(
@@ -52,6 +57,7 @@ public class NotificationService {
         int totalCount = notificationRepository.countByReceiverId(receiverId);
         List<NotificationDto> dtoList = notificationMapper.toDtoList(pageContent);
 
+        log.info("알림 목록 조회 완료: count={}, hasNext={}", dtoList.size(), hasNext);
         return new NotificationCursorResponse(
                 dtoList,
                 nextCursor,
@@ -69,22 +75,27 @@ public class NotificationService {
 
     @Transactional
     public void delete(UUID receiverId, UUID notificationId) {
+        log.debug("알림 삭제 시작: receiverId={}, notificationId={}", receiverId, notificationId);
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("알림이 존재하지 않습니다")); //TODO 커스텀 예외처리
+                .orElseThrow(() -> {
+                    log.warn("알림 삭제 실패 - 존재하지 않음: notificationId={}", notificationId);
+                    return new NotificationException(NOTIFICATION_NOT_FOUND, this.getClass().getSimpleName(), NOTIFICATION_NOT_FOUND.getMessage());
+                });
 
         if (!notification.getReceiverId().equals(receiverId)) {
-            throw new AccessDeniedException("삭제 권한이 없습니다."); //TODO 다른 방식으로 권한 처리 고민해보기
+            log.warn("알림 삭제 실패 - 권한 없음: receiverId={}, notificationId={}", receiverId, notificationId);
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
         }
 
         notificationRepository.delete(notification);
+        log.info("알림 삭제 완료: notificationId={}", notificationId);
     }
 
 
     @Transactional
     public void create(UUID receiverId, String title, String content,
                        NotificationLevel level) {
-        log.debug("새 알림 생성 시작: receiverId={}, type={}", receiverId, level);
-
+        log.debug("단일 알림 생성 시작: receiverId={}, level={}, title={}", receiverId, level, title);
         Notification notification = new Notification(
                 receiverId,
                 title,
@@ -97,14 +108,13 @@ public class NotificationService {
         NotificationDto dto = notificationMapper.toDto(notification);
         eventPublisher.publishEvent(new NotificationCreatedEvent(dto));
 
-        log.info("새 알림 생성 완료: id={}, receiverId={}",
-                notification.getId(), receiverId);
+        log.info("단일 알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
     }
 
     @Transactional
     public void createAll(Set<UUID> receiverIds, String title, String content,
                           NotificationLevel level) {
-        log.debug("여러 알림 생성 시작: receiverIds={}, type={}", receiverIds, level);
+        log.debug("여러 알림 생성 시작: count={}, level={}, title={}", receiverIds.size(), level, title);
 
         List<Notification> notifications = receiverIds.stream()
                 .map(receiverId -> new Notification(
