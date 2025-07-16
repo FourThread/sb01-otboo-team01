@@ -31,6 +31,10 @@ public enum ErrorCode {
   SELF_FOLLOW_NOT_ALLOWED("SELF_FOLLOW_NOT_ALLOWED", "자기 자신을 팔로우할 수 없습니다.", HttpStatus.BAD_REQUEST),
   ALREADY_FOLLOWING("ALREADY_FOLLOWING", "이미 팔로우 중입니다.", HttpStatus.CONFLICT),
 
+  // 알림 관련
+  NOTIFICATION_NOT_FOUND("NOTIFICATION_NOT_FOUND", "알림 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+
   FILE_UPLOAD_ERROR("FILE_UPLOAD_ERROR", "파일 업로드 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_SIZE_EXCEEDED( "FILE_SIZE_EXCEEDED","파일 크기가 제한을 초과했습니다.",  HttpStatus.BAD_REQUEST),
   INVALID_FILE_TYPE( "INVALID_FILE_TYPE", "지원하지 않는 파일 형식입니다.", HttpStatus.BAD_REQUEST),
