@@ -30,7 +30,6 @@ public class BatchScheduler {
     private final JobLauncher asyncJobLauncher;
 
     private final Job weatherDataCleanupJob;
-    private final Job expiredTokenCleanupJob;
 
     @Value("${batch.scheduler.weather-cleanup.enabled:true}")
     private boolean weatherCleanupEnabled;
@@ -67,36 +66,6 @@ public class BatchScheduler {
 
         } catch (Exception e) {
             log.error("[Scheduled] 날씨 데이터 정리 작업 실행 실패", e);
-        }
-    }
-
-    /**
-     * JWT 토큰 정리 작업
-     */
-    @Scheduled(cron = "0 0 1 * * ?", zone = "#{@timezoneId}")
-    public void runTokenCleanup() {
-        if (!tokenCleanupEnabled) {
-            log.debug("JWT 토큰 정리 작업이 비활성화되어 있습니다");
-            return;
-        }
-
-        log.info("[Scheduled] JWT 토큰 정리 작업 시작");
-
-        try {
-            JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .addString("jobType", "scheduled_token_cleanup")
-                .addString("triggeredBy", "scheduler")
-                .addString("timezone", zoneId.getId())
-                .toJobParameters();
-
-            JobExecution jobExecution = asyncJobLauncher.run(expiredTokenCleanupJob, jobParameters);
-
-            log.info("[Scheduled] JWT 토큰 정리 작업 시작됨 - Job ID: {}, Status: {}",
-                jobExecution.getId(), jobExecution.getStatus());
-
-        } catch (Exception e) {
-            log.error("[Scheduled] JWT 토큰 정리 작업 실행 실패", e);
         }
     }
 
