@@ -92,6 +92,12 @@ public class NotificationEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FeedCommentedEvent event) {
+        notificationService.create(
+                event.feedAuthorUserId(),
+                String.format("%s님이 댓글을 달았어요.",event.commentUserName()),
+                event.content(),
+                NotificationLevel.INFO
+        );
 
     }
 
