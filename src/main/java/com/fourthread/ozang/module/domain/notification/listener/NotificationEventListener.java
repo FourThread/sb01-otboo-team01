@@ -7,6 +7,7 @@ import com.fourthread.ozang.module.domain.notification.service.NotificationServi
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -130,8 +131,13 @@ public class NotificationEventListener {
 
     // DM 수신
     @Async("eventTaskExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handle(DmReceivedEvent event) {
-
+        notificationService.create(
+                event.dmDto().receiver().userId(),
+                String.format("[DM] %s", event.dmDto().sender().name()),
+                event.dmDto().content(),
+                NotificationLevel.INFO
+        );
     }
 }
