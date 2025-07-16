@@ -404,16 +404,20 @@ public class WeatherServiceImpl implements WeatherService {
 
     private String calculateBaseTime(LocalDateTime dateTime) {
         int hour = dateTime.getHour();
-        int[] baseHours = {2, 5, 8, 11, 14, 17, 20, 23};
+        int minute = dateTime.getMinute();
 
-        for (int i = baseHours.length - 1; i >= 0; i--) {
-            if (hour >= baseHours[i]) {
-                return String.format("%02d00", baseHours[i]);
+        // 발표 시각 배열
+        int[] baseHours = {23, 20, 17, 14, 11, 8, 5, 2};
+
+        for (int baseHour : baseHours) {
+            // 해당 시각의 10분 이후라면 그 시각 사용
+            if (hour > baseHour || (hour == baseHour && minute >= 10)) {
+                return String.format("%02d00", baseHour);
             }
         }
 
-        LocalDateTime yesterday = dateTime.minusDays(1);
-        return yesterday.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "2300";
+        // 02:10 이전이라면 전날 23시
+        return "2300";
     }
 
     private List<WeatherDto> processFiveDayForecast(WeatherApiResponse response,
