@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import java.time.Duration;
 import java.util.List;
@@ -18,6 +19,8 @@ public class WeatherCacheService {
 
     @Qualifier("weatherRedisTemplate")
     private final RedisTemplate<String, Object> weatherRedisTemplate;
+
+    private final ObjectMapper objectMapper;
 
     @Value("${weather.cache.ttl:3600}")
     private long cacheTtlSeconds;

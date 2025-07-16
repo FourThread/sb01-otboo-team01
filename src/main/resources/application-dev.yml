@@ -46,7 +46,7 @@ elasticsearch:
 
 batch:
   jdbc:
-    initialize-schema: always
+    initialize-schema: never
     platform: postgresql
     schema: classpath:org/springframework/batch/core/schema-postgresql.sql
     job:
@@ -60,8 +60,6 @@ batch:
       enabled: true
   job:
     enabled: false
-  jdbc:
-    initialize-schema: embedded
 
 management:
   endpoints:
