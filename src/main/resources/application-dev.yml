@@ -36,13 +36,18 @@ spring:
             max-wait: 1000ms
           shutdown-timeout: 100ms
 
-# Elasticsearch 설정 추가 (선택적 활성화)
   elasticsearch:
-    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
-# Elasticsearch 기능 활성화 플래그 추가
-# 환경변수로 ELASTICSEARCH_ENABLED=true 설정하면 활성화, 기본값은 false
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+    connection-timeout: 10s
+    socket-timeout: 60s
+
 elasticsearch:
-  enabled: ${ELASTICSEARCH_ENABLED:false}
+  enabled: ${ELASTICSEARCH_ENABLED:true}
+  cloud:
+    host: ${ELASTICSEARCH_HOST}
+    api-key: ${ELASTICSEARCH_API_KEY}
 
 batch:
   weather:
