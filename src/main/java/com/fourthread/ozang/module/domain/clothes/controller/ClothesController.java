@@ -56,7 +56,7 @@ public class ClothesController {
     public ResponseEntity<ClothesDtoCursorResponse> findAll(
             @RequestParam UUID ownerId,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestParam ClothesType typeEqual,
+            @RequestParam(required = false) ClothesType typeEqual,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
             @RequestParam(required = false, defaultValue = "CREATED_AT") String sortBy,
