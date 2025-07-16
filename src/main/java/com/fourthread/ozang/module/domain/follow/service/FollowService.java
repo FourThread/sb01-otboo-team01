@@ -10,10 +10,13 @@ import com.fourthread.ozang.module.domain.follow.entity.Follow;
 import com.fourthread.ozang.module.domain.follow.exception.FollowsException;
 import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
 import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FollowedEvent;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,7 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final FollowMapper followMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public FollowDto createFollow(UUID followerId, UUID followeeId) {
@@ -48,7 +52,11 @@ public class FollowService {
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND, this.getClass().getSimpleName(), USER_NOT_FOUND.getMessage()));
 
         Follow follow = followRepository.save(new Follow(follower, followee));
-        return followMapper.toDto(follow);
+
+        FollowDto dto = followMapper.toDto(follow);
+        eventPublisher.publishEvent(new FollowedEvent(dto));
+
+        return dto;
     }
 
     @Transactional(readOnly = true)
