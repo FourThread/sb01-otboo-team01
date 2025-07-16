@@ -39,8 +39,11 @@ public class BatchAdminController {
     @Qualifier("asyncJobLauncher")
     private final JobLauncher asyncJobLauncher;
 
+    @Qualifier("weatherDataCleanupJob")
     private final Job weatherDataCleanupJob;
-    private final Job expiredTokenCleanupJob;
+
+    @Qualifier("weatherCacheWarmupJob")
+    private final Job weatherCacheWarmupJob;
 
     private final JobExplorer jobExplorer;
 
@@ -64,20 +67,20 @@ public class BatchAdminController {
     }
 
     /**
-     * JWT 토큰 정리 배치 수동 실행
+     * 날씨 캐시 워밍업 배치 수동 실행
      */
-    @PostMapping("/token-cleanup")
-    public ResponseEntity<Map<String, Object>> runTokenCleanup(
+    @PostMapping("/weather-cache-warmup")
+    public ResponseEntity<Map<String, Object>> runWeatherCacheWarmup(
         @Parameter(description = "비동기 실행 여부", example = "true")
         @RequestParam(defaultValue = "true") boolean async
     ) {
-        log.info("[Admin] JWT 토큰 정리 배치 수동 실행 요청 - async: {}", async);
+        log.info("[Admin] 날씨 캐시 워밍업 배치 수동 실행 요청 - async: {}", async);
 
         return executeJob(
             async ? asyncJobLauncher : jobLauncher,
-            expiredTokenCleanupJob,
-            "manual_token_cleanup",
-            "JWT 토큰 정리 배치"
+            weatherCacheWarmupJob,
+            "manual_weather_cache_warmup",
+            "날씨 캐시 워밍업 배치"
         );
     }
 
@@ -87,31 +90,37 @@ public class BatchAdminController {
      */
     @GetMapping("/history")
     public ResponseEntity<Map<String, Object>> getBatchHistory(
+        @Parameter(description = "조회할 배치 Job 이름", example = "weatherDataCleanupJob")
+        @RequestParam(required = false) String jobName,
+
         @Parameter(description = "조회할 개수", example = "10")
-        @RequestParam(defaultValue = "10") int limit,
-        @Parameter(description = "조회할 작업 유형 (WEATHER, TOKEN, ALL)", example = "ALL")
-        @RequestParam(defaultValue = "ALL") String jobType
+        @RequestParam(defaultValue = "10") int limit
     ) {
-        log.info("[Admin] 배치 작업 이력 조회 요청 - limit: {}, jobType: {}", limit, jobType);
+        log.info("[Admin] 배치 작업 실행 이력 조회 요청 - Job Name: {}, Limit: {}", jobName, limit);
 
         try {
             Map<String, Object> response = new HashMap<>();
 
-            // 도메인별 이력 조회
-            if ("ALL".equals(jobType) || "WEATHER".equals(jobType)) {
-                response.put("weatherCleanupHistory", getJobHistory("weatherDataCleanupJob", limit));
-            }
-
-            if ("ALL".equals(jobType) || "TOKEN".equals(jobType)) {
-                response.put("tokenCleanupHistory", getJobHistory("expiredTokenCleanupJob", limit));
+            if (jobName != null) {
+                // 특정 Job 이력 조회
+                List<Map<String, Object>> history = getJobHistory(jobName, limit);
+                response.put("history", history);
+                response.put("jobName", jobName);
+            } else {
+                // 모든 Job 이력 조회
+                Map<String, List<Map<String, Object>>> allHistory = new HashMap<>();
+                allHistory.put("weatherDataCleanupJob", getJobHistory("weatherDataCleanupJob", limit));
+                allHistory.put("expiredTokenCleanupJob", getJobHistory("expiredTokenCleanupJob", limit));
+                allHistory.put("weatherCacheWarmupJob", getJobHistory("weatherCacheWarmupJob", limit));
+                response.put("history", allHistory);
             }
 
             response.put("success", true);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("[Admin] 배치 작업 이력 조회 실패", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("배치 이력 조회 실패", e));
+            log.error("[Admin] 배치 작업 실행 이력 조회 실패", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("이력 조회 실패", e));
         }
     }
 
@@ -187,9 +196,11 @@ public class BatchAdminController {
             // 최근 실행 상태
             Map<String, Object> weatherStatus = getLatestJobStatus("weatherDataCleanupJob");
             Map<String, Object> tokenStatus = getLatestJobStatus("expiredTokenCleanupJob");
+            Map<String, Object> cacheWarmupStatus = getLatestJobStatus("weatherCacheWarmupJob");
 
             response.put("weatherCleanup", weatherStatus);
             response.put("tokenCleanup", tokenStatus);
+            response.put("weatherCacheWarmup", cacheWarmupStatus);
             response.put("success", true);
 
             return ResponseEntity.ok(response);
@@ -300,6 +311,9 @@ public class BatchAdminController {
 
         if (executionContext.containsKey("deletedWeatherCount")) {
             results.put("deletedWeatherCount", executionContext.getInt("deletedWeatherCount"));
+        }
+        if (executionContext.containsKey("majorCitiesSuccess")) {
+            results.put("majorCitiesSuccess", executionContext.getInt("majorCitiesSuccess"));
         }
         if (executionContext.containsKey("deletedTokenCount")) {
             results.put("deletedTokenCount", executionContext.getInt("deletedTokenCount"));
