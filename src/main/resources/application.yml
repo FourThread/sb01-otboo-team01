@@ -40,6 +40,15 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+  cache:
+    type: redis
+    redis:
+      cache-null-values: false
+      key-prefix: "ozang:"
+      use-key-prefix: true
+      enable-statistics: true
+
   elasticsearch:
     uris: http://localhost:9200
 
@@ -72,9 +81,26 @@ logging:
 
 batch:
   weather:
-    retention-days: 30  # 날씨 데이터 보관 기간 (일)
+    retention-days: 30
+    cache-warmup:
+      enabled: true
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    weather-cache-warmup:
+      enabled: true
 
 weather:
+  cache:
+    current:
+      ttl: PT1H  # 현재 날씨 캐시 TTL (1시간)
+    forecast:
+      ttl: PT3H  # 5일 예보 캐시 TTL (3시간)
+    location:
+      ttl: PT24H # 위치 정보 캐시 TTL (24시간)
+    warmup:
+      enabled: true
+      max-regions: 50  # 최대 워밍업 지역 수
   api:
     key:  ${WEATHER_API_KEY}
     base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
