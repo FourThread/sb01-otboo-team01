@@ -76,6 +76,24 @@ class NotificationEventListenerTest {
         );
     }
 
+    @DisplayName("의상 속성 수정 시 요청자를 제외한 모든 사용자에게 알림이 생성된다.")
+    @Test
+    void handleClothesAttributeUpdatedEvent_shouldNotifyOthers() {
+        ClothesAttributeDefDto attrDto = new ClothesAttributeDefDto(UUID.randomUUID(), "소재", List.of("면", "폴리에스터"));
+        ClothesAttributeUpdatedEvent event = new ClothesAttributeUpdatedEvent(attrDto, userId);
+
+        when(userRepository.findAllUserIds()).thenReturn(Set.of(userId, otherUserId));
+
+        listener.handle(event);
+
+        verify(notificationService).createAll(
+                eq(Set.of(otherUserId)),
+                contains("속성이 변경"),
+                contains("소재"),
+                eq(NotificationLevel.INFO)
+        );
+    }
+
 
     @DisplayName("피드 좋아요 시 피드 작성자에게 알림이 생성된다.")
     @Test
