@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SslOptions;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -13,6 +15,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -26,6 +31,21 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class WeatherRedisConfig {
 
+    @Value("${spring.data.redis.host}")
+    private String host;
+
+    @Value("${spring.data.redis.port}")
+    private int port;
+
+    @Value("${weather.redis.database:1}")
+    private int weatherDatabase;
+
+    @Value("${spring.data.redis.ssl.enabled:false}")
+    private boolean sslEnabled;
+
+    @Value("${spring.data.redis.timeout:2000}")
+    private long timeout;
+
     @Value("${weather.cache.current.ttl:PT1H}")  // 현재 날씨 1시간
     private Duration currentWeatherTtl;
 
@@ -35,13 +55,55 @@ public class WeatherRedisConfig {
     @Value("${weather.cache.location.ttl:PT24H}")  // 위치 정보 24시간
     private Duration locationTtl;
 
+
+    /**
+     * 날씨 전용 RedisConnectionFactory 생성
+     */
+    @Bean(name = "weatherRedisConnectionFactory")
+    public RedisConnectionFactory weatherRedisConnectionFactory() {
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
+        redisStandaloneConfiguration.setHostName(host);
+        redisStandaloneConfiguration.setPort(port);
+        redisStandaloneConfiguration.setDatabase(weatherDatabase);
+
+        LettuceClientConfiguration.LettuceClientConfigurationBuilder configBuilder =
+            LettuceClientConfiguration.builder();
+
+        if (sslEnabled) {
+            SslOptions sslOptions = SslOptions.builder()
+                .jdkSslProvider() // JDK SSL Provider 사용
+                .build();
+
+            ClientOptions clientOptions = ClientOptions.builder()
+                .sslOptions(sslOptions)
+                .build();
+
+            configBuilder
+                .useSsl() // SSL 활성화
+                .and()
+                .clientOptions(clientOptions);
+        } else {
+            ClientOptions clientOptions = ClientOptions.builder()
+                .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+                .autoReconnect(true)
+                .build();
+
+            configBuilder.clientOptions(clientOptions);
+        }
+
+        configBuilder.commandTimeout(java.time.Duration.ofMillis(timeout));
+
+        LettuceClientConfiguration clientConfig = configBuilder.build();
+        return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
+    }
+
     /**
      * 날씨 전용 RedisTemplate 설정
      */
     @Bean(name = "weatherRedisTemplate")
-    public RedisTemplate<String, Object> weatherRedisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> weatherRedisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
+        template.setConnectionFactory(weatherRedisConnectionFactory()); // 전용 ConnectionFactory 사용
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -52,7 +114,8 @@ public class WeatherRedisConfig {
             JsonTypeInfo.As.PROPERTY
         );
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(
+            objectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(jsonSerializer);
@@ -67,16 +130,19 @@ public class WeatherRedisConfig {
      * 날씨 캐시 매니저 설정
      */
     @Bean
-    public CacheManager weatherCacheManager(RedisConnectionFactory connectionFactory) {
+    public CacheManager weatherCacheManager() {
         ObjectMapper objectMapper = createObjectMapperWithTypeInfo();
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(
+            objectMapper);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
+            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                new StringRedisSerializer()))
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
             .entryTtl(Duration.ofHours(1)); // 기본 TTL
 
-        return RedisCacheManager.builder(connectionFactory)
+        return RedisCacheManager.builder(weatherRedisConnectionFactory())
             .cacheDefaults(defaultConfig)
             // 캐시별 TTL 설정
             .withCacheConfiguration("currentWeather", defaultConfig.entryTtl(currentWeatherTtl))
