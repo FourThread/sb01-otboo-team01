@@ -167,6 +167,11 @@ public class WeatherServiceImpl implements WeatherService {
 
             validateApiResponse(apiResponse);
 
+            Optional<Weather> yesterdayWeather = weatherRepository.findLatestByGridCoordinateAndDate(
+                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now().minusDays(1)
+            );
+
+
             List<WeatherDto> result = processFiveDayForecast(apiResponse, latitude, longitude,
                 gridCoordinate, locationNames);
 
@@ -388,6 +393,8 @@ public class WeatherServiceImpl implements WeatherService {
     private List<WeatherDto> processFiveDayForecast(WeatherApiResponse response,
         Double latitude, Double longitude,
         GridCoordinate grid, List<String> locationNames) {
+        GridCoordinate grid, List<String> locationNames,
+        Optional<Weather> yesterdayWeather) {
 
         WeatherAPILocation location = weatherMapper.toWeatherAPILocation(
             latitude, longitude, grid.getX(), grid.getY(), locationNames
@@ -409,7 +416,8 @@ public class WeatherServiceImpl implements WeatherService {
             List<WeatherApiResponse.Item> dayItems = groupedByDate.get(targetDate);
 
             if (dayItems != null && !dayItems.isEmpty()) {
-                WeatherDto dayWeather = createDayWeatherDto(dayItems, location, targetDate);
+                WeatherDto dayWeather = createDayWeatherDto(dayItems, location, targetDate,
+                    i == 0 ? yesterdayWeather : Optional.empty()); //첫 번째 날만 전날 대비 계산
                 result.add(dayWeather);
             }
         }
@@ -418,7 +426,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     private WeatherDto createDayWeatherDto(List<WeatherApiResponse.Item> dayItems,
-        WeatherAPILocation location, LocalDate date) {
+        WeatherAPILocation location, LocalDate date, Optional<Weather> yesterdayWeather) {
 
         DoubleSummaryStatistics tempStats = dayItems.stream()
             .filter(item -> "TMP".equals(item.category()))
@@ -431,14 +439,29 @@ public class WeatherServiceImpl implements WeatherService {
             .average()
             .orElse(0.0);
 
+        // 전날 대비 온도 변화 계산
+        double tempComparedToDayBefore = 0.0;
+        double humidityComparedToDayBefore = 0.0;
+
+        if (yesterdayWeather.isPresent()) {
+            double yesterdayAvgTemp = yesterdayWeather.get().getTemperature().current();
+            double yesterdayAvgHumidity = yesterdayWeather.get().getHumidity().current();
+
+            tempComparedToDayBefore = tempStats.getAverage() - yesterdayAvgTemp;
+            humidityComparedToDayBefore = avgHumidity - yesterdayAvgHumidity;
+
+            log.debug("전날 대비 계산 - 오늘 평균기온: {}, 전날 평균기온: {}, 차이: {}",
+                tempStats.getAverage(), yesterdayAvgTemp, tempComparedToDayBefore);
+        }
+
         TemperatureDto temperature = new TemperatureDto(
             tempStats.getAverage(),
-            0.0,
+            tempComparedToDayBefore, // 전날 대비 온도 차이
             tempStats.getMin(),
             tempStats.getMax()
         );
 
-        HumidityDto humidity = new HumidityDto(avgHumidity, 0.0);
+        HumidityDto humidity = new HumidityDto(avgHumidity, humidityComparedToDayBefore);
 
         PrecipitationDto precipitation = calculatePrecipitation(dayItems);
 
