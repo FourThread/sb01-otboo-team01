@@ -1,6 +1,9 @@
 package com.fourthread.ozang.module.domain.clothes.service;
 
+import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
+import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
@@ -18,17 +21,20 @@ public class ClothesExtractionService {
       throw new IllegalArgumentException("url is null or empty");
     }
 
-    if (url.contains("musinsa.com")) {
-      return extractFromMusinsa(url);
-    } else if (url.contains("zigzag.kr")) {
-      return extractFromZigzag(url);
+    String normalizedUrl = url.toLowerCase();
+
+    if (normalizedUrl.contains("musinsa.com")) {
+      return extractFromOgMeta(url, "무신사");
+    } else if (normalizedUrl.contains("zigzag.kr")) {
+      return extractFromOgMeta(url, "지그재그");
+    } else if (normalizedUrl.contains("29cm.co.kr")) {
+      return extractFromOgMeta(url, "29cm");
     } else {
-      throw new UnsupportedOperationException("지원하지 않는 사이트입니다.");
+      throw new ClothesException(ErrorCode.URL_NOT_SUPPORTED, ClothesException.class.toString(), url);
     }
   }
 
-
-  private ClothesDto extractFromMusinsa(String url) {
+  private ClothesDto extractFromOgMeta(String url, String siteName) {
     try {
       Document doc = Jsoup.connect(url).userAgent("Mozilla").get();
 
@@ -45,49 +51,8 @@ public class ClothesExtractionService {
           .build();
 
     } catch (IOException e) {
-      log.error("무신사 파싱 실패: {}", e.getMessage(), e);
-      throw new RuntimeException("의류 정보를 추출하는 데 실패했습니다.");
-    }
-}
-  private ClothesDto extractFromZigzag(String url) {
-    try {
-      Document doc = Jsoup.connect(url).userAgent("Mozilla").get();
-      String title = doc.select("meta[property=og:title]").attr("content");
-      String imageUrl = doc.select("meta[property=og:image]").attr("content");
-
-      return ClothesDto.builder()
-          .id(null)
-          .ownerId(null)
-          .name(title)
-          .imageUrl(imageUrl)
-          .type(null)
-          .attributes(null)
-          .build();
-
-    } catch (IOException e) {
-      log.error("지그재그 파싱 실패: {}", e.getMessage(), e);
-      throw new RuntimeException("의류 정보를 추출하는 데 실패했습니다.");
-    }
-  }
-
-  private ClothesDto extractFrom29cm(String url) {
-    try {
-      Document doc = Jsoup.connect(url).userAgent("Mozilla").get();
-      String title = doc.select("meta[property=og:title]").attr("content");
-      String imageUrl = doc.select("meta[property=og:image]").attr("content");
-
-      return ClothesDto.builder()
-          .id(null)
-          .ownerId(null)
-          .name(title)
-          .imageUrl(imageUrl)
-          .type(null)
-          .attributes(null)
-          .build();
-
-    } catch (IOException e) {
-      log.error("29CM 파싱 실패: {}", e.getMessage(), e);
-      throw new RuntimeException("의류 정보를 추출하는 데 실패했습니다.");
+      log.error("{} 파싱 실패: {}", siteName, e.getMessage(), e);
+      throw new RuntimeException(siteName + " 의류 정보를 추출하는 데 실패했습니다.");
     }
   }
 }
