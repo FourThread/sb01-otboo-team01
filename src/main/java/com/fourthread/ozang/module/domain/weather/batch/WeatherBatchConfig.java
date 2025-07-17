@@ -2,6 +2,7 @@ package com.fourthread.ozang.module.domain.weather.batch;
 
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 import com.fourthread.ozang.module.domain.weather.service.WeatherService;
+import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -98,7 +99,7 @@ public class WeatherBatchConfig {
      * 날씨 캐시 워밍업 스케줄러
      * 매일 새벽 5:30에 주요 도시 캐시 준비
      */
-    @Scheduled(cron = "0 30 5 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 30 5 * * *", zone = "#{@timezoneId}")
     public void scheduledMajorCitiesCacheWarmup() {
         if (!cacheWarmupEnabled) {
             log.debug("날씨 캐시 워밍업이 비활성화되어 있습니다");
@@ -113,7 +114,7 @@ public class WeatherBatchConfig {
      * 활성 지역 캐시 갱신 스케줄러
      * 매시간 정각에 활성 지역 캐시 갱신
      */
-    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 * * * *", zone = "#{@timezoneId}")
     public void scheduledActiveRegionsCacheRefresh() {
         if (!cacheWarmupEnabled) {
             log.debug("날씨 캐시 워밍업이 비활성화되어 있습니다");
@@ -128,7 +129,7 @@ public class WeatherBatchConfig {
      * 날씨 데이터 정리 스케줄러
      * 매일 새벽 3시에 오래된 데이터 정리
      */
-    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 3 * * *", zone = "#{@timezoneId}")
     public void scheduledWeatherDataCleanup() {
         log.info("스케줄된 날씨 데이터 정리 시작");
 
