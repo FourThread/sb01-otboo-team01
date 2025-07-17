@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -13,7 +14,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -42,23 +43,17 @@ public class WeatherRedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // JSON 직렬화를 위한 ObjectMapper 설정
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.registerModule(new JavaTimeModule());
-//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//        objectMapper.activateDefaultTyping(
-//            objectMapper.getPolymorphicTypeValidator(),
-//            ObjectMapper.DefaultTyping.NON_FINAL,
-//            JsonTypeInfo.As.PROPERTY
-//        );
-//
-//        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.activateDefaultTyping(
+            objectMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            JsonTypeInfo.As.PROPERTY
+        );
 
-        // JSON 직렬화 설정 (타입 정보 없이)
-        ObjectMapper objectMapper = createObjectMapper();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // 직렬화 설정
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(jsonSerializer);
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -73,8 +68,8 @@ public class WeatherRedisConfig {
      */
     @Bean
     public CacheManager weatherCacheManager(RedisConnectionFactory connectionFactory) {
-        ObjectMapper objectMapper = createObjectMapper();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+        ObjectMapper objectMapper = createObjectMapperWithTypeInfo();
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
@@ -90,11 +85,21 @@ public class WeatherRedisConfig {
             .build();
     }
 
-    private ObjectMapper createObjectMapper() {
+    /**
+     * 타입 정보를 포함한 ObjectMapper 생성
+     */
+    private ObjectMapper createObjectMapperWithTypeInfo() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.findAndRegisterModules();
+
+        objectMapper.activateDefaultTyping(
+            objectMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            JsonTypeInfo.As.PROPERTY
+        );
+
         return objectMapper;
     }
 }
