@@ -29,9 +29,11 @@ public class WeatherCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
+    public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate,
+        ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
+        log.info("WeatherCacheService 초기화 완료 - Redis DB: 1번 (Weather 전용)");
     }
 
     private static final Duration CURRENT_WEATHER_TTL = Duration.ofHours(1);
