@@ -1,9 +1,9 @@
 package com.fourthread.ozang.module.domain.weather.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -13,11 +13,9 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.time.Duration;
 
 /**
  * 날씨 데이터 전용 Redis 캐시 설정
@@ -45,16 +43,20 @@ public class WeatherRedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         // JSON 직렬화를 위한 ObjectMapper 설정
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.activateDefaultTyping(
-            objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY
-        );
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        objectMapper.activateDefaultTyping(
+//            objectMapper.getPolymorphicTypeValidator(),
+//            ObjectMapper.DefaultTyping.NON_FINAL,
+//            JsonTypeInfo.As.PROPERTY
+//        );
+//
+//        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        // JSON 직렬화 설정 (타입 정보 없이)
+        ObjectMapper objectMapper = createObjectMapper();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
 
         // 직렬화 설정
         template.setKeySerializer(new StringRedisSerializer());
@@ -71,10 +73,12 @@ public class WeatherRedisConfig {
      */
     @Bean
     public CacheManager weatherCacheManager(RedisConnectionFactory connectionFactory) {
+        ObjectMapper objectMapper = createObjectMapper();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
-                new GenericJackson2JsonRedisSerializer(createObjectMapper())))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
             .entryTtl(Duration.ofHours(1)); // 기본 TTL
 
         return RedisCacheManager.builder(connectionFactory)
@@ -90,11 +94,7 @@ public class WeatherRedisConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.activateDefaultTyping(
-            objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY
-        );
+        objectMapper.findAndRegisterModules();
         return objectMapper;
     }
 }
