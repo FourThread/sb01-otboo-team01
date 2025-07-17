@@ -120,6 +120,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'co.elastic.clients:elasticsearch-java'
 
+    implementation 'org.jsoup:jsoup:1.17.2'
+
     // TestContainers (필요시 주석 해제)
     testImplementation "org.testcontainers:elasticsearch"
     testImplementation "org.testcontainers:testcontainers"
