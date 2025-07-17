@@ -1,21 +1,22 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.util.WeatherCacheKeyGenerator;
-import lombok.RequiredArgsConstructor;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 날씨 캐시 관리 서비스
@@ -26,9 +27,11 @@ import java.util.stream.Collectors;
 public class WeatherCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = new ObjectMapper();
     }
 
     private static final Duration CURRENT_WEATHER_TTL = Duration.ofHours(1);
@@ -41,13 +44,15 @@ public class WeatherCacheService {
      */
     public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
         String key = WeatherCacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
-
         try {
             WeatherDto cached = (WeatherDto) redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                log.debug("Redis 캐시 히트 - 현재 날씨: {}", key);
-                // 활성 지역으로 기록
-                recordActiveRegion(latitude, longitude);
+                WeatherDto result = convertToWeatherDto(cached);
+                if(result != null) {
+                    log.debug("Redis 캐시 히트 - 현재 날씨: {}", key);
+                    recordActiveRegion(latitude, longitude);
+                    return result;
+                }
             }
             return cached;
         } catch (Exception e) {
@@ -82,13 +87,16 @@ public class WeatherCacheService {
         String key = WeatherCacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
-            @SuppressWarnings("unchecked")
-            List<WeatherDto> cached = (List<WeatherDto>) redisTemplate.opsForValue().get(key);
+            Object cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                log.debug("Redis 캐시 히트 - 5일 예보: {}", key);
-                recordActiveRegion(latitude, longitude);
+                List<WeatherDto> result = convertToWeatherDtoList(cached);
+                if(result != null) {
+                    log.debug("Redis 캐시 히트 - 5일 예보: {}", key);
+                    recordActiveRegion(latitude, longitude);
+                    return result;
+                }
             }
-            return cached;
+            return null;
         } catch (Exception e) {
             log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
             try {
@@ -120,11 +128,15 @@ public class WeatherCacheService {
         String key = WeatherCacheKeyGenerator.generateLocationKey(latitude, longitude);
 
         try {
-            WeatherAPILocation cached = (WeatherAPILocation) redisTemplate.opsForValue().get(key);
+            Object cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                log.debug("Redis 캐시 히트 - 위치 정보: {}", key);
+                WeatherAPILocation result = convertToWeatherAPILocation(cached);
+                if(result !=null) {
+                    log.debug("Redis 캐시 히트 - 위치 정보: {}", key);
+                    return result;
+                }
             }
-            return cached;
+            return null;
         } catch (Exception e) {
             log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
             try {
@@ -146,6 +158,70 @@ public class WeatherCacheService {
         } catch (Exception e) {
             log.error("Redis 캐시 저장 실패: {}", key, e);
         }
+    }
+
+    /**
+     * 타입 안전한 변환 메서드
+     * @return WeatherDto
+     */
+    private WeatherDto convertToWeatherDto(Object cached) {
+        try {
+            if (cached instanceof WeatherDto) {
+                return (WeatherDto) cached;
+            }
+
+            if (cached instanceof Map) {
+                return objectMapper.convertValue(cached, WeatherDto.class);
+            }
+        } catch (Exception e) {
+            log.warn("WeatherDto 변환 실패", e);
+        }
+        return null;
+    }
+
+    /**
+     * 타입 안전한 변환 메서드
+     * @return List<WeatherDto>
+     */
+    private List<WeatherDto> convertToWeatherDtoList(Object cached) {
+        try {
+            if (cached instanceof List<?> list) {
+                return list.stream()
+                    .map(item -> {
+                        if (item instanceof WeatherDto) {
+                            return (WeatherDto) item;
+                        }
+                        if (item instanceof Map) {
+                            return objectMapper.convertValue(item, WeatherDto.class);
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            log.warn("WeatherDto List 변환 실패", e);
+        }
+        return null;
+    }
+
+    /**
+     * 타입 안전한 변환 메서드
+     * @return WeatherAPILocation
+     */
+    private WeatherAPILocation convertToWeatherAPILocation(Object cached) {
+        try {
+            if (cached instanceof WeatherAPILocation) {
+                return (WeatherAPILocation) cached;
+            }
+
+            if (cached instanceof Map) {
+                return objectMapper.convertValue(cached, WeatherAPILocation.class);
+            }
+        } catch (Exception e) {
+            log.warn("WeatherAPILocation 변환 실패", e);
+        }
+        return null;
     }
 
     /**
@@ -222,16 +298,4 @@ public class WeatherCacheService {
         }
     }
 
-    /**
-     * 캐시 상태 확인
-     */
-    public boolean isHealthy() {
-        try {
-            redisTemplate.opsForValue().get("health:check");
-            return true;
-        } catch (Exception e) {
-            log.error("Redis 헬스 체크 실패", e);
-            return false;
-        }
-    }
 }
