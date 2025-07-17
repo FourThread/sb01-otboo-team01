@@ -9,6 +9,7 @@ import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
 import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
+import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse.Item;
 import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
@@ -173,7 +174,12 @@ public class WeatherServiceImpl implements WeatherService {
 
 
             List<WeatherDto> result = processFiveDayForecast(apiResponse, latitude, longitude,
-                gridCoordinate, locationNames);
+                gridCoordinate, locationNames, yesterdayWeather);
+
+            if (!result.isEmpty()) {
+                WeatherDto todayWeather = result.get(0);
+                saveTodayWeatherToDatabase(todayWeather, apiResponse, gridCoordinate);
+            }
 
             cacheService.cacheForecast(latitude, longitude, baseTime, result);
 
@@ -182,6 +188,51 @@ public class WeatherServiceImpl implements WeatherService {
         } catch (Exception e) {
             log.error("5일 예보 조회 실패", e);
             throw new WeatherDataFetchException("5일 예보 조회 중 오류 발생", e);
+        }
+    }
+
+    /**
+     * 오늘 날씨 데이터를 DB에 저장
+     */
+    private void saveTodayWeatherToDatabase(WeatherDto todayWeather, WeatherApiResponse apiResponse,
+        GridCoordinate gridCoordinate) {
+
+        try {
+            // 오늘 날짜의 기존 데이터가 있는지 확인
+            Optional<Weather> existingWeather = weatherRepository.findLatestByGridCoordinateAndDate(
+                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now()
+            );
+
+            if (existingWeather.isPresent() &&
+                existingWeather.get().getForecastedAt()
+                    .isAfter(LocalDateTime.now().minusHours(1))) {
+                log.debug("1시간 이내 데이터가 이미 존재하여 DB 저장을 생략합니다.");
+                return;
+            }
+
+            List<Item> todayItems = apiResponse.response().body().items().item()
+                .stream()
+                .filter(item -> {
+                    String fcstDate = item.fcstDate();
+                    LocalDate itemDate = LocalDate.parse(fcstDate,
+                        DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+                    return itemDate.equals(LocalDate.now());
+                })
+                .collect(Collectors.toList());
+
+            if (!todayItems.isEmpty()) {
+                Weather weather = weatherMapper.fromApiResponse(todayItems,
+                    todayWeather.location());
+                String responseHash = generateResponseHash(apiResponse);
+                weather.setApiResponseHash(responseHash);
+
+                Weather savedWeather = weatherRepository.save(weather);
+                log.info("오늘 날씨 데이터 DB 저장 완료 - ID: {}", savedWeather.getId());
+            }
+        } catch (Exception e) {
+            log.error("오늘 날씨 데이터 DB 저장 실패, e");
+            // DB 저장 실패해도 예외를 던지지 않음 (캐시는 정상 동작해야 됨)
         }
     }
 
@@ -392,7 +443,6 @@ public class WeatherServiceImpl implements WeatherService {
 
     private List<WeatherDto> processFiveDayForecast(WeatherApiResponse response,
         Double latitude, Double longitude,
-        GridCoordinate grid, List<String> locationNames) {
         GridCoordinate grid, List<String> locationNames,
         Optional<Weather> yesterdayWeather) {
 
