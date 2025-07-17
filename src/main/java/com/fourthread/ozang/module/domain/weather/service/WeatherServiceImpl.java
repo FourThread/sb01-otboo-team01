@@ -169,7 +169,7 @@ public class WeatherServiceImpl implements WeatherService {
             validateApiResponse(apiResponse);
 
             Optional<Weather> yesterdayWeather = weatherRepository.findLatestByGridCoordinateAndDate(
-                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now().minusDays(1)
+                gridCoordinate.getX(), gridCoordinate.getY(), LocalDate.now().minusDays(1)
             );
 
 
@@ -200,7 +200,7 @@ public class WeatherServiceImpl implements WeatherService {
         try {
             // 오늘 날짜의 기존 데이터가 있는지 확인
             Optional<Weather> existingWeather = weatherRepository.findLatestByGridCoordinateAndDate(
-                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now()
+                gridCoordinate.getX(), gridCoordinate.getY(), LocalDate.now()
             );
 
             if (existingWeather.isPresent() &&

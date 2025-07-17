@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.weather.repository;
 
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +24,17 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
     Optional<Weather> findLatestByGridCoordinate(
         @Param("x") Integer x,
         @Param("y") Integer y
+    );
+
+    @Query("SELECT w FROM Weather w WHERE " +
+        "w.location.x = :x AND w.location.y = :y " +
+        "AND DATE(w.forecastAt) = :date " +
+        "ORDER BY w.forecastedAt DESC " +
+        "LIMIT 1")
+    Optional<Weather> findLatestByGridCoordinateAndDate(
+        @Param("x") Integer x,
+        @Param("y") Integer y,
+        @Param("date") LocalDate date
     );
 
     /**
