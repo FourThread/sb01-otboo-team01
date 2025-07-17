@@ -10,12 +10,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClothesExtractionService {
 
+  @Transactional(readOnly = true)
   public ClothesDto extractFromUrl(String url) {
     if (url == null || url.isEmpty()) {
       throw new IllegalArgumentException("url is null or empty");
