@@ -55,7 +55,7 @@ public class WeatherApiClient {
     }
 
     /**
-     * 단기예보 조회(getVilageFcst)
+     * 단기예보 조회(getVilageFcst), //TODO 삭제 후 테스트 코드 재작성
      */
     public WeatherApiResponse callVilageFcst(
         GridCoordinate coord,
@@ -80,7 +80,7 @@ public class WeatherApiClient {
             .block();
     }
 
-    // 초단기실황 조회 (필요시 사용)
+    // 초단기실황 조회 (getUltraSrtNcst) //TODO 삭제 후 테스트 코드 재작성
     public WeatherApiResponse getWeatherNowcast(GridCoordinate coord) {
         LocalDateTime now = LocalDateTime.now();
         String date = now.format(DATE_FMT);
