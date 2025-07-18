@@ -252,4 +252,30 @@ class FollowServiceTest {
         assertThatThrownBy(() -> followService.findAllFollowers(followeeId, null, null, 10, "", invalidSortBy, sortDirection))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @DisplayName("getCursorValue는 createdAt 기준으로 커서 문자열을 반환한다")
+    @Test
+    void getCursorValue_should_return_createdAt_string() {
+        // given
+        Follow follow = new Follow(follower, followee);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 7, 15, 12, 0);
+        ReflectionTestUtils.setField(follow, "createdAt", createdAt);
+
+        // when
+        String cursor = ReflectionTestUtils.invokeMethod(followService, "getCursorValue", follow, "createdAt");
+
+        // then
+        assertThat(cursor).isEqualTo(createdAt.toString());
+    }
+
+    @DisplayName("getCursorValue는 지원하지 않는 정렬 기준일 경우 예외를 발생시킨다")
+    @Test
+    void getCursorValue_should_throw_when_sortBy_invalid() {
+        Follow follow = new Follow(follower, followee);
+
+        assertThatThrownBy(() ->
+                ReflectionTestUtils.invokeMethod(followService, "getCursorValue", follow, "invalidField")
+        )
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }
