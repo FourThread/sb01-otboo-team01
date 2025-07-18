@@ -40,6 +40,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  ai:
+    openai:
+      api-key: 4214212141241412421421
+      base-url: https://api.openai.com
 
 openai:
   api:

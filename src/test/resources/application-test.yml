@@ -20,6 +20,11 @@ spring:
       port: 6379
       database: 0
 
+  ai:
+    openai:
+      api-key: 421441242ed21d
+      base-url: https://api.openai.com
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
