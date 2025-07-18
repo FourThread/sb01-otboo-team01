@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,6 +34,27 @@ public class GlobalExceptionHandler {
         details);
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+    BindingResult bindingResult = e.getBindingResult();
+
+    FieldError fieldError = bindingResult.getFieldError();
+    String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : "유효하지 않은 요청입니다.";
+
+    ErrorDetails details = new ErrorDetails(
+            e.getClass().getSimpleName(),
+            errorMessage
+    );
+
+    ErrorResponse errorResponse = new ErrorResponse(
+            ErrorCode.BAD_REQUEST.name(),
+            errorMessage,
+            details
+    );
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 
   @ExceptionHandler(GlobalException.class)

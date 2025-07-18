@@ -1,4 +1,11 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-public record FeedLikedEvent() {
+import java.util.UUID;
+
+public record FeedLikedEvent(
+        UUID feedId,
+        UUID feedUserId,
+        String content,
+        String likeByUserName
+) {
 }

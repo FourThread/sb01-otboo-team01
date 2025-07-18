@@ -1,6 +1,9 @@
 package com.fourthread.ozang.module.domain.user.service.impl;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.RoleChangedEvent;
+import com.fourthread.ozang.module.domain.storage.ImageService;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
 import com.fourthread.ozang.module.domain.storage.ImageService;
@@ -28,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,6 +50,7 @@ public class UserServiceImpl implements UserService {
   private final MailService mailService;
   private final JwtService jwtService;
   private final ImageService imageService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public UserServiceImpl(UserRepository userRepository,
       ProfileRepository profileRepository,
@@ -54,7 +59,9 @@ public class UserServiceImpl implements UserService {
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
       MailService mailService,
-      @Qualifier("profileImageService") ImageService imageService) {
+      @Qualifier("profileImageService") ImageService imageService,
+      ApplicationEventPublisher eventPublisher
+                         ) {
     this.userRepository = userRepository;
     this.profileRepository = profileRepository;
     this.userMapper = userMapper;
@@ -63,6 +70,7 @@ public class UserServiceImpl implements UserService {
     this.mailService = mailService;
     this.jwtService = jwtService;
     this.imageService = imageService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -102,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
   @Transactional
   @Override
-  public UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request) {
+  public UserDto updateUserRole(UUID userId, UserRoleUpdateRequest request, UUID requesterId) {
     Role newRole = request.role();
     log.info("사용자 Role를 업데이트 합니다 : {}", newRole);
     User findUser = userRepository.findById(userId)
@@ -113,7 +121,10 @@ public class UserServiceImpl implements UserService {
 
     log.info("{} 사용자 Role 업데이트를 완료했습니다", findUser.getName());
 
-    return userMapper.toDto(findUser);
+    UserDto dto = userMapper.toDto(findUser);
+    eventPublisher.publishEvent(new RoleChangedEvent(dto, requesterId));
+
+    return dto;
   }
 
   @Transactional

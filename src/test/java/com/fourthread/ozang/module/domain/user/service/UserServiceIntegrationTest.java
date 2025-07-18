@@ -14,13 +14,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
+
+import java.util.UUID;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -83,7 +87,7 @@ public class UserServiceIntegrationTest {
     @DisplayName("사용자 역할을 업데이트 합니다.")
     void updateUser_success_role_changed() {
       UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
-      UserDto userDto = userService.updateUserRole(savedUser.id(), request);
+      UserDto userDto = userService.updateUserRole(savedUser.id(), request, UUID.randomUUID());
       User findUser = userRepository.findById(savedUser.id())
           .orElseThrow(() -> new IllegalArgumentException());
       assertThat(userDto.role()).isEqualTo(Role.ADMIN);

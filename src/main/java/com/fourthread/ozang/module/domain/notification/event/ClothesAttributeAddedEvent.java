@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public record ClothesAttributeAddedEvent(
         ClothesAttributeDefDto clothesAttributeDefDto,
-        UUID ownerId
+        UUID requesterId
 ) {
 }

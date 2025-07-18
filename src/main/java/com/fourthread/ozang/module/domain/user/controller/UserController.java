@@ -1,6 +1,7 @@
 package com.fourthread.ozang.module.domain.user.controller;
 
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
 import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
 import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -77,10 +79,12 @@ public class UserController {
 
   @PatchMapping("/{userId}/role")
   public ResponseEntity<UserDto> changeUserRole(
+      @AuthenticationPrincipal UserDetailsImpl userDetails,
       @PathVariable(name = "userId") UUID userId,
       @RequestBody UserRoleUpdateRequest request
   ) {
-    UserDto userDto = userService.updateUserRole(userId, request);
+    UUID requesterId = userDetails.getPayloadDto().userId();
+    UserDto userDto = userService.updateUserRole(userId, request, requesterId);
 
     return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
