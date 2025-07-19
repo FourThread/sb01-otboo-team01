@@ -57,8 +57,8 @@ logging:
 
 weather:
   api:
-    key: test-weather-key
-    base-url: http://test-weather-api.com
+    key: ${WEATHER_API_KEY}
+    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
     nowcast:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
@@ -66,7 +66,7 @@ weather:
 
 kakao:
   api:
-    key: test-kakao-key
+    key: ${KAKAO_API_KEY}
     url: https://dapi.kakao.com
 
 jwt:
