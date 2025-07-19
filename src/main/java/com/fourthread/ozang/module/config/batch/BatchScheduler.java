@@ -30,9 +30,13 @@ public class BatchScheduler {
     private final JobLauncher asyncJobLauncher;
 
     private final Job weatherDataCleanupJob;
+    private final Job weatherChangeDetectionJob;
 
     @Value("${batch.scheduler.weather-cleanup.enabled:true}")
     private boolean weatherCleanupEnabled;
+
+    @Value("${batch.scheduler.weather-change-detection.enabled:true}")
+    private boolean weatherChangeDetectionEnabled;
 
     /**
      * 날씨 데이터 정리 작업
@@ -66,4 +70,34 @@ public class BatchScheduler {
         }
     }
 
+    /**
+     * 날씨 변화 감지 작업
+     * 매시 50분에 실행 (초단기예보 제공 후 5분 뒤)
+     */
+    @Scheduled(cron = "0 50 * * * ?", zone = "#{@timezoneId}")
+    public void runWeatherChangeDetection() {
+        if (!weatherChangeDetectionEnabled) {
+            log.debug("날씨 변화 감지 작업이 비활성화되어 있습니다");
+            return;
+        }
+
+        log.info("[Scheduled] 날씨 변화 감지 작업 시작");
+
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("timestamp", System.currentTimeMillis())
+                .addString("jobType", "scheduled_weather_change_detection")
+                .addString("triggeredBy", "scheduler")
+                .addString("timezone", zoneId.getId())
+                .toJobParameters();
+
+            JobExecution jobExecution = asyncJobLauncher.run(weatherChangeDetectionJob, jobParameters);
+
+            log.info("[Scheduled] 날씨 변화 감지 작업 시작 - Job ID={}, Status={}",
+                jobExecution.getId(), jobExecution.getStatus());
+
+        } catch (Exception e) {
+            log.error("[Scheduled] 날씨 변화 감지 작업 실행 실패", e);
+        }
+    }
 }
