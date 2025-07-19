@@ -1,7 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.repository;
 
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +33,7 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
     Optional<Weather> findLatestByGridCoordinateAndDate(
         @Param("x") Integer x,
         @Param("y") Integer y,
-        @Param("date") LocalDate date
+        @Param("date") LocalDateTime date
     );
 
     /**
@@ -53,17 +52,5 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
     @Query("DELETE FROM Weather w WHERE w.forecastedAt < :cutoffDate")
     void deleteOldWeatherData(@Param("cutoffDate") LocalDateTime cutoffDate);
 
-    /**
-     * 특정 날짜 범위의 날씨 데이터 조회 (배치 모니터링용)
-     * @param startDate 시작 날짜
-     * @param endDate 끝 날짜
-     * @return 해당 범위의 날씨 데이터 목록
-     */
-    @Query("SELECT w FROM Weather w WHERE w.forecastedAt BETWEEN :startDate AND :endDate ORDER BY w.forecastedAt DESC")
-    List<Weather> findWeatherDataBetweenDates(
-        @Param("startDate") LocalDateTime startDate,
-        @Param("endDate") LocalDateTime endDate
-    );
-
-  List<Weather> findALlByIdIn(Collection<UUID> ids);
+    List<Weather> findALlByIdIn(Collection<UUID> ids);
 }
