@@ -66,8 +66,6 @@ batch:
   scheduler:
     weather-cleanup:
       enabled: true
-    token-cleanup:
-      enabled: true
   job:
     enabled: false
   jdbc:

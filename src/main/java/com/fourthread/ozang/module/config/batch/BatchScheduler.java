@@ -34,9 +34,6 @@ public class BatchScheduler {
     @Value("${batch.scheduler.weather-cleanup.enabled:true}")
     private boolean weatherCleanupEnabled;
 
-    @Value("${batch.scheduler.token-cleanup.enabled:true}")
-    private boolean tokenCleanupEnabled;
-
     /**
      * 날씨 데이터 정리 작업
      */

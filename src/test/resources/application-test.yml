@@ -85,8 +85,6 @@ batch:
   scheduler:
     weather-cleanup:
       enabled: false
-    token-cleanup:
-      enabled: false
 
 cloud:
   aws:
