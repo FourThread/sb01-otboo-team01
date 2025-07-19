@@ -79,43 +79,43 @@ public class WeatherServiceImpl implements WeatherService {
         this.cacheService = cacheService;
     }
 
-//    @Override
-//    public WeatherDto getWeatherForecast(Double longitude, Double latitude) {
-//        log.info("날씨 예보 조회 시작 - 위도: {}, 경도: {}", latitude, longitude);
-//
-//        validateCoordinates(longitude, latitude);
-//
-//        // 1단계: Redis 캐시 확인
-//        WeatherDto cachedWeather = cacheService.getCurrentWeatherFromCache(latitude, longitude);
-//        if (cachedWeather != null) {
-//            log.info("Redis 캐시에서 날씨 데이터 반환");
-//            return cachedWeather;
-//        }
-//
-//        GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
-//
-//        // 2단계: DB 캐시 확인 (1시간 이내 데이터)
-//        Optional<Weather> recentWeather = weatherRepository.findLatestByGridCoordinate(
-//            gridCoordinate.getX(), gridCoordinate.getY());
-//
-//        if (recentWeather.isPresent()) {
-//            Weather weather = recentWeather.get();
-//            if (weather.getForecastedAt().isAfter(LocalDateTime.now().minusHours(1))) {
-//                log.info("DB 캐시에서 날씨 데이터 반환");
-//                WeatherDto weatherDto = weatherMapper.toDto(weather);
-//
-//                cacheService.cacheCurrentWeather(latitude, longitude, weatherDto);
-//                return weatherDto;
-//            }
-//        }
-//
-//        Weather freshWeather = fetchAndSaveWeatherData(latitude, longitude, gridCoordinate);
-//        WeatherDto result = weatherMapper.toDto(freshWeather);
-//
-//        cacheService.cacheCurrentWeather(latitude, longitude, result);
-//
-//        return result;
-//    }
+    @Override
+    public WeatherDto getWeatherForecast(Double longitude, Double latitude) {
+        log.info("날씨 예보 조회 시작 - 위도: {}, 경도: {}", latitude, longitude);
+
+        validateCoordinates(longitude, latitude);
+
+        // 1단계: Redis 캐시 확인
+        WeatherDto cachedWeather = cacheService.getCurrentWeatherFromCache(latitude, longitude);
+        if (cachedWeather != null) {
+            log.info("Redis 캐시에서 날씨 데이터 반환");
+            return cachedWeather;
+        }
+
+        GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
+
+        // 2단계: DB 캐시 확인 (1시간 이내 데이터)
+        Optional<Weather> recentWeather = weatherRepository.findLatestByGridCoordinate(
+            gridCoordinate.getX(), gridCoordinate.getY());
+
+        if (recentWeather.isPresent()) {
+            Weather weather = recentWeather.get();
+            if (weather.getForecastedAt().isAfter(LocalDateTime.now().minusHours(1))) {
+                log.info("DB 캐시에서 날씨 데이터 반환");
+                WeatherDto weatherDto = weatherMapper.toDto(weather);
+
+                cacheService.cacheCurrentWeather(latitude, longitude, weatherDto);
+                return weatherDto;
+            }
+        }
+
+        Weather freshWeather = fetchAndSaveWeatherData(latitude, longitude, gridCoordinate);
+        WeatherDto result = weatherMapper.toDto(freshWeather);
+
+        cacheService.cacheCurrentWeather(latitude, longitude, result);
+
+        return result;
+    }
 
     @Override
     @Transactional
@@ -263,72 +263,72 @@ public class WeatherServiceImpl implements WeatherService {
 
     }
 
-//    @Transactional
-//    protected Weather fetchAndSaveWeatherData(Double latitude, Double longitude,
-//        GridCoordinate gridCoordinate) {
-//        try {
-//            log.info("외부 API 병렬 호출 시작");
-//            long startTime = System.currentTimeMillis();
-//
-//            CompletableFuture<WeatherApiResponse> weatherApiFuture = CompletableFuture
-//                .supplyAsync(() -> {
-//                    log.debug("기상청 API 호출 시작");
-//                    return weatherApiClient.getWeatherForecast(gridCoordinate);
-//                }, apiCallExecutor)
-//                .orTimeout(10, TimeUnit.SECONDS);
-//
-//            CompletableFuture<List<String>> locationFuture = CompletableFuture
-//                .supplyAsync(() -> {
-//                    log.debug("카카오 지역명 API 호출 시작");
-//                    return kakaoApiClient.getLocationNames(latitude, longitude);
-//                }, apiCallExecutor)
-//                .orTimeout(5, TimeUnit.SECONDS);
-//
-//            try {
-//                CompletableFuture.allOf(weatherApiFuture, locationFuture).join();
-//
-//                WeatherApiResponse apiResponse = weatherApiFuture.get();
-//                List<String> locationNames = locationFuture.get();
-//
-//                long endTime = System.currentTimeMillis();
-//                log.info("외부 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
-//
-//                validateApiResponse(apiResponse);
-//
-//                WeatherAPILocation location = weatherMapper.toWeatherAPILocation(
-//                    latitude, longitude,
-//                    gridCoordinate.getX(), gridCoordinate.getY(),
-//                    locationNames
-//                );
-//
-//                List<WeatherApiResponse.Item> items = apiResponse.response().body().items().item();
-//                Weather weather = weatherMapper.fromApiResponse(items, location);
-//
-//                String responseHash = generateResponseHash(apiResponse);
-//                weather.setApiResponseHash(responseHash);
-//
-//                Weather savedWeather = weatherRepository.save(weather);
-//                log.info("날씨 데이터 DB 저장 완료 - ID: {}", savedWeather.getId());
-//
-//                return savedWeather;
-//
-//            } catch (CompletionException e) {
-//                log.error("외부 API 호출 중 오류 발생", e);
-//                Throwable cause = e.getCause();
-//                if (cause instanceof RuntimeException) {
-//                    throw (RuntimeException) cause;
-//                }
-//                throw new WeatherDataFetchException("외부 API 호출 실패", e);
-//            }
-//
-//        } catch (WeatherApiException | WeatherDataFetchException | InvalidCoordinateException e) {
-//            log.error("날씨 데이터 조회 실패", e);
-//            throw e;
-//        } catch (Exception e) {
-//            log.error("예상치 못한 오류 발생", e);
-//            throw new WeatherDataFetchException("날씨 데이터 조회 중 오류 발생", e);
-//        }
-//    }
+    @Transactional
+    protected Weather fetchAndSaveWeatherData(Double latitude, Double longitude,
+        GridCoordinate gridCoordinate) {
+        try {
+            log.info("외부 API 병렬 호출 시작");
+            long startTime = System.currentTimeMillis();
+
+            CompletableFuture<WeatherApiResponse> weatherApiFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    log.debug("기상청 API 호출 시작");
+                    return weatherApiClient.getWeatherForecast(gridCoordinate);
+                }, apiCallExecutor)
+                .orTimeout(10, TimeUnit.SECONDS);
+
+            CompletableFuture<List<String>> locationFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    log.debug("카카오 지역명 API 호출 시작");
+                    return kakaoApiClient.getLocationNames(latitude, longitude);
+                }, apiCallExecutor)
+                .orTimeout(5, TimeUnit.SECONDS);
+
+            try {
+                CompletableFuture.allOf(weatherApiFuture, locationFuture).join();
+
+                WeatherApiResponse apiResponse = weatherApiFuture.get();
+                List<String> locationNames = locationFuture.get();
+
+                long endTime = System.currentTimeMillis();
+                log.info("외부 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
+
+                validateApiResponse(apiResponse);
+
+                WeatherAPILocation location = weatherMapper.toWeatherAPILocation(
+                    latitude, longitude,
+                    gridCoordinate.getX(), gridCoordinate.getY(),
+                    locationNames
+                );
+
+                List<WeatherApiResponse.Item> items = apiResponse.response().body().items().item();
+                Weather weather = weatherMapper.fromApiResponse(items, location);
+
+                String responseHash = generateResponseHash(apiResponse);
+                weather.setApiResponseHash(responseHash);
+
+                Weather savedWeather = weatherRepository.save(weather);
+                log.info("날씨 데이터 DB 저장 완료 - ID: {}", savedWeather.getId());
+
+                return savedWeather;
+
+            } catch (CompletionException e) {
+                log.error("외부 API 호출 중 오류 발생", e);
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                throw new WeatherDataFetchException("외부 API 호출 실패", e);
+            }
+
+        } catch (WeatherApiException | WeatherDataFetchException | InvalidCoordinateException e) {
+            log.error("날씨 데이터 조회 실패", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("예상치 못한 오류 발생", e);
+            throw new WeatherDataFetchException("날씨 데이터 조회 중 오류 발생", e);
+        }
+    }
 
     @Override
     @Transactional
