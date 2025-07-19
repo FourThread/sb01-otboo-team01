@@ -38,8 +38,8 @@ public class WeatherApiClient {
             .uri(uriBuilder -> uriBuilder
                 .path("/getVilageFcst")
                 .queryParam("serviceKey", serviceKey)
-                .queryParam("pageNo", 1)
                 .queryParam("numOfRows", 1000)
+                .queryParam("pageNo", 1)
                 .queryParam("dataType", "JSON")
                 .queryParam("base_date", date)
                 .queryParam("base_time", time)
@@ -55,7 +55,7 @@ public class WeatherApiClient {
     }
 
     /**
-     * 단기예보 조회(getVilageFcst), //TODO 삭제 후 테스트 코드 재작성
+     * 단기예보 조회(getVilageFcst)
      */
     public WeatherApiResponse callVilageFcst(
         GridCoordinate coord,
@@ -109,7 +109,7 @@ public class WeatherApiClient {
     }
 
     /**
-     * 초단기예보 API 제공 시각 계산
+     * 단기예보 API 제공 시각 계산
      * 제공 시각: [0200,0500,0800,1100,1400,1700,2000,2300] 이후 10분
      */
     private LocalDateTime calculateBaseDateTime() {
