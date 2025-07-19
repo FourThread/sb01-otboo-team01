@@ -89,6 +89,8 @@ batch:
       enabled: true
     weather-cache-warmup:
       enabled: true
+    weather-change-detection:
+      enabled: true
 
 weather:
   cache:
@@ -108,6 +110,9 @@ weather:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
       url: ${weather.api.base-url}/getVilageFst
+  change-detection:
+    max-regions: 30  # 최대 감지 지역 수
+    enabled: true
 
 kakao:
   api:
