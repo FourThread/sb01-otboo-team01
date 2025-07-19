@@ -6,12 +6,14 @@ import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
 import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
 import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
 import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse.Item;
 import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
+import com.fourthread.ozang.module.domain.weather.dto.type.WeatherChangeType;
 import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
 import com.fourthread.ozang.module.domain.weather.entity.GridCoordinate;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
@@ -35,7 +37,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -81,40 +82,79 @@ public class WeatherServiceImpl implements WeatherService {
 
     @Override
     public WeatherDto getWeatherForecast(Double longitude, Double latitude) {
-        log.info("날씨 예보 조회 시작 - 위도: {}, 경도: {}", latitude, longitude);
+        log.info("초단기예보 조회 시작 - 위도: {}, 경도: {}", latitude, longitude);
 
         validateCoordinates(longitude, latitude);
 
-        // 1단계: Redis 캐시 확인
-        WeatherDto cachedWeather = cacheService.getCurrentWeatherFromCache(latitude, longitude);
-        if (cachedWeather != null) {
-            log.info("Redis 캐시에서 날씨 데이터 반환");
-            return cachedWeather;
-        }
+        try {
+            GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
 
-        GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
+            // 초단기예보 API 호출
+            WeatherApiResponse apiResponse = weatherApiClient.getUltraShortTermForecast(gridCoordinate);
+            validateApiResponse(apiResponse);
 
-        // 2단계: DB 캐시 확인 (1시간 이내 데이터)
-        Optional<Weather> recentWeather = weatherRepository.findLatestByGridCoordinate(
-            gridCoordinate.getX(), gridCoordinate.getY());
+            // 위치 정보 조회 (캐시 먼저 확인)
+            WeatherAPILocation location = getWeatherLocation(longitude, latitude);
 
-        if (recentWeather.isPresent()) {
-            Weather weather = recentWeather.get();
-            if (weather.getForecastedAt().isAfter(LocalDateTime.now().minusHours(1))) {
-                log.info("DB 캐시에서 날씨 데이터 반환");
-                WeatherDto weatherDto = weatherMapper.toDto(weather);
+            // 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
+            List<Item> currentHourItems = extractCurrentHourItems(apiResponse);
 
-                cacheService.cacheCurrentWeather(latitude, longitude, weatherDto);
-                return weatherDto;
+            if (currentHourItems.isEmpty()) {
+                throw new WeatherDataFetchException("현재 시간 초단기예보 데이터가 없습니다.");
             }
+
+            // WeatherDto 생성
+            WeatherDto weatherDto = createWeatherDtoFromItems(currentHourItems, location);
+
+            log.info("초단기예보 조회 완료 - 위도: {}, 경도: {}", latitude, longitude);
+            return weatherDto;
+
+        } catch (Exception e) {
+            log.error("초단기예보 조회 실패", e);
+            throw new WeatherDataFetchException("초단기예보 조회 중 오류 발생", e);
+        }
+    }
+
+    @Override
+    public List<WeatherChangeDto> detectWeatherChanges(Double latitude, Double longitude) {
+        log.info("날씨 변화 감지 시작 - 위도: {}, 경도: {}", latitude, longitude);
+
+        List<WeatherChangeDto> changes = new ArrayList<>();
+
+        try {
+            // 현재 초단기예보 조회
+            WeatherDto currentWeather = getWeatherForecast(longitude, latitude);
+
+            // 1시간 전 데이터 조회 (캐시)
+            WeatherDto previousWeather = getPreviousHourWeather(latitude, longitude);
+
+            if (previousWeather == null) {
+                log.debug("이전 시간 데이터가 없어 변화 감지를 건너뜁니다.");
+                return changes;
+            }
+
+            // 온도 변화 감지
+            changes.addAll(detectTemperatureChanges(currentWeather, previousWeather));
+
+            // 강수 변화 감지
+            changes.addAll(detectPrecipitationChanges(currentWeather, previousWeather));
+
+            // 풍속 변화 감지
+            changes.addAll(detectWindChanges(currentWeather, previousWeather));
+
+            // 하늘 상태 변화 감지
+            changes.addAll(detectSkyChanges(currentWeather, previousWeather));
+
+            if (!changes.isEmpty()) {
+                log.info("날씨 변화 감지됨 - 위도: {}, 경도: {}, 변화 수: {}",
+                    latitude, longitude, changes.size());
+            }
+
+        } catch (Exception e) {
+            log.error("날씨 변화 감지 실패 - 위도: {}, 경도: {}", latitude, longitude, e);
         }
 
-        Weather freshWeather = fetchAndSaveWeatherData(latitude, longitude, gridCoordinate);
-        WeatherDto result = weatherMapper.toDto(freshWeather);
-
-        cacheService.cacheCurrentWeather(latitude, longitude, result);
-
-        return result;
+        return changes;
     }
 
     @Override
@@ -263,73 +303,6 @@ public class WeatherServiceImpl implements WeatherService {
 
     }
 
-    @Transactional
-    protected Weather fetchAndSaveWeatherData(Double latitude, Double longitude,
-        GridCoordinate gridCoordinate) {
-        try {
-            log.info("외부 API 병렬 호출 시작");
-            long startTime = System.currentTimeMillis();
-
-            CompletableFuture<WeatherApiResponse> weatherApiFuture = CompletableFuture
-                .supplyAsync(() -> {
-                    log.debug("기상청 API 호출 시작");
-                    return weatherApiClient.getWeatherForecast(gridCoordinate);
-                }, apiCallExecutor)
-                .orTimeout(10, TimeUnit.SECONDS);
-
-            CompletableFuture<List<String>> locationFuture = CompletableFuture
-                .supplyAsync(() -> {
-                    log.debug("카카오 지역명 API 호출 시작");
-                    return kakaoApiClient.getLocationNames(latitude, longitude);
-                }, apiCallExecutor)
-                .orTimeout(5, TimeUnit.SECONDS);
-
-            try {
-                CompletableFuture.allOf(weatherApiFuture, locationFuture).join();
-
-                WeatherApiResponse apiResponse = weatherApiFuture.get();
-                List<String> locationNames = locationFuture.get();
-
-                long endTime = System.currentTimeMillis();
-                log.info("외부 API 병렬 호출 완료 - 소요시간: {}ms", endTime - startTime);
-
-                validateApiResponse(apiResponse);
-
-                WeatherAPILocation location = weatherMapper.toWeatherAPILocation(
-                    latitude, longitude,
-                    gridCoordinate.getX(), gridCoordinate.getY(),
-                    locationNames
-                );
-
-                List<WeatherApiResponse.Item> items = apiResponse.response().body().items().item();
-                Weather weather = weatherMapper.fromApiResponse(items, location);
-
-                String responseHash = generateResponseHash(apiResponse);
-                weather.setApiResponseHash(responseHash);
-
-                Weather savedWeather = weatherRepository.save(weather);
-                log.info("날씨 데이터 DB 저장 완료 - ID: {}", savedWeather.getId());
-
-                return savedWeather;
-
-            } catch (CompletionException e) {
-                log.error("외부 API 호출 중 오류 발생", e);
-                Throwable cause = e.getCause();
-                if (cause instanceof RuntimeException) {
-                    throw (RuntimeException) cause;
-                }
-                throw new WeatherDataFetchException("외부 API 호출 실패", e);
-            }
-
-        } catch (WeatherApiException | WeatherDataFetchException | InvalidCoordinateException e) {
-            log.error("날씨 데이터 조회 실패", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("예상치 못한 오류 발생", e);
-            throw new WeatherDataFetchException("날씨 데이터 조회 중 오류 발생", e);
-        }
-    }
-
     @Override
     @Transactional
     public int cleanupOldWeatherData() {
@@ -353,6 +326,212 @@ public class WeatherServiceImpl implements WeatherService {
         log.info("날씨 데이터 정리 완료 - 삭제된 데이터: {}건", countBefore);
 
         return (int) countBefore;
+    }
+
+    /**
+     * 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
+     */
+    private List<Item> extractCurrentHourItems(WeatherApiResponse apiResponse) {
+        LocalDateTime now = LocalDateTime.now();
+        String targetDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String targetTime = now.format(DateTimeFormatter.ofPattern("HH00"));
+
+        return apiResponse.response().body().items().item().stream()
+            .filter(item -> targetDate.equals(item.fcstDate()) && targetTime.equals(item.fcstTime()))
+            .toList();
+    }
+
+    /**
+     * API 응답 아이템들로부터 WeatherDto 생성
+     */
+    private WeatherDto createWeatherDtoFromItems(List<Item> items, WeatherAPILocation location) {
+        Map<String, String> dataMap = items.stream()
+            .collect(Collectors.toMap(Item::category, Item::fcstValue, (old, new_) -> new_));
+
+        // 온도 정보
+        double temperature = parseDouble(dataMap.get("T1H"), 0.0);
+        TemperatureDto temperatureDto = new TemperatureDto(temperature, 0.0, temperature, temperature);
+
+        // 습도 정보
+        double humidity = parseDouble(dataMap.get("REH"), 50.0);
+        HumidityDto humidityDto = new HumidityDto(humidity, 0.0);
+
+        // 강수 정보
+        PrecipitationType precipitationType = mapPrecipitationType(dataMap.get("PTY"));
+        double precipitationAmount = parseAmount(dataMap.get("RN1"));
+        PrecipitationDto precipitationDto = new PrecipitationDto(precipitationType, precipitationAmount, 0.0);
+
+        // 풍속 정보
+        double windSpeed = parseDouble(dataMap.get("WSD"), 0.0);
+        WindStrength windStrength = WindStrength.fromSpeed(windSpeed);
+        WindSpeedDto windSpeedDto = new WindSpeedDto(windSpeed, windStrength);
+
+        // 하늘 상태
+        SkyStatus skyStatus = mapSkyStatus(dataMap.get("SKY"));
+
+        return new WeatherDto(
+            UUID.randomUUID(),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            location,
+            skyStatus,
+            precipitationDto,
+            humidityDto,
+            temperatureDto,
+            windSpeedDto
+        );
+    }
+
+    /**
+     * 1시간 전 날씨 데이터 조회
+     */
+    private WeatherDto getPreviousHourWeather(Double latitude, Double longitude) {
+        try {
+            // 캐시에서 1시간 전 데이터 조회 시도
+            String previousHourKey = LocalDateTime.now().minusHours(1)
+                .format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
+
+            // 여기서는 간단히 DB에서 조회하는 방식 사용
+            GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
+            Optional<Weather> previousWeather = weatherRepository.findLatestByGridCoordinateAndDate(
+                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now().minusHours(1)
+            );
+
+            return previousWeather.map(weatherMapper::toDto).orElse(null);
+        } catch (Exception e) {
+            log.warn("이전 시간 날씨 데이터 조회 실패", e);
+            return null;
+        }
+    }
+
+    //  날씨 변화 감지 헬퍼 메서드
+    private List<WeatherChangeDto> detectTemperatureChanges(WeatherDto current, WeatherDto previous) {
+        List<WeatherChangeDto> changes = new ArrayList<>();
+
+        double currentTemp = current.temperature().current();
+        double previousTemp = previous.temperature().current();
+        double tempDiff = currentTemp - previousTemp;
+
+        // 3도 이상 급상승
+        if (tempDiff >= 3.0) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.TEMPERATURE_RISE,
+                String.format("기온이 %.1f도 급상승했습니다", tempDiff),
+                previousTemp,
+                currentTemp,
+                "°C",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+        // 3도 이상 급하강
+        else if (tempDiff <= -3.0) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.TEMPERATURE_DROP,
+                String.format("기온이 %.1f도 급하강했습니다", Math.abs(tempDiff)),
+                previousTemp,
+                currentTemp,
+                "°C",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+
+        return changes;
+    }
+
+    private List<WeatherChangeDto> detectPrecipitationChanges(WeatherDto current, WeatherDto previous) {
+        List<WeatherChangeDto> changes = new ArrayList<>();
+
+        PrecipitationType currentType = current.precipitation().type();
+        PrecipitationType previousType = previous.precipitation().type();
+
+        // 강수 시작
+        if (previousType == PrecipitationType.NONE && currentType != PrecipitationType.NONE) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.PRECIPITATION_START,
+                String.format("%s가 시작되었습니다", currentType.getDescription()),
+                0.0,
+                current.precipitation().amount(),
+                "mm",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+        // 강수 종료
+        else if (previousType != PrecipitationType.NONE && currentType == PrecipitationType.NONE) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.PRECIPITATION_END,
+                String.format("%s가 끝났습니다", previousType.getDescription()),
+                previous.precipitation().amount(),
+                0.0,
+                "mm",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+        // 강수 형태 변화
+        else if (previousType != PrecipitationType.NONE && currentType != PrecipitationType.NONE
+            && previousType != currentType) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.PRECIPITATION_TYPE_CHANGE,
+                String.format("%s에서 %s로 변경되었습니다",
+                    previousType.getDescription(), currentType.getDescription()),
+                previous.precipitation().amount(),
+                current.precipitation().amount(),
+                "mm",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+
+        return changes;
+    }
+
+    private List<WeatherChangeDto> detectWindChanges(WeatherDto current, WeatherDto previous) {
+        List<WeatherChangeDto> changes = new ArrayList<>();
+
+        double currentWind = current.windSpeed().speed();
+        double previousWind = previous.windSpeed().speed();
+
+        // 풍속이 2배 이상 증가하고 9m/s 이상일 때
+        if (currentWind >= previousWind * 2 && currentWind >= 9.0) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.WIND_INCREASE,
+                String.format("강풍이 발생했습니다 (%.1fm/s)", currentWind),
+                previousWind,
+                currentWind,
+                "m/s",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+
+        return changes;
+    }
+
+    private List<WeatherChangeDto> detectSkyChanges(WeatherDto current, WeatherDto previous) {
+        List<WeatherChangeDto> changes = new ArrayList<>();
+
+        SkyStatus currentSky = current.skyStatus();
+        SkyStatus previousSky = previous.skyStatus();
+
+        // 맑음 ↔ 흐림 등 급격한 변화
+        if ((previousSky == SkyStatus.CLEAR && currentSky == SkyStatus.CLOUDY) ||
+            (previousSky == SkyStatus.CLOUDY && currentSky == SkyStatus.CLEAR)) {
+            changes.add(new WeatherChangeDto(
+                WeatherChangeType.SKY_CHANGE,
+                String.format("하늘 상태가 %s에서 %s로 급변했습니다",
+                    previousSky.getDescription(), currentSky.getDescription()),
+                0.0,
+                0.0,
+                "",
+                LocalDateTime.now(),
+                current.location()
+            ));
+        }
+
+        return changes;
     }
 
     private void validateCoordinates(Double longitude, Double latitude) {
@@ -432,7 +611,7 @@ public class WeatherServiceImpl implements WeatherService {
             LocalTime baseTime = LocalTime.parse(baseTimes[i], DateTimeFormatter.ofPattern("HHmm"));
             LocalDateTime baseDateTime = now.toLocalDate().atTime(baseTime);
 
-            if (now.isAfter(baseDateTime.plusMinutes(10))) { // API 제공 시간 고려
+            if (now.isAfter(baseDateTime.plusMinutes(10))) {
                 return baseTimes[i];
             }
         }
@@ -609,6 +788,15 @@ public class WeatherServiceImpl implements WeatherService {
             default -> PrecipitationType.NONE;
         };
     }
+
+    private double parseDouble(String value, double defaultValue) {
+        try {
+            return value != null ? Double.parseDouble(value) : defaultValue;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
 
     /**
      * 강수량 문자열을 Double로 파싱
