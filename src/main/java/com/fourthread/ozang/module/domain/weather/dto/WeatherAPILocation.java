@@ -11,18 +11,8 @@ public record WeatherAPILocation(
     @JsonProperty("y") Integer y,
     @JsonProperty("locationNames") List<String> locationNames
 ) {
+
     @JsonCreator
-    public WeatherAPILocation(
-        @JsonProperty("latitude") Double latitude,
-        @JsonProperty("longitude") Double longitude,
-        @JsonProperty("x") Integer x,
-        @JsonProperty("y") Integer y,
-        @JsonProperty("locationNames") List<String> locationNames
-    ) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.x = x;
-        this.y = y;
-        this.locationNames = locationNames;
+    public WeatherAPILocation {
     }
 }
