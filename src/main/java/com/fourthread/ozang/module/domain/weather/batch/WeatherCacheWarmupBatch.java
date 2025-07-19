@@ -198,7 +198,7 @@ public class WeatherCacheWarmupBatch {
             log.debug("캐시 워밍업 시작 - 위도: {}, 경도: {}", latitude, longitude);
 
             // 현재 날씨 조회 및 캐싱
-            WeatherDto currentWeather = weatherService.getWeatherForecast(longitude, latitude);
+//            WeatherDto currentWeather = weatherService.getWeatherForecast(longitude, latitude);
 
             // 5일 예보 조회 및 캐싱
             List<WeatherDto> forecast = weatherService.getFiveDayForecast(longitude, latitude);
@@ -207,7 +207,7 @@ public class WeatherCacheWarmupBatch {
             WeatherAPILocation location = weatherService.getWeatherLocation(longitude, latitude);
 
             // 명시적으로 캐시에 저장
-            cacheService.warmupCache(latitude, longitude, currentWeather, forecast, location);
+            cacheService.warmupCache(latitude, longitude, /*currentWeather,*/ forecast, location);
 
             log.debug("캐시 워밍업 성공 - 위도: {}, 경도: {}", latitude, longitude);
             return true;

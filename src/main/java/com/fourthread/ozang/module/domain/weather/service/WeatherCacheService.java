@@ -275,13 +275,13 @@ public class WeatherCacheService {
     /**
      * 캐시 워밍업
      */
-    public void warmupCache(double latitude, double longitude, WeatherDto currentWeather,
+    public void warmupCache(double latitude, double longitude, /*WeatherDto currentWeather,*/
         List<WeatherDto> forecast, WeatherAPILocation location) {
         try {
-            // 현재 날씨 캐시
-            if (currentWeather != null) {
-                cacheCurrentWeather(latitude, longitude, currentWeather);
-            }
+//            // 현재 날씨 캐시
+//            if (currentWeather != null) {
+//                cacheCurrentWeather(latitude, longitude, currentWeather);
+//            }
 
             // 5일 예보 캐시
             if (forecast != null && !forecast.isEmpty()) {
