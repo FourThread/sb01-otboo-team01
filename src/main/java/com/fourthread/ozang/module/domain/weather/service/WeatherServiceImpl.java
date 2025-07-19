@@ -408,7 +408,7 @@ public class WeatherServiceImpl implements WeatherService {
     private String generateResponseHash(WeatherApiResponse response) {
         try {
             String responseStr = response.toString();
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hash = md.digest(responseStr.getBytes());
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
@@ -420,7 +420,7 @@ public class WeatherServiceImpl implements WeatherService {
             }
             return hexString.toString();
         } catch (Exception e) {
-            return UUID.randomUUID().toString();
+            return UUID.randomUUID().toString().replace("-", "");  // 32자 UUID
         }
     }
 
