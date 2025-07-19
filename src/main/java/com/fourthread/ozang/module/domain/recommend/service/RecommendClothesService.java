@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -57,6 +58,7 @@ public class RecommendClothesService {
    * @author : wongil
    * @Description: 의상 추천
    **/
+  @Cacheable(value = "recommendation", key = "'recommendation::'.concat(#weatherId.toString()).concat('::').concat(#userId.toString())")
   public RecommendationDto recommend(UUID weatherId, UUID userId) throws JsonProcessingException {
 
     Weather weather = getWeather(weatherId);
