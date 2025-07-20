@@ -57,22 +57,45 @@ public class SseService {
                     emitter.send(event);
                 } catch (IOException e) {
                     log.error("SSE 전송 실패: {}", e.getMessage());
+                    emitter.completeWithError(e); // 혹은 complete()도 가능
+                    emitterRepository.delete(receiverId, emitter);
                 }
             }));
         });
     }
 
+//    public void send(Collection<UUID> receiverIds, String eventName, Object data) {
+//        SseMessage message = messageRepository.save(SseMessage.create(receiverIds, eventName, data));
+//        Set<SseEmitter.SseEventBuilder> events = message.toEvent();
+//        emitterRepository.findAllByReceiverIdsIn(receiverIds)
+//                .forEach(emitter -> events.forEach(event -> {
+//                    try {
+//                        emitter.send(event);
+//                    } catch (IOException e) {
+//                        log.error("SSE 다중 전송 실패: {}", e.getMessage());
+//                    }
+//                }));
+//    }
+
     public void send(Collection<UUID> receiverIds, String eventName, Object data) {
         SseMessage message = messageRepository.save(SseMessage.create(receiverIds, eventName, data));
         Set<SseEmitter.SseEventBuilder> events = message.toEvent();
-        emitterRepository.findAllByReceiverIdsIn(receiverIds)
-                .forEach(emitter -> events.forEach(event -> {
-                    try {
-                        emitter.send(event);
-                    } catch (IOException e) {
-                        log.error("SSE 다중 전송 실패: {}", e.getMessage());
-                    }
-                }));
+
+        receiverIds.forEach(receiverId -> {
+            emitterRepository.findByReceiverId(receiverId).ifPresent(emitters -> {
+                emitters.forEach(emitter -> {
+                    events.forEach(event -> {
+                        try {
+                            emitter.send(event);
+                        } catch (IOException e) {
+                            log.warn("SSE 전송 실패 (receiverId={}): {}", receiverId, e.getMessage());
+                            emitter.completeWithError(e);
+                            emitterRepository.delete(receiverId, emitter);
+                        }
+                    });
+                });
+            });
+        });
     }
 
     public void broadcast(String eventName, Object data) {
