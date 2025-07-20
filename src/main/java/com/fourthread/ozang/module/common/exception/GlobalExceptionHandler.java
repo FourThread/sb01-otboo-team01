@@ -1,8 +1,11 @@
 package com.fourthread.ozang.module.common.exception;
 
 import java.util.Map;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
@@ -17,10 +20,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
+  public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e, HttpServletRequest request) {
     if (e instanceof AccessDeniedException) {
       throw (AccessDeniedException) e;
     }
+
+    String accept = request.getHeader("Accept");
+    if (accept != null && accept.contains("text/event-stream")) {
+      return ResponseEntity.noContent().build(); // SSE 요청은 JSON 응답 안 함
+    }
+
     log.error("Unhandled exception occurred", e);
 
     ErrorDetails details = new ErrorDetails(
