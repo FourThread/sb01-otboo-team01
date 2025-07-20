@@ -5,6 +5,17 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ozang-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -43,11 +54,11 @@ spring:
     connection-timeout: 10s
     socket-timeout: 60s
 
-elasticsearch:
-  enabled: ${ELASTICSEARCH_ENABLED:true}
-  cloud:
-    host: ${ELASTICSEARCH_HOST}
-    api-key: ${ELASTICSEARCH_API_KEY}
+#elasticsearch:
+#  enabled: ${ELASTICSEARCH_ENABLED:true}
+#  cloud:
+#    host: ${ELASTICSEARCH_HOST}
+#    api-key: ${ELASTICSEARCH_API_KEY}
 
 batch:
   weather:
@@ -123,13 +134,3 @@ file:
       allowed-extensions: jpg,jpeg,png,gif,webp
       max-size: 10485760
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: ozang-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
