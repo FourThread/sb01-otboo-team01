@@ -21,7 +21,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Slf4j
 @Configuration
 @EnableScheduling
-@RequiredArgsConstructor
 public class BatchScheduler {
 
     private final ZoneId zoneId;
@@ -29,14 +28,37 @@ public class BatchScheduler {
     @Qualifier("asyncJobLauncher")
     private final JobLauncher asyncJobLauncher;
 
+    @Qualifier("weatherDataCleanupJob")
     private final Job weatherDataCleanupJob;
+
+    @Qualifier("weatherChangeDetectionJob")
     private final Job weatherChangeDetectionJob;
+
+    @Qualifier("weatherCacheWarmupJob")
+    private final Job weatherCacheWarmupJob;
 
     @Value("${batch.scheduler.weather-cleanup.enabled:true}")
     private boolean weatherCleanupEnabled;
 
     @Value("${batch.scheduler.weather-change-detection.enabled:true}")
     private boolean weatherChangeDetectionEnabled;
+
+    @Value("${batch.scheduler.weather-cache-warmup.enabled:true}")
+    private boolean weatherCacheWarmupEnabled;
+
+    public BatchScheduler(
+        ZoneId zoneId,
+        @Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher,
+        @Qualifier("weatherDataCleanupJob") Job weatherDataCleanupJob,
+        @Qualifier("weatherChangeDetectionJob") Job weatherChangeDetectionJob,
+        @Qualifier("weatherCacheWarmupJob") Job weatherCacheWarmupJob
+    ) {
+        this.zoneId = zoneId;
+        this.asyncJobLauncher = asyncJobLauncher;
+        this.weatherDataCleanupJob = weatherDataCleanupJob;
+        this.weatherChangeDetectionJob = weatherChangeDetectionJob;
+        this.weatherCacheWarmupJob = weatherCacheWarmupJob;
+    }
 
     /**
      * 날씨 데이터 정리 작업
@@ -98,6 +120,37 @@ public class BatchScheduler {
 
         } catch (Exception e) {
             log.error("[Scheduled] 날씨 변화 감지 작업 실행 실패", e);
+        }
+    }
+
+    /**
+     * 활성 지역 캐시 갱신 스케줄러
+     * 매시간 정각에 활성 지역 캐시 갱신
+     */
+    @Scheduled(cron = "0 0 * * * *", zone = "#{@timezoneId}")
+    public void scheduledActiveRegionsCacheRefresh() {
+        if (!weatherCacheWarmupEnabled) {
+            log.debug("날씨 캐시 워밍업이 비활성화되어 있습니다");
+            return;
+        }
+
+        log.info("[Scheduled] 활성 지역 캐시 갱신 시작");
+
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("timestamp", System.currentTimeMillis())
+                .addString("jobType", "scheduled-active-regions")
+                .addString("triggeredBy", "scheduler")
+                .addString("timezone", zoneId.getId())
+                .toJobParameters();
+
+            JobExecution jobExecution = asyncJobLauncher.run(weatherCacheWarmupJob, jobParameters);
+
+            log.info("[Scheduled] 활성 지역 캐시 갱신 시작 - Job ID={}, Status={}",
+                jobExecution.getId(), jobExecution.getStatus());
+
+        } catch (Exception e) {
+            log.error("[Scheduled] 활성 지역 캐시 갱신 실행 실패", e);
         }
     }
 }

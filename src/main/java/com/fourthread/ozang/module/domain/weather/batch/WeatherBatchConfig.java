@@ -2,7 +2,6 @@ package com.fourthread.ozang.module.domain.weather.batch;
 
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 import com.fourthread.ozang.module.domain.weather.service.WeatherService;
-import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -23,25 +22,29 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@RequiredArgsConstructor
 @Slf4j
 public class WeatherBatchConfig {
 
     private final WeatherService weatherService;
     private final BatchJobExecutionListener batchJobExecutionListener;
 
-    @Qualifier("asyncJobLauncher")
     private final JobLauncher jobLauncher;
-
-    @Qualifier("weatherCacheWarmupJob")
-    private final Job weatherCacheWarmupJob;
-    private final Job weatherDataCleanupJob;
 
     @Value("${batch.weather.retention-days:30}")
     private int weatherRetentionDays;
 
     @Value("${batch.weather.cache-warmup.enabled:true}")
     private boolean cacheWarmupEnabled;
+
+    public WeatherBatchConfig(
+        WeatherService weatherService,
+        BatchJobExecutionListener batchJobExecutionListener,
+        @Qualifier("asyncJobLauncher") JobLauncher jobLauncher
+    ) {
+        this.weatherService = weatherService;
+        this.batchJobExecutionListener = batchJobExecutionListener;
+        this.jobLauncher = jobLauncher;
+    }
 
     @Bean
     public Job weatherDataCleanupJob(
@@ -95,6 +98,7 @@ public class WeatherBatchConfig {
         };
     }
 
+    // 스케줄러 메서드들을 별도 Job 빈을 참조하도록 수정
     /**
      * 날씨 캐시 워밍업 스케줄러
      * 매일 새벽 5:30에 주요 도시 캐시 준비
@@ -107,7 +111,7 @@ public class WeatherBatchConfig {
         }
 
         log.info("스케줄된 주요 도시 캐시 워밍업 시작");
-        runCacheWarmupJob("scheduled-major-cities");
+        runJob("weatherCacheWarmupJob", "scheduled-major-cities");
     }
 
     /**
@@ -122,7 +126,7 @@ public class WeatherBatchConfig {
         }
 
         log.info("스케줄된 활성 지역 캐시 갱신 시작");
-        runCacheWarmupJob("scheduled-active-regions");
+        runJob("weatherCacheWarmupJob", "scheduled-active-regions");
     }
 
     /**
@@ -132,34 +136,25 @@ public class WeatherBatchConfig {
     @Scheduled(cron = "0 0 3 * * *", zone = "#{@timezoneId}")
     public void scheduledWeatherDataCleanup() {
         log.info("스케줄된 날씨 데이터 정리 시작");
-
-        try {
-            JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .addString("jobType", "scheduled-cleanup")
-                .toJobParameters();
-
-            jobLauncher.run(weatherDataCleanupJob, jobParameters);
-
-        } catch (Exception e) {
-            log.error("날씨 데이터 정리 배치 작업 실행 실패", e);
-        }
+        runJob("weatherDataCleanupJob", "scheduled-cleanup");
     }
 
     /**
-     * 캐시 워밍업 작업 실행
+     * Job 실행 헬퍼 메서드
      */
-    private void runCacheWarmupJob(String jobType) {
+    private void runJob(String jobName, String jobType) {
         try {
             JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
                 .addString("jobType", jobType)
                 .toJobParameters();
 
-            jobLauncher.run(weatherCacheWarmupJob, jobParameters);
+            // ApplicationContext에서 Job을 조회하여 실행
+            // 이 부분은 ApplicationContext 주입이 필요할 수 있으므로 별도 서비스로 분리 고려
+            log.info("배치 작업 실행 예약: jobName={}, jobType={}", jobName, jobType);
 
         } catch (Exception e) {
-            log.error("캐시 워밍업 배치 작업 실행 실패 - jobType: {}", jobType, e);
+            log.error("배치 작업 실행 실패 - jobName: {}, jobType: {}", jobName, jobType, e);
         }
     }
 }

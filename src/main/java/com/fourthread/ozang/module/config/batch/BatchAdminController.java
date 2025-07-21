@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/admin/batch")
-@RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class BatchAdminController {
 
@@ -45,7 +44,26 @@ public class BatchAdminController {
     @Qualifier("weatherCacheWarmupJob")
     private final Job weatherCacheWarmupJob;
 
+    @Qualifier("weatherChangeDetectionJob")
+    private final Job weatherChangeDetectionJob;
+
     private final JobExplorer jobExplorer;
+
+    public BatchAdminController(
+        JobLauncher jobLauncher,
+        @Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher,
+        @Qualifier("weatherDataCleanupJob") Job weatherDataCleanupJob,
+        @Qualifier("weatherCacheWarmupJob") Job weatherCacheWarmupJob,
+        @Qualifier("weatherChangeDetectionJob") Job weatherChangeDetectionJob,
+        JobExplorer jobExplorer
+    ) {
+        this.jobLauncher = jobLauncher;
+        this.asyncJobLauncher = asyncJobLauncher;
+        this.weatherDataCleanupJob = weatherDataCleanupJob;
+        this.weatherCacheWarmupJob = weatherCacheWarmupJob;
+        this.weatherChangeDetectionJob = weatherChangeDetectionJob;
+        this.jobExplorer = jobExplorer;
+    }
 
 
     /**
@@ -81,6 +99,24 @@ public class BatchAdminController {
             weatherCacheWarmupJob,
             "manual_weather_cache_warmup",
             "날씨 캐시 워밍업 배치"
+        );
+    }
+
+    /**
+     * 날씨 변화 감지 배치 수동 실행
+     */
+    @PostMapping("/weather-change-detection")
+    public ResponseEntity<Map<String, Object>> runWeatherChangeDetection(
+        @Parameter(description = "비동기 실행 여부", example = "true")
+        @RequestParam(defaultValue = "true") boolean async
+    ) {
+        log.info("[Admin] 날씨 변화 감지 배치 수동 실행 요청 - async: {}", async);
+
+        return executeJob(
+            async ? asyncJobLauncher : jobLauncher,
+            weatherChangeDetectionJob,
+            "manual_weather_change_detection",
+            "날씨 변화 감지 배치"
         );
     }
 
