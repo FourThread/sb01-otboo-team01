@@ -10,6 +10,7 @@ import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinit
 import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ class ClothesAttributeDefinitionServiceTest {
     private UUID ClothesAttributeDefinitionId;
     private ClothesAttributeDefinition clothesAttributeDefinition;
     private ClothesAttributeDefDto clothesAttributeDefDto;
+
+    @Mock
+    private ClothesAttributeRepository clothesAttributeRepository;
 
     @Mock
     private ApplicationEventPublisher eventPublisher;

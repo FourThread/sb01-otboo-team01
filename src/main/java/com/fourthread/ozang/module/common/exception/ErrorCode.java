@@ -8,6 +8,7 @@ public enum ErrorCode {
   // 공통
   INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   INVALID_REQUEST("INVALID_REQUEST", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
+  BAD_REQUEST("BAD_REQUEST", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
 
   // 사용자 관련
   USER_NOT_FOUND("USER_NOT_FOUND", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -25,11 +26,16 @@ public enum ErrorCode {
   DUPLICATE_CLOTHES("DUPLICATE_CLOTHES", "이미 존재하는 의상입니다.", HttpStatus.CONFLICT),
   CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND("CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND", "의상 속성 정의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION("DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION", "이미 존재하는 의상 속성 정의입니다.", HttpStatus.CONFLICT),
+  URL_NOT_SUPPORTED("URL NOT SUPPORTED", "지원하지 않는 주소입니다.", HttpStatus.BAD_REQUEST),
 
   // 팔로우 관련
   FOLLOWS_NOT_FOUND("FOLLOWS_NOT_FOUND", "팔로우 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   SELF_FOLLOW_NOT_ALLOWED("SELF_FOLLOW_NOT_ALLOWED", "자기 자신을 팔로우할 수 없습니다.", HttpStatus.BAD_REQUEST),
   ALREADY_FOLLOWING("ALREADY_FOLLOWING", "이미 팔로우 중입니다.", HttpStatus.CONFLICT),
+
+  // 알림 관련
+  NOTIFICATION_NOT_FOUND("NOTIFICATION_NOT_FOUND", "알림 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
 
   FILE_UPLOAD_ERROR("FILE_UPLOAD_ERROR", "파일 업로드 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_SIZE_EXCEEDED( "FILE_SIZE_EXCEEDED","파일 크기가 제한을 초과했습니다.",  HttpStatus.BAD_REQUEST),

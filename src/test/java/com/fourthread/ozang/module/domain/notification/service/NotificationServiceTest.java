@@ -7,6 +7,7 @@ import com.fourthread.ozang.module.domain.notification.entity.Notification;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
 import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
+import com.fourthread.ozang.module.domain.notification.execption.NotificationException;
 import com.fourthread.ozang.module.domain.notification.mapper.NotificationMapper;
 import com.fourthread.ozang.module.domain.notification.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -168,7 +169,7 @@ class NotificationServiceTest {
 
         // when & then
         assertThatThrownBy(() -> notificationService.delete(receiverId, notificationId))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(NotificationException.class);
     }
 
     @DisplayName("다른 사용자의 알림을 삭제하려 하면 예외 발생")

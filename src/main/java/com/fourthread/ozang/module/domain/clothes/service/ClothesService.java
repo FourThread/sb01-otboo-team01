@@ -192,6 +192,4 @@ public class ClothesService {
             default -> throw new IllegalArgumentException("지원하지 않는 커서 필드입니다: " + sortBy);
         };
     }
-
-
 }
