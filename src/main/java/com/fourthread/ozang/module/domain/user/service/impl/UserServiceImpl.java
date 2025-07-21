@@ -126,6 +126,10 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND, userId.toString(),
             this.getClass().getSimpleName()));
 
+    if (findUser.getTempPasswordIssuedAt() != null) {
+      findUser.setTempPasswordIssuedAt(null);
+    }
+
     findUser.updatePassword(encodePassword);
     log.info("비밀번호 변경을 완료했습니다");
 
