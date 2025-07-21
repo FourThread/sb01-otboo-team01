@@ -1,4 +1,11 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-public record RoleChangedEvent() {
+import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+
+import java.util.UUID;
+
+public record RoleChangedEvent(
+        UserDto userDto,
+        UUID requesterId
+) {
 }

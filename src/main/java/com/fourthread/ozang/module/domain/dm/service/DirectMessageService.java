@@ -11,6 +11,8 @@ import com.fourthread.ozang.module.domain.dm.entity.DirectMessage;
 import com.fourthread.ozang.module.domain.dm.repository.DirectMessageRepository;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.module.domain.notification.event.DmReceivedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreatedEvent;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +33,7 @@ public class DirectMessageService {
   private final DirectMessageRepository dmRepository;
   private final UserRepository userRepository;
   private final SimpMessagingTemplate messagingTemplate;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
   * @methodName : send
@@ -50,6 +54,8 @@ public class DirectMessageService {
 
     messagingTemplate.convertAndSend(DirectMessageURI.SEND.getUri() + getDmKey(sender, receiver), dmDto);
     log.info("DM 전송: {}", dmDto);
+
+    eventPublisher.publishEvent(new DmReceivedEvent(dmDto));
 
     return dmDto;
   }

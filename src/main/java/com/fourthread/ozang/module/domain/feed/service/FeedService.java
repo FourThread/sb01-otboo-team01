@@ -31,6 +31,10 @@ import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
+import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FeedCommentedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FeedLikedEvent;
+import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreatedEvent;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -44,6 +48,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -66,6 +71,7 @@ public class FeedService {
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
   private final FeedMapper feedMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * @methodName : register
@@ -97,7 +103,11 @@ public class FeedService {
     elasticsearchIfPresentSearchFeed(feed);
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
-    return feedMapper.toDto(feed, user, weather, ootds);
+    FeedDto dto = feedMapper.toDto(feed, user, weather, ootds);
+
+    eventPublisher.publishEvent(new FollowingFeedCreatedEvent(dto.author(), feed.getContent()));
+
+    return dto;
   }
 
   /**
@@ -193,8 +203,12 @@ public class FeedService {
     Feed feed = getFeed(feedId);
     feed.increaseLike();
 
-    FeedLike feedLike = new FeedLike(feed, getUser(likeByUserId));
+    User likeByUser = getUser(likeByUserId);
+
+    FeedLike feedLike = new FeedLike(feed, likeByUser);
     feedLikeRepository.save(feedLike);
+
+    eventPublisher.publishEvent(new FeedLikedEvent(feedLike.getId(), feed.getAuthor().getId(), feed.getContent(), likeByUser.getName()));
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }
@@ -239,6 +253,8 @@ public class FeedService {
         .build();
 
     feedCommentRepository.save(comment);
+
+    eventPublisher.publishEvent(new FeedCommentedEvent(feed.getAuthor().getId(),comment.getAuthor().getName(), comment.getContent()));
 
     return feedMapper.toDto(feed, user, feed.getWeather(), getOotdsByFeed(feed), comment);
   }

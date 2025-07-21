@@ -1,4 +1,8 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-public record DmReceivedEvent() {
+import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDto;
+
+public record DmReceivedEvent(
+        DirectMessageDto dmDto
+) {
 }

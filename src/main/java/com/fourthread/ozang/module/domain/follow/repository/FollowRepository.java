@@ -3,9 +3,12 @@ package com.fourthread.ozang.module.domain.follow.repository;
 import com.fourthread.ozang.module.domain.follow.entity.Follow;
 import com.fourthread.ozang.module.domain.follow.repository.query.FollowRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface FollowRepository extends JpaRepository<Follow, UUID>, FollowRepositoryCustom {
@@ -23,7 +26,8 @@ public interface FollowRepository extends JpaRepository<Follow, UUID>, FollowRep
     long countByFollowerId(UUID followerId);
 
     // 특정 사용자를 팔로우 중인 사람들
-    List<Follow> findAllByFolloweeId(UUID followeeId);
+    @Query("select f.follower.id from Follow f where f.followee.id = :followeeId")
+    Set<UUID> findFollowerIdsByFolloweeId(@Param("followeeId") UUID followeeId);
 
     // 특정 사용자가 팔로우한 사람들
     List<Follow> findAllByFollowerId(UUID followerId);
