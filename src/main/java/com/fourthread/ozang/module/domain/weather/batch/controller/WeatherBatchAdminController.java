@@ -13,6 +13,8 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/batch/weathers")
 @PreAuthorize("hasRole('ADMIN')")
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.enabled", havingValue = "true", matchIfMissing = true)
 public class WeatherBatchAdminController {
 
     private final JobLauncher jobLauncher;
