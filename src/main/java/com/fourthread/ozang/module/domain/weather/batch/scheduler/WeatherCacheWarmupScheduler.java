@@ -10,6 +10,8 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.scheduler.weather-cache-warmup.enabled", havingValue = "true")
 public class WeatherCacheWarmupScheduler {
 
     private final ZoneId zoneId;
@@ -44,7 +48,7 @@ public class WeatherCacheWarmupScheduler {
             return;
         }
 
-        log.info("[Scheduled] 주요 도시 캐시 워밍업 시작");
+        log.info("[BATCH-SCHEDULER] 주요 도시 캐시 워밍업 시작");
         executeWarmupJob("scheduled_major_cities", "주요 도시 캐시 워밍업");
     }
 
@@ -59,7 +63,7 @@ public class WeatherCacheWarmupScheduler {
             return;
         }
 
-        log.info("[Scheduled] 활성 지역 캐시 갱신 시작");
+        log.info("[BATCH-SCHEDULER] 활성 지역 캐시 갱신 시작");
         executeWarmupJob("scheduled_active_regions", "활성 지역 캐시 갱신");
     }
 
@@ -77,11 +81,11 @@ public class WeatherCacheWarmupScheduler {
 
             JobExecution jobExecution = asyncJobLauncher.run(weatherCacheWarmupJob, jobParameters);
 
-            log.info("[Scheduled] {} 시작 - Job ID={}, Status={}",
+            log.info("[BATCH-SCHEDULER] {} 시작 - Job ID={}, Status={}",
                 description, jobExecution.getId(), jobExecution.getStatus());
 
         } catch (Exception e) {
-            log.error("[Scheduled] {} 실행 실패", description, e);
+            log.error("[BATCH-SCHEDULER] {} 실행 실패", description, e);
         }
     }
 }

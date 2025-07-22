@@ -10,6 +10,8 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.scheduler.weather-cleanup.enabled", havingValue = "true")
 public class WeatherDataCleanupScheduler {
 
     private final ZoneId zoneId;
@@ -44,23 +48,24 @@ public class WeatherDataCleanupScheduler {
             return;
         }
 
-        log.info("[Scheduled] 날씨 데이터 정리 작업 시작");
+        log.info("[BATCH-SCHEDULER] 날씨 데이터 정리 작업 시작");
 
         try {
             JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
                 .addString("jobType", "scheduled_weather_cleanup")
-                .addString("triggeredBy", "scheduler")
+                .addString("triggeredBy", "batch-scheduler")
                 .addString("timezone", zoneId.getId())
+                .addString("instance", "batch-server")
                 .toJobParameters();
 
             JobExecution jobExecution = asyncJobLauncher.run(weatherDataCleanupJob, jobParameters);
 
-            log.info("[Scheduled] 날씨 데이터 정리 작업 시작 - Job ID={}, Status={}",
+            log.info("[BATCH-SCHEDULER] 날씨 데이터 정리 작업 시작 - Job ID={}, Status={}",
                 jobExecution.getId(), jobExecution.getStatus());
 
         } catch (Exception e) {
-            log.error("[Scheduled] 날씨 데이터 정리 작업 실행 실패", e);
+            log.error("[BATCH-SCHEDULER] 날씨 데이터 정리 작업 실행 실패", e);
         }
     }
 }
