@@ -323,17 +323,18 @@ jobs:
         id: verify-deployment
         run: |
           echo "Verifying deployment..."
-          
-          # ALB를 통한 애플리케이션 접근 테스트
-          echo "Testing application via ALB..."
+
+          # ALB HTTPS로 직접 헬스체크
+          echo "Testing application via ALB HTTPS..."
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
             --retry 3 \
             --retry-delay 10 \
-            http://${{ env.ALB_DNS }}/actuator/health || echo "000")
-          
+            --insecure \
+            https://${{ env.ALB_DNS }}/actuator/health || echo "000")
+
           echo "HTTP Status: $HTTP_STATUS"
-          
+
           if [ "$HTTP_STATUS" = "200" ]; then
             echo "Application is healthy and accessible via ALB"
             echo "deployment_status=success" >> $GITHUB_OUTPUT
@@ -342,16 +343,16 @@ jobs:
             echo "deployment_status=failed" >> $GITHUB_OUTPUT
             exit 1
           fi
-          
+
           # ECS 태스크 상태 확인
           RUNNING_TASKS=$(aws ecs list-tasks \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service-name ${{ env.ECS_SERVICE }} \
             --desired-status RUNNING \
             --query 'length(taskArns)')
-          
+
           echo "Running tasks: $RUNNING_TASKS"
-          
+
           if [ "$RUNNING_TASKS" -gt 0 ]; then
             echo "ECS tasks are running successfully"
           else
