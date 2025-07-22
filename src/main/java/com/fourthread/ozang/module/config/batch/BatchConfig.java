@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Spring Batch 메인 설정 클래스
@@ -20,6 +21,7 @@ import org.springframework.core.task.TaskExecutor;
 @Slf4j
 @Configuration
 @EnableBatchProcessing
+@EnableScheduling
 @RequiredArgsConstructor
 public class BatchConfig {
 
