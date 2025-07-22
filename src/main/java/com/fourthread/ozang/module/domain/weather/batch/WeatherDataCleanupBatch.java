@@ -11,9 +11,10 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -23,13 +24,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.enabled", havingValue = "true", matchIfMissing = true)
 public class WeatherDataCleanupBatch {
 
     private final WeatherService weatherService;
     private final BatchJobExecutionListener batchJobExecutionListener;
-
-    @Value("${batch.weather.retention-days:30}")
-    private int weatherRetentionDays;
 
     @Bean
     public Job weatherDataCleanupJob(
@@ -60,12 +60,12 @@ public class WeatherDataCleanupBatch {
     @Bean
     public Tasklet weatherDataCleanupTasklet() {
         return (contribution, chunkContext) -> {
-            log.info("날씨 데이터 정리 배치 작업 시작");
+            log.info("[BATCH-JOB] 날씨 데이터 정리 배치 작업 시작");
 
             try {
                 int deletedCount = weatherService.cleanupOldWeatherData();
 
-                log.info("날씨 데이터 정리 완료 - 삭제된 데이터: {}건", deletedCount);
+                log.info("[BATCH-JOB] 날씨 데이터 정리 완료 - 삭제된 데이터: {}건", deletedCount);
 
                 // ExecutionContext에 결과 저장 (모니터링용)
                 chunkContext.getStepContext()
@@ -77,7 +77,7 @@ public class WeatherDataCleanupBatch {
                 return RepeatStatus.FINISHED;
 
             } catch (Exception e) {
-                log.error("날씨 데이터 정리 배치 작업 실패", e);
+                log.error("[BATCH-JOB] 날씨 데이터 정리 배치 작업 실패", e);
                 throw e;
             }
         };

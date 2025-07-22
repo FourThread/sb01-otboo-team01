@@ -18,8 +18,10 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -29,6 +31,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.enabled", havingValue = "true", matchIfMissing = true)
 public class WeatherCacheWarmupBatch {
 
     private final WeatherService weatherService;
@@ -70,17 +74,17 @@ public class WeatherCacheWarmupBatch {
     @Bean
     public Tasklet activeRegionsWarmupTasklet() {
         return (contribution, chunkContext) -> {
-            log.info("활성 지역 날씨 캐시 워밍업 시작");
+            log.info("[BATCH-JOB] 활성 지역 날씨 캐시 워밍업 시작");
 
             // Redis에서 최근 활성 지역 조회
             List<double[]> activeRegions = cacheService.getActiveRegions(maxWarmupRegions);
 
             if (activeRegions.isEmpty()) {
-                log.info("활성 지역이 없어 워밍업을 건너뜁니다");
+                log.info("[BATCH-JOB] 활성 지역이 없어 워밍업을 건너뜁니다");
                 return RepeatStatus.FINISHED;
             }
 
-            log.info("활성 지역 {}개 발견", activeRegions.size());
+            log.info("[BATCH-JOB] 활성 지역 {}개 발견", activeRegions.size());
 
             int successCount = 0;
             int failureCount = 0;
@@ -99,12 +103,12 @@ public class WeatherCacheWarmupBatch {
                         failureCount++;
                     }
                 } catch (Exception e) {
-                    log.error("활성 지역 캐시 워밍업 중 오류 발생", e);
+                    log.error("[BATCH-JOB] 활성 지역 캐시 워밍업 중 오류 발생", e);
                     failureCount++;
                 }
             }
 
-            log.info("활성 지역 캐시 워밍업 완료 - 성공: {}개, 실패: {}개",
+            log.info("[BATCH-JOB] 활성 지역 캐시 워밍업 완료 - 성공: {}개, 실패: {}개",
                 successCount, failureCount);
 
             // ExecutionContext에 결과 저장
@@ -123,7 +127,7 @@ public class WeatherCacheWarmupBatch {
      */
     private boolean warmupLocationWeather(double latitude, double longitude) {
         try {
-            log.debug("캐시 워밍업 시작 - 위도: {}, 경도: {}", latitude, longitude);
+            log.debug("[BATCH-JOB] 캐시 워밍업 시작 - 위도: {}, 경도: {}", latitude, longitude);
 
             // 현재 날씨 조회 및 캐싱
             WeatherDto currentWeather = weatherService.getWeatherForecast(longitude, latitude);
@@ -137,11 +141,11 @@ public class WeatherCacheWarmupBatch {
             // 명시적으로 캐시에 저장
             cacheService.warmupCache(latitude, longitude, currentWeather, forecast, location);
 
-            log.debug("캐시 워밍업 성공 - 위도: {}, 경도: {}", latitude, longitude);
+            log.debug("[BATCH-JOB] 캐시 워밍업 성공 - 위도: {}, 경도: {}", latitude, longitude);
             return true;
 
         } catch (Exception e) {
-            log.error("캐시 워밍업 실패 - 위도: {}, 경도: {}", latitude, longitude, e);
+            log.error("[BATCH-JOB] 캐시 워밍업 실패 - 위도: {}, 경도: {}", latitude, longitude, e);
             return false;
         }
     }

@@ -23,9 +23,11 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -35,6 +37,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@Profile("batch")
+@ConditionalOnProperty(name = "batch.enabled", havingValue = "true", matchIfMissing = true)
 public class WeatherChangeDetectionBatch {
 
     private final WeatherService weatherService;
@@ -72,18 +76,18 @@ public class WeatherChangeDetectionBatch {
     @Bean
     public Tasklet weatherChangeDetectionTasklet() {
         return (contribution, chunkContext) -> {
-            log.info("날씨 변화 감지 배치 작업 시작");
+            log.info("[BATCH-JOB] 날씨 변화 감지 배치 작업 시작");
 
             try {
                 // Redis에서 최근 활성 지역 조회
                 List<double[]> activeRegions = cacheService.getActiveRegions(maxDetectionRegions);
 
                 if (activeRegions.isEmpty()) {
-                    log.info("활성 지역이 없어 날씨 변화 감지를 건너뜁니다");
+                    log.info("[BATCH-JOB] 활성 지역이 없어 날씨 변화 감지를 건너뜁니다");
                     return RepeatStatus.FINISHED;
                 }
 
-                log.info("활성 지역 {}개에서 날씨 변화 감지 시작", activeRegions.size());
+                log.info("[BATCH-JOB] 활성 지역 {}개에서 날씨 변화 감지 시작", activeRegions.size());
 
                 int totalChanges = 0;
                 int processedRegions = 0;
@@ -108,16 +112,16 @@ public class WeatherChangeDetectionBatch {
                             // 이벤트 발행
                             eventPublisher.publishEvent(new WeatherChangeDetectedEvent(changes));
 
-                            log.info("날씨 변화 감지됨 - 지역: {}, 변화 수: {}",
+                            log.info("[BATCH-JOB] 날씨 변화 감지됨 - 지역: {}, 변화 수: {}",
                                 getLocationDescription(changes.get(0)), changes.size());
                         }
 
                     } catch (Exception e) {
-                        log.error("지역별 날씨 변화 감지 중 오류 발생", e);
+                        log.error("[BATCH-JOB] 지역별 날씨 변화 감지 중 오류 발생", e);
                     }
                 }
 
-                log.info("날씨 변화 감지 배치 작업 완료 - 처리된 지역: {}개, 총 변화: {}건",
+                log.info("[BATCH-JOB] 날씨 변화 감지 배치 작업 완료 - 처리된 지역: {}개, 총 변화: {}건",
                     processedRegions, totalChanges);
 
                 // ExecutionContext에 결과 저장
@@ -136,7 +140,7 @@ public class WeatherChangeDetectionBatch {
                 return RepeatStatus.FINISHED;
 
             } catch (Exception e) {
-                log.error("날씨 변화 감지 배치 작업 실패", e);
+                log.error("[BATCH-JOB] 날씨 변화 감지 배치 작업 실패", e);
                 throw e;
             }
         };
