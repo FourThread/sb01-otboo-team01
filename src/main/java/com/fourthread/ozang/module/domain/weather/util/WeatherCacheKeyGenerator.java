@@ -1,10 +1,9 @@
 package com.fourthread.ozang.module.domain.weather.util;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 날씨 캐시 키 생성 유틸리티
@@ -16,7 +15,8 @@ public class WeatherCacheKeyGenerator {
 
     private static final double GRID_SIZE_KM = 5.0; // 5km 그리드
     private static final double KM_PER_LAT_DEGREE = 111.0; // 위도 1도당 약 111km
-    public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");
+    public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern(
+        "yyyyMMddHH");
 
     /**
      * 현재 날씨 캐시 키 생성
@@ -37,7 +37,8 @@ public class WeatherCacheKeyGenerator {
      * 5일 예보 캐시 키 생성
      * 형식: weather:forecast:{gridX}:{gridY}:{baseTime}
      */
-    public static String generateForecastWeatherKey(double latitude, double longitude, String baseTime) {
+    public static String generateForecastWeatherKey(double latitude, double longitude,
+        String baseTime) {
         GridCell grid = convertToGrid(latitude, longitude);
 
         String key = String.format("weather:forecast:%d:%d:%s",
@@ -59,14 +60,6 @@ public class WeatherCacheKeyGenerator {
 
         log.debug("위치 정보 캐시 키 생성: {}", key);
         return key;
-    }
-
-    /**
-     * 활성 지역 키 생성 (배치 작업용)
-     * 형식: weather:active:regions
-     */
-    public static String generateActiveRegionsKey() {
-        return "weather:active:regions";
     }
 
     /**
@@ -94,6 +87,7 @@ public class WeatherCacheKeyGenerator {
      * 그리드 셀 정보
      */
     private static class GridCell {
+
         final int x;
         final int y;
 
@@ -101,22 +95,5 @@ public class WeatherCacheKeyGenerator {
             this.x = x;
             this.y = y;
         }
-    }
-
-    /**
-     * 캐시 키에서 그리드 좌표 추출
-     */
-    public static int[] extractGridFromKey(String key) {
-        String[] parts = key.split(":");
-        if (parts.length >= 4) {
-            try {
-                int x = Integer.parseInt(parts[2]);
-                int y = Integer.parseInt(parts[3]);
-                return new int[]{x, y};
-            } catch (NumberFormatException e) {
-                log.error("캐시 키에서 그리드 좌표 추출 실패: {}", key, e);
-            }
-        }
-        return null;
     }
 }
