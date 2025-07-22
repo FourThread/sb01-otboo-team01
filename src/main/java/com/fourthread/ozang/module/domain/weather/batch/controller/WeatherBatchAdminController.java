@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/batch/weathers")
 @PreAuthorize("hasRole('ADMIN')")
-public class BatchAdminController {
+public class WeatherBatchAdminController {
 
     private final JobLauncher jobLauncher;
 
@@ -48,7 +48,7 @@ public class BatchAdminController {
 
     private final JobExplorer jobExplorer;
 
-    public BatchAdminController(
+    public WeatherBatchAdminController(
         JobLauncher jobLauncher,
         @Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher,
         @Qualifier("weatherDataCleanupJob") Job weatherDataCleanupJob,
