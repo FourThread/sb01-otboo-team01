@@ -36,6 +36,23 @@ spring:
             max-wait: 1000ms
           shutdown-timeout: 100ms
 
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: embedded
+
+batch:
+  weather:
+    retention-days: 3
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    weather-cache-warmup:
+      enabled: true
+    weather-change-detection:
+      enabled: true
+
 weather:
   redis:
     database: 1  # Weather용 (캐시 데이터)
@@ -59,17 +76,6 @@ elasticsearch:
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
-
-batch:
-  weather:
-    retention-days: 3
-  scheduler:
-    weather-cleanup:
-      enabled: true
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: embedded
 
 management:
   endpoints:

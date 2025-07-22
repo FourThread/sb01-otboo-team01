@@ -42,6 +42,24 @@ spring:
         cluster:
           refresh:
             adaptive: true
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+# 배치 스케줄링 비활성화
+batch:
+  weather:
+    retention-days: 14
+  scheduler:
+    weather-cleanup:
+      enabled: false
+    weather-cache-warmup:
+      enabled: false
+    weather-change-detection:
+      enabled: false
+
 weather:
   redis:
     database: 1  # Weather용 (캐시 데이터)
@@ -70,18 +88,6 @@ elasticsearch:
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
-
-batch:
-  weather:
-    retention-days: 14
-  scheduler:
-    weather-cleanup:
-      enabled: true
-
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: embedded
 
 logging:
   level:

@@ -67,7 +67,7 @@ spring:
     job:
       enabled: false #애플리케이션 시작 시 배치 작업 자동 실행 여부
     jdbc:
-      initialize-schema: embedded #배치 메타데이터 테이블 초기화
+      initialize-schema: never #배치 메타데이터 테이블 초기화
 
 logging:
   level:
@@ -78,19 +78,6 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.elasticsearch.client: trace
-
-batch:
-  weather:
-    retention-days: 30
-    cache-warmup:
-      enabled: true
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    weather-cache-warmup:
-      enabled: true
-    weather-change-detection:
-      enabled: true
 
 weather:
   cache:
