@@ -1,10 +1,9 @@
-package com.fourthread.ozang.module.config.batch;
+package com.fourthread.ozang.module.domain.weather.batch.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/admin/batch")
+@RequestMapping("/api/admin/batch/weathers")
 @PreAuthorize("hasRole('ADMIN')")
 public class BatchAdminController {
 
@@ -69,7 +68,7 @@ public class BatchAdminController {
     /**
      * 날씨 데이터 정리 배치 수동 실행
      */
-    @PostMapping("/weather-cleanup")
+    @PostMapping("/cleanup")
     public ResponseEntity<Map<String, Object>> runWeatherCleanup(
         @Parameter(description = "비동기 실행 여부", example = "true")
         @RequestParam(defaultValue = "true") boolean async
@@ -87,7 +86,7 @@ public class BatchAdminController {
     /**
      * 날씨 캐시 워밍업 배치 수동 실행
      */
-    @PostMapping("/weather-cache-warmup")
+    @PostMapping("/cache-warmup")
     public ResponseEntity<Map<String, Object>> runWeatherCacheWarmup(
         @Parameter(description = "비동기 실행 여부", example = "true")
         @RequestParam(defaultValue = "true") boolean async
@@ -105,7 +104,7 @@ public class BatchAdminController {
     /**
      * 날씨 변화 감지 배치 수동 실행
      */
-    @PostMapping("/weather-change-detection")
+    @PostMapping("/change-detection")
     public ResponseEntity<Map<String, Object>> runWeatherChangeDetection(
         @Parameter(description = "비동기 실행 여부", example = "true")
         @RequestParam(defaultValue = "true") boolean async
@@ -145,9 +144,12 @@ public class BatchAdminController {
             } else {
                 // 모든 Job 이력 조회
                 Map<String, List<Map<String, Object>>> allHistory = new HashMap<>();
-                allHistory.put("weatherDataCleanupJob", getJobHistory("weatherDataCleanupJob", limit));
-                allHistory.put("expiredTokenCleanupJob", getJobHistory("expiredTokenCleanupJob", limit));
-                allHistory.put("weatherCacheWarmupJob", getJobHistory("weatherCacheWarmupJob", limit));
+                allHistory.put("weatherDataCleanupJob",
+                    getJobHistory("weatherDataCleanupJob", limit));
+                allHistory.put("expiredTokenCleanupJob",
+                    getJobHistory("expiredTokenCleanupJob", limit));
+                allHistory.put("weatherCacheWarmupJob",
+                    getJobHistory("weatherCacheWarmupJob", limit));
                 response.put("history", allHistory);
             }
 
