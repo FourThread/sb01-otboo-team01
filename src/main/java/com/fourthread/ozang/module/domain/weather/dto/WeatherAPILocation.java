@@ -2,8 +2,10 @@ package com.fourthread.ozang.module.domain.weather.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
 public record WeatherAPILocation(
     @JsonProperty("latitude") Double latitude,
     @JsonProperty("longitude") Double longitude,
