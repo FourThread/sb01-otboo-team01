@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.batch;
 
+import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.WeatherChangeDetectedEvent;
 import com.fourthread.ozang.module.domain.notification.service.NotificationService;
@@ -42,6 +43,7 @@ public class WeatherChangeDetectionBatch {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Executor apiCallExecutor;
+    private final BatchJobExecutionListener batchJobExecutionListener;
 
     @Value("${weather.change-detection.max-regions:30}")
     private int maxDetectionRegions;
@@ -52,6 +54,7 @@ public class WeatherChangeDetectionBatch {
         Step weatherChangeDetectionStep
     ) {
         return new JobBuilder("weatherChangeDetectionJob", jobRepository)
+            .listener(batchJobExecutionListener)
             .start(weatherChangeDetectionStep)
             .build();
     }
@@ -144,7 +147,7 @@ public class WeatherChangeDetectionBatch {
      */
     private void sendWeatherChangeNotifications(List<WeatherChangeDto> changes) {
         try {
-            // 모든 사용자에게 알림 (실제로는 해당 지역 사용자만 필터링해야 함)
+            /// (임시)모든 사용자에게 알림 TODO: 해당 지역 사용자만 필터링해야 함
             Set<UUID> allUserIds = userRepository.findAllUserIds();
 
             for (WeatherChangeDto change : changes) {

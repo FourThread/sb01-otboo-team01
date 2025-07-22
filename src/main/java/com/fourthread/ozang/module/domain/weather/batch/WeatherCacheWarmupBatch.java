@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.weather.batch;
 
+import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.service.WeatherCacheService;
@@ -33,6 +34,7 @@ public class WeatherCacheWarmupBatch {
     private final WeatherService weatherService;
     private final WeatherCacheService cacheService;
     private final Executor apiCallExecutor;
+    private final BatchJobExecutionListener batchJobExecutionListener;
 
     @Value("${weather.cache.warmup.max-regions:50}")
     private int maxWarmupRegions;
@@ -44,6 +46,7 @@ public class WeatherCacheWarmupBatch {
         Step activeRegionsWarmupStep
     ) {
         return new JobBuilder("weatherCacheWarmupJob", jobRepository)
+            .listener(batchJobExecutionListener)
             .start(activeRegionsWarmupStep)
             .build();
     }
