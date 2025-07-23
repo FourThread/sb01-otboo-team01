@@ -30,26 +30,28 @@ LABEL maintainer="fourthread" \
       version="${VERSION}" \
       build-date="${BUILD_DATE}" \
       vcs-ref="${VCS_REF}" \
-      description="O-ZANG Batch Application optimized for t2.micro" \
-      instance-type="t2.micro" \
-      cpu="1-vcpu" \
-      memory="1gb" \
-      platform="linux/amd64"
+      description="O-ZANG Batch Application optimized for t3.small" \
+      instance-type="t3.small" \
+      cpu="2-vcpu" \
+      memory="2gb" \
+      platform="linux/amd64" \
+      application-type="batch-processor"
 
-# t2.micro 최적화된 JAVA_OPTS
-ENV JAVA_OPTS="-Xmx512m \
-    -Xms256m \
-    -XX:MaxMetaspaceSize=128m \
-    -XX:MetaspaceSize=64m \
+ENV JAVA_OPTS="-Xmx1024m \
+    -Xms512m \
+    -XX:MaxMetaspaceSize=256m \
+    -XX:MetaspaceSize=128m \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UseCompressedOops \
     -XX:+UseCompressedClassPointers \
     -XX:+HeapDumpOnOutOfMemoryError \
-    -XX:HeapDumpPath=/app/logs/heapdump.hprof \
+    -XX:HeapDumpPath=/app/logs/batch-heapdump.hprof \
+    -XX:+ExitOnOutOfMemoryError \
     -XX:+UseContainerSupport \
     -XX:InitialRAMPercentage=25.0 \
     -XX:MaxRAMPercentage=75.0 \
+    -XX:MinRAMPercentage=50.0 \
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF-8 \
     -Duser.timezone=Asia/Seoul \
@@ -60,7 +62,10 @@ RUN apk update && apk upgrade && \
     apk add --no-cache \
         tzdata \
         curl \
-        wget && \
+        wget \
+        jq \
+        procps \
+        htop && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo "${TZ}" > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
@@ -75,27 +80,50 @@ RUN mkdir -p /app/logs /app/data && \
 
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/*.jar app.jar
 
+RUN echo "Application: ${PROJECT_NAME}" > /app/batch-app-info.txt && \
+    echo "Version: ${PROJECT_VERSION:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Build Date: ${BUILD_DATE:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Git Commit: ${VCS_REF:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Java Version: $(java -version 2>&1 | head -n 1)" >> /app/batch-app-info.txt && \
+    echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/batch-app-info.txt && \
+    echo "Application Type: Batch Processor" >> /app/batch-app-info.txt && \
+    echo "Build Time: $(date)" >> /app/batch-app-info.txt && \
+    chown appuser:appgroup /app/batch-app-info.txt
+
+# 빌드 검증 (JAR 파일 존재 확인)
+RUN if [ ! -f app.jar ]; then \
+        echo "ERROR: app.jar not found!" && \
+        ls -la /app/build/libs/ && \
+        exit 1; \
+    fi && \
+    echo "Batch JAR file validated: $(ls -lh app.jar)"
 # 사용자 전환
 USER appuser
 
 EXPOSE 8081
 
 # 헬스체크 설정
-HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f --max-time 8 --connect-timeout 5 http://localhost:8081/batch/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=12s --start-period=120s --retries=3 \
+    CMD curl -f --max-time 10 --connect-timeout 8 http://localhost:8081/batch/actuator/health/readiness || \
+        curl -f --max-time 8 --connect-timeout 5 http://localhost:8081/batch/actuator/health || \
+        exit 1
 
 # 배치 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "\
     echo 'Starting O-ZANG Batch Application...'; \
     echo 'Platform: linux/amd64'; \
     echo 'Version: '${PROJECT_VERSION:-unknown}; \
-    echo 'Instance: t2.micro (1vCPU, 1GB RAM)'; \
+    echo 'Instance: t3.small (2vCPU, 2GB RAM)'; \
+    echo 'Application Type: Batch Processor'; \
     echo 'Profile: batch'; \
     echo 'Java Options: '${JAVA_OPTS}; \
+    echo 'Port: 8081'; \
+    echo 'Context Path: /batch'; \
     echo ''; \
     exec java ${JAVA_OPTS} -jar app.jar \
     --server.port=8081 \
     --spring.profiles.active=batch \
     --spring.application.name=${PROJECT_NAME} \
     --spring.application.version=${PROJECT_VERSION:-unknown} \
+    --server.servlet.context-path=/batch \
 "]

@@ -96,7 +96,7 @@ RUN if [ ! -f app.jar ]; then \
         ls -la /app/build/libs/ && \
         exit 1; \
     fi && \
-    echo "✅ JAR file validated: $(ls -lh app.jar)"
+    echo "JAR file validated: $(ls -lh app.jar)"
 
 # 사용자 전환
 USER appuser
