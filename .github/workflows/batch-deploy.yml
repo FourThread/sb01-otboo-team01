@@ -18,7 +18,7 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: public.ecr.aws/o8x2e2q0
   ECR_REPOSITORY: ozang-batch
-  ECS_CLUSTER: ozang-cluster
+  ECS_CLUSTER: ozang-cluster2
   ECS_SERVICE: ozang-batch-service
   ECS_TASK_DEFINITION: ozang-batch-task
 
