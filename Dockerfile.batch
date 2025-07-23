@@ -1,4 +1,4 @@
-FROM amazoncorretto:17-alpine AS builder
+FROM --platform=linux/amd64 amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
 # Gradle Wrapper와 설정 파일 복사
@@ -14,7 +14,7 @@ RUN ./gradlew dependencies --no-daemon --quiet
 COPY src/ src/
 RUN ./gradlew clean build -x test --no-daemon --quiet
 
-FROM amazoncorretto:17-alpine
+FROM --platform=linux/amd64 amazoncorretto:17-alpine
 WORKDIR /app
 
 # 환경 변수 설정 (배치 전용)
@@ -34,6 +34,7 @@ LABEL maintainer="fourthread" \
       instance-type="t2.micro" \
       cpu="1-vcpu" \
       memory="1gb"
+      platform="linux/amd64"
 
 # t2.micro 최적화된 JAVA_OPTS
 ENV JAVA_OPTS="-Xmx512m \
@@ -86,6 +87,7 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
 # 배치 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "\
     echo 'Starting O-ZANG Batch Application...'; \
+    echo 'Platform: linux/amd64'; \
     echo 'Version: '${PROJECT_VERSION:-unknown}; \
     echo 'Instance: t2.micro (1vCPU, 1GB RAM)'; \
     echo 'Profile: batch'; \
