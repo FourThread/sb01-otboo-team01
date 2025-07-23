@@ -76,6 +76,11 @@ weather:
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
 
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
+
   elasticsearch:
     uris: ${ELASTICSEARCH_HOST}
     username: ${ELASTICSEARCH_USERNAME}
@@ -88,6 +93,28 @@ elasticsearch:
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
+
+openai:
+  api:
+    key: ${OPEN_AI_API_KEY}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${PROMPT_ID}
+    version: ${PROMPT_VERSION}
+
+batch:
+  weather:
+    retention-days: 14
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    token-cleanup:
+      enabled: true
+  job:
+    enabled: false
+  jdbc:
+    initialize-schema: never
 
 logging:
   level:
