@@ -88,7 +88,7 @@ RUN echo "Application: ${PROJECT_NAME}" > /app/batch-app-info.txt && \
     echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/batch-app-info.txt && \
     echo "Application Type: Batch Processor" >> /app/batch-app-info.txt && \
     echo "Build Time: $(date)" >> /app/batch-app-info.txt && \
-    chown appuser:appgroup /app/batch-app-info.txt \
+    chown appuser:appgroup /app/batch-app-info.txt
 
 # 빌드 검증 (JAR 파일 존재 확인)
 RUN if [ ! -f app.jar ]; then \
