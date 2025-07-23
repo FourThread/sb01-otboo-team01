@@ -64,7 +64,6 @@ public class SecurityRedisConfig {
       configBuilder.clientOptions(clientOptions);
     }
 
-    // =============== 공통 타임아웃 설정 추가 ===============
     configBuilder.commandTimeout(java.time.Duration.ofMillis(timeout));
 
     LettuceClientConfiguration clientConfig = configBuilder.build();

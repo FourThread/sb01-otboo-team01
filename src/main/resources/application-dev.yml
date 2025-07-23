@@ -24,7 +24,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      database: 0
+      database: 0 # Security용 (JWT, 인증 등)
       ssl:
         enabled: false
         timeout: 2000ms
@@ -35,6 +35,35 @@ spring:
             min-idle: 0
             max-wait: 1000ms
           shutdown-timeout: 100ms
+
+
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: embedded
+
+batch:
+  weather:
+    retention-days: 3
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    weather-cache-warmup:
+      enabled: true
+    weather-change-detection:
+      enabled: true
+
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
 
   ai:
     openai:
@@ -58,6 +87,7 @@ elasticsearch:
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
+
 
 openai:
   api:

@@ -31,7 +31,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: 6379
-      database: 0
+      database: 0 # Security용 (JWT, 인증 등)
       ssl:
         enabled: true
       lettuce:
@@ -42,6 +42,34 @@ spring:
         cluster:
           refresh:
             adaptive: true
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+# 배치 스케줄링 비활성화
+batch:
+  weather:
+    retention-days: 14
+  scheduler:
+    weather-cleanup:
+      enabled: false
+    weather-cache-warmup:
+      enabled: false
+    weather-change-detection:
+      enabled: false
+
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
 
   autoconfigure:
     exclude:

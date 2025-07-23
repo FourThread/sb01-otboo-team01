@@ -25,6 +25,17 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
         @Param("y") Integer y
     );
 
+    @Query("SELECT w FROM Weather w WHERE " +
+        "w.location.x = :x AND w.location.y = :y " +
+        "AND DATE(w.forecastAt) = :date " +
+        "ORDER BY w.forecastedAt DESC " +
+        "LIMIT 1")
+    Optional<Weather> findLatestByGridCoordinateAndDate(
+        @Param("x") Integer x,
+        @Param("y") Integer y,
+        @Param("date") LocalDateTime date
+    );
+
     /**
      * 오래된 날씨 데이터 개수 조회 (배치용)
      * @param cutoffDate 기준 날짜 (이전 데이터들이 삭제 대상)
@@ -41,17 +52,5 @@ public interface WeatherRepository extends JpaRepository<Weather, UUID> {
     @Query("DELETE FROM Weather w WHERE w.forecastedAt < :cutoffDate")
     void deleteOldWeatherData(@Param("cutoffDate") LocalDateTime cutoffDate);
 
-    /**
-     * 특정 날짜 범위의 날씨 데이터 조회 (배치 모니터링용)
-     * @param startDate 시작 날짜
-     * @param endDate 끝 날짜
-     * @return 해당 범위의 날씨 데이터 목록
-     */
-    @Query("SELECT w FROM Weather w WHERE w.forecastedAt BETWEEN :startDate AND :endDate ORDER BY w.forecastedAt DESC")
-    List<Weather> findWeatherDataBetweenDates(
-        @Param("startDate") LocalDateTime startDate,
-        @Param("endDate") LocalDateTime endDate
-    );
-
-  List<Weather> findALlByIdIn(Collection<UUID> ids);
+    List<Weather> findALlByIdIn(Collection<UUID> ids);
 }
