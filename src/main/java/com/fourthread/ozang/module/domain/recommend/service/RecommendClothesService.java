@@ -58,7 +58,11 @@ public class RecommendClothesService {
    * @author : wongil
    * @Description: 의상 추천
    **/
-  @Cacheable(value = "recommendation", key = "'recommendation::'.concat(#weatherId.toString()).concat('::').concat(#userId.toString())")
+  @Cacheable(
+      value = "recommendation",
+      cacheManager = "recommendationCacheManager",
+      key = "'recommendation::'.concat(#weatherId.toString()).concat('::').concat(#userId.toString())"
+  )
   public RecommendationDto recommend(UUID weatherId, UUID userId) throws JsonProcessingException {
 
     Weather weather = getWeather(weatherId);

@@ -35,7 +35,22 @@ spring:
             min-idle: 0
             max-wait: 1000ms
           shutdown-timeout: 100ms
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
+    #      chat:
+  #        options:
+  #          model: microsoft/mai-ds-r1:free@preset/fashion-director
+  #          model: nousresearch/deephermes-3-llama-3-8b-preview:free@preset/fashion-director
+  #            model: tngtech/deepseek-r1t2-chimera:free
 
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+    connection-timeout: 10s
+    socket-timeout: 60s
 
   batch:
     job:
@@ -65,29 +80,11 @@ weather:
     location:
       ttl: PT24H     # 위치 정보 24시간
 
-  ai:
-    openai:
-      api-key: ${OPEN_AI_API_KEY}
-      base-url: https://api.openai.com
-  #      chat:
-#        options:
-#          model: microsoft/mai-ds-r1:free@preset/fashion-director
-#          model: nousresearch/deephermes-3-llama-3-8b-preview:free@preset/fashion-director
-#            model: tngtech/deepseek-r1t2-chimera:free
-
-  elasticsearch:
-    uris: ${ELASTICSEARCH_HOST}
-    username: ${ELASTICSEARCH_USERNAME}
-    password: ${ELASTICSEARCH_PASSWORD}
-    connection-timeout: 10s
-    socket-timeout: 60s
-
 elasticsearch:
   enabled: ${ELASTICSEARCH_ENABLED:true}
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
-
 
 openai:
   api:
@@ -97,19 +94,6 @@ openai:
   prompt:
     id: ${PROMPT_ID}
     version: ${PROMPT_VERSION}
-
-batch:
-  weather:
-    retention-days: 3
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    token-cleanup:
-      enabled: true
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: embedded
 
 management:
   endpoints:

@@ -125,47 +125,4 @@ public class WeatherRedisConfig {
         template.afterPropertiesSet();
         return template;
     }
-
-    /**
-     * 날씨 캐시 매니저 설정
-     */
-    @Bean
-    public CacheManager weatherCacheManager() {
-        ObjectMapper objectMapper = createObjectMapperWithTypeInfo();
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(
-            objectMapper);
-
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
-                new StringRedisSerializer()))
-            .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
-            .entryTtl(Duration.ofHours(1)); // 기본 TTL
-
-        return RedisCacheManager.builder(weatherRedisConnectionFactory())
-            .cacheDefaults(defaultConfig)
-            // 캐시별 TTL 설정
-            .withCacheConfiguration("currentWeather", defaultConfig.entryTtl(currentWeatherTtl))
-            .withCacheConfiguration("forecastWeather", defaultConfig.entryTtl(forecastWeatherTtl))
-            .withCacheConfiguration("weatherLocation", defaultConfig.entryTtl(locationTtl))
-            .build();
-    }
-
-    /**
-     * 타입 정보를 포함한 ObjectMapper 생성
-     */
-    private ObjectMapper createObjectMapperWithTypeInfo() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.findAndRegisterModules();
-
-        objectMapper.activateDefaultTyping(
-            objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY
-        );
-
-        return objectMapper;
-    }
 }
