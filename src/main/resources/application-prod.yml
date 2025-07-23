@@ -42,6 +42,24 @@ spring:
         cluster:
           refresh:
             adaptive: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
+
+
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
+
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+    connection-timeout: 10s
+    socket-timeout: 60s
+
   batch:
     job:
       enabled: false
@@ -71,23 +89,6 @@ weather:
     location:
       ttl: PT24H     # 위치 정보 24시간
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
-      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
-
-  ai:
-    openai:
-      api-key: ${OPEN_AI_API_KEY}
-      base-url: https://api.openai.com
-
-  elasticsearch:
-    uris: ${ELASTICSEARCH_HOST}
-    username: ${ELASTICSEARCH_USERNAME}
-    password: ${ELASTICSEARCH_PASSWORD}
-    connection-timeout: 10s
-    socket-timeout: 60s
-
 elasticsearch:
   enabled: ${ELASTICSEARCH_ENABLED:true}
   cloud:
@@ -102,19 +103,6 @@ openai:
   prompt:
     id: ${PROMPT_ID}
     version: ${PROMPT_VERSION}
-
-batch:
-  weather:
-    retention-days: 14
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    token-cleanup:
-      enabled: true
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: never
 
 logging:
   level:
