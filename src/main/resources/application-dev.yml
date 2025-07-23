@@ -98,19 +98,6 @@ openai:
     id: ${PROMPT_ID}
     version: ${PROMPT_VERSION}
 
-batch:
-  weather:
-    retention-days: 3
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    token-cleanup:
-      enabled: true
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: embedded
-
 management:
   endpoints:
     web:
