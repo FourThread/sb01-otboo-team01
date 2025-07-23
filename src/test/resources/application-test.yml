@@ -20,6 +20,11 @@ spring:
       port: 6379
       database: 0
 
+  ai:
+    openai:
+      api-key: 421441242ed21d
+      base-url: https://api.openai.com
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
@@ -68,6 +73,15 @@ kakao:
   api:
     key: test-kakao-key
     url: https://dapi.kakao.com
+
+openai:
+  api:
+    key: 123231121412412
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: 12dd21d21d1d21d1212d
+    version: 1
 
 jwt:
   secret: test-jwt-secret-key-for-testing-only

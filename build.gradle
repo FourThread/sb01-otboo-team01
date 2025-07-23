@@ -32,6 +32,13 @@ springBoot {
 
 ext {
     querydslVersion = '5.1.0'
+    springAiVersion = "1.0.0"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0"
+    }
 }
 
 dependencies {
@@ -46,6 +53,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation("com.openai:openai-java:2.14.0")
 
     // Development Tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -204,4 +213,9 @@ jacocoTestCoverageVerification {
 
 test {
     finalizedBy jacocoTestReport
+}
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
+    }
 }
