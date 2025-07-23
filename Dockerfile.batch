@@ -33,7 +33,7 @@ LABEL maintainer="fourthread" \
       description="O-ZANG Batch Application optimized for t2.micro" \
       instance-type="t2.micro" \
       cpu="1-vcpu" \
-      memory="1gb"
+      memory="1gb" \
       platform="linux/amd64"
 
 # t2.micro 최적화된 JAVA_OPTS
