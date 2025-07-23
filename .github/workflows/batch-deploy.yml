@@ -1,0 +1,98 @@
+name: Deploy Batch Application
+
+on:
+  push:
+    branches: [ 'release*', 'release-*' ]
+    paths:
+      - 'src/main/java/com/fourthread/ozang/module/domain/weather/batch/**'
+      - 'src/main/resources/application-batch.yml'
+      - 'Dockerfile.batch'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag'
+        required: false
+        default: 'latest'
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: public.ecr.aws/o8x2e2q0
+  ECR_REPOSITORY: ozang-batch
+  ECS_CLUSTER: ozang-cluster
+  ECS_SERVICE: ozang-batch-service
+  ECS_TASK_DEFINITION: ozang-batch-task
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Set build variables
+        id: vars
+        run: |
+          echo "VERSION=${{ github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          echo "VCS_REF=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.batch
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            VERSION=${{ steps.vars.outputs.VERSION }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
+            VCS_REF=${{ steps.vars.outputs.VCS_REF }}
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.VERSION }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Update ECS Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/batch-task-definition.json
+          container-name: ozang-batch-app
+          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.VERSION }}
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Verify deployment
+        run: |
+          echo "Batch application deployed successfully!"
+          echo "Version: ${{ steps.vars.outputs.VERSION }}"
+          echo "Platform: linux/amd64"
+          echo "Instance Type: t2.micro"
+          echo "Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "Service: ${{ env.ECS_SERVICE }}"
