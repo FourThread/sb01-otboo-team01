@@ -104,7 +104,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       if (pattern.equals(SecurityMatchers.LOGOUT) && !HttpMethod.POST.matches(method)) continue;
       if (pattern.equals(SecurityMatchers.SIGN_UP) && !HttpMethod.POST.matches(method)) continue;
       if (pattern.equals(SecurityMatchers.REFRESH) && !HttpMethod.POST.matches(method)) continue;
-      if (pattern.equals(SecurityMatchers.ME) && !HttpMethod.GET.matches(method)) continue;
 
       if (pathPattern.matches(PathContainer.parsePath(path))) {
         return true;
@@ -117,7 +116,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       SecurityMatchers.LOGIN,
       SecurityMatchers.LOGOUT,
       SecurityMatchers.H2_CONSOLE,
-      SecurityMatchers.ME,
       SecurityMatchers.SIGN_UP,
       SecurityMatchers.REFRESH
   };

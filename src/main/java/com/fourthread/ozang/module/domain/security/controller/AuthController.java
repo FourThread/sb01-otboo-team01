@@ -1,17 +1,23 @@
 package com.fourthread.ozang.module.domain.security.controller;
 
 import com.fourthread.ozang.module.domain.security.jwt.JwtService;
+import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
+import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.fourthread.ozang.module.domain.user.dto.response.MeResponse;
+import com.nimbusds.oauth2.sdk.auth.JWTAuthentication;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fourthread.ozang.module.domain.user.dto.request.ResetPasswordRequest;
 import com.fourthread.ozang.module.domain.user.service.UserService;
 import jakarta.validation.Valid;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,24 +35,18 @@ public class AuthController {
   private final JwtService jwtService;
   private final UserService userService;
 
-  // 리프레시 토큰을 이용해서 엑세스 토큰을 조회
   @GetMapping("/me")
-  public ResponseEntity<String> me(
-      @CookieValue(value = "refresh_token", required = false) String refreshToken) {
+  public ResponseEntity<MeResponse> me(
+      @AuthenticationPrincipal UserDetailsImpl userDetails
+  ){
 
-    if (refreshToken == null || refreshToken.trim().isEmpty()) {
-      log.warn("[AuthController] refresh_token 쿠키가 없습니다. 로그인이 필요합니다.");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body("Authentication required. Please login first.");
-    }
+    JwtPayloadDto payloadDto = userDetails.getPayloadDto();
 
-    try {
-      JwtTokenResponse jwtToken = jwtService.refreshJwtToken(refreshToken);
-      return ResponseEntity.status(HttpStatus.OK).body(jwtToken.accessToken());
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body("Invalid refresh token. Please login again.");
-    }
+    MeResponse response = new MeResponse(payloadDto.userId(), payloadDto.email(), payloadDto.name(),
+        payloadDto.role());
+
+    return ResponseEntity.ok(response);
+
   }
 
   // 리프레시 토큰을 이용해서 리프레시 토큰과 엑세스 토큰을 재발급 받는다
