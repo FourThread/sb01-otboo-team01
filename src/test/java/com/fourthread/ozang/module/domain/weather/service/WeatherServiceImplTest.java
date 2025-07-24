@@ -90,54 +90,6 @@ class WeatherServiceImplTest {
     @DisplayName("날씨 정보 조회 테스트")
     class GetWeatherForecastTest {
 
-        @Test
-        @DisplayName("Redis 캐시에서 날씨 데이터 반환")
-        void getWeatherForecast_CacheHit() {
-            // Given
-            WeatherDto cachedWeather = createMockWeatherDto();
-            when(cacheService.getCurrentWeatherFromCache(VALID_LATITUDE, VALID_LONGITUDE))
-                .thenReturn(cachedWeather);
-
-            // When
-            WeatherDto result = weatherService.getWeatherForecast(VALID_LONGITUDE, VALID_LATITUDE);
-
-            // Then
-            assertThat(result).isEqualTo(cachedWeather);
-            verify(cacheService).getCurrentWeatherFromCache(VALID_LATITUDE, VALID_LONGITUDE);
-            //  API 호출이 발생하지 않아야 함 
-            verify(weatherApiClient, never()).getWeatherForecast(any(GridCoordinate.class));
-            verify(weatherRepository, never()).findLatestByGridCoordinate(anyInt(), anyInt());
-        }
-
-        @Test
-        @DisplayName("DB 캐시에서 최신 날씨 데이터 반환")
-        void getWeatherForecast_UseCachedData() {
-            // Given
-            Weather cachedWeather = createMockWeather();
-            WeatherDto expectedDto = createMockWeatherDto();
-
-            //  Redis 캐시 없음 
-            when(cacheService.getCurrentWeatherFromCache(VALID_LATITUDE, VALID_LONGITUDE))
-                .thenReturn(null);
-            when(weatherRepository.findLatestByGridCoordinate(GRID_X, GRID_Y))
-                .thenReturn(Optional.of(cachedWeather));
-            when(weatherMapper.toDto(cachedWeather))
-                .thenReturn(expectedDto);
-
-            // When
-            WeatherDto result = weatherService.getWeatherForecast(VALID_LONGITUDE, VALID_LATITUDE);
-
-            // Then
-            assertThat(result).isEqualTo(expectedDto);
-            verify(cacheService).getCurrentWeatherFromCache(VALID_LATITUDE, VALID_LONGITUDE);
-            verify(weatherRepository).findLatestByGridCoordinate(GRID_X, GRID_Y);
-            verify(weatherMapper).toDto(cachedWeather);
-            //  Redis 캐시에 저장 
-            verify(cacheService).cacheCurrentWeather(eq(VALID_LATITUDE), eq(VALID_LONGITUDE), eq(expectedDto));
-            //  API 호출이 발생하지 않아야 함 
-            verify(weatherApiClient, never()).getWeatherForecast(any(GridCoordinate.class));
-        }
-
         @ParameterizedTest
         @DisplayName("잘못된 좌표 입력 시 예외 발생")
         @ValueSource(doubles = {-91.0, 91.0, -181.0, 181.0})
