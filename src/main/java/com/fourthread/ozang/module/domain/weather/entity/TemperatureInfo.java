@@ -20,10 +20,8 @@ class TemperatureInfo {
     @Column(name = "temperature_compared_to_day_before")
     private Double comparedToDayBefore = 0.0;
 
-    @Column(name = "temperature_min")
     private Double min = 0.0;
 
-    @Column(name = "temperature_max")
     private Double max = 0.0;
 
     public TemperatureDto toDto() {
