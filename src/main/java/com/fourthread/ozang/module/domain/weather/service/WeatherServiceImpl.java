@@ -29,12 +29,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -216,10 +215,6 @@ public class WeatherServiceImpl implements WeatherService {
             List<WeatherDto> result = processFiveDayForecast(apiResponse, latitude, longitude,
                 gridCoordinate, locationNames, yesterdayWeather);
 
-            if (!result.isEmpty()) {
-                WeatherDto todayWeather = result.get(0);
-                saveTodayWeatherToDatabase(todayWeather, apiResponse, gridCoordinate);
-            }
 
             cacheService.cacheForecast(latitude, longitude, baseTime, result);
 
@@ -228,51 +223,6 @@ public class WeatherServiceImpl implements WeatherService {
         } catch (Exception e) {
             log.error("5일 예보 조회 실패", e);
             throw new WeatherDataFetchException("5일 예보 조회 중 오류 발생", e);
-        }
-    }
-
-    /**
-     * 오늘 날씨 데이터를 DB에 저장
-     */
-    private void saveTodayWeatherToDatabase(WeatherDto todayWeather, WeatherApiResponse apiResponse,
-        GridCoordinate gridCoordinate) {
-
-        try {
-            // 오늘 날짜의 기존 데이터가 있는지 확인
-            Optional<Weather> existingWeather = weatherRepository.findLatestByGridCoordinateAndDate(
-                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now()
-            );
-
-            if (existingWeather.isPresent() &&
-                existingWeather.get().getForecastedAt()
-                    .isAfter(LocalDateTime.now().minusHours(1))) {
-                log.debug("1시간 이내 데이터가 이미 존재하여 DB 저장을 생략합니다.");
-                return;
-            }
-
-            List<Item> todayItems = apiResponse.response().body().items().item()
-                .stream()
-                .filter(item -> {
-                    String fcstDate = item.fcstDate();
-                    LocalDate itemDate = LocalDate.parse(fcstDate,
-                        DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-                    return itemDate.equals(LocalDate.now());
-                })
-                .collect(Collectors.toList());
-
-            if (!todayItems.isEmpty()) {
-                Weather weather = weatherMapper.fromApiResponse(todayItems,
-                    todayWeather.location());
-                String responseHash = generateResponseHash(apiResponse);
-                weather.setApiResponseHash(responseHash);
-
-                Weather savedWeather = weatherRepository.save(weather);
-                log.info("오늘 날씨 데이터 DB 저장 완료 - ID: {}", savedWeather.getId());
-            }
-        } catch (Exception e) {
-            log.error("오늘 날씨 데이터 DB 저장 실패, e");
-            // DB 저장 실패해도 예외를 던지지 않음 (캐시는 정상 동작해야 됨)
         }
     }
 
@@ -391,7 +341,7 @@ public class WeatherServiceImpl implements WeatherService {
             String previousHourKey = LocalDateTime.now().minusHours(1)
                 .format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
 
-            // 여기서는 간단히 DB에서 조회하는 방식 사용
+            // DB에서 조회
             GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
             Optional<Weather> previousWeather = weatherRepository.findLatestByGridCoordinateAndDate(
                 gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now().minusHours(1)
@@ -584,11 +534,21 @@ public class WeatherServiceImpl implements WeatherService {
         }
     }
 
-    private String generateResponseHash(WeatherApiResponse response) {
+    /**
+     * 날짜별 고유 API 응답 해시 생성
+     * API 응답 + 예보 날짜를 조합하여 각 날씨 데이터마다 고유한 해시 생성
+     *
+     * @param response API 응답
+     * @param targetDate 예보 대상 날짜
+     * @return 날짜별 고유 해시값
+     */
+    private String generateDateSpecificResponseHash(WeatherApiResponse response, LocalDate targetDate) {
         try {
-            String responseStr = response.toString();
+            // API 응답 + 예보 날짜를 조합하여 고유한 데이터 생성
+            String combinedData = response.toString() + "_" + targetDate.toString();
+
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(responseStr.getBytes());
+            byte[] hash = md.digest(combinedData.getBytes());
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -597,9 +557,15 @@ public class WeatherServiceImpl implements WeatherService {
                 }
                 hexString.append(hex);
             }
-            return hexString.toString();
+
+            String resultHash = hexString.toString();
+            log.debug("날짜별 해시 생성 완료 - 날짜: {}, Hash: {}", targetDate, resultHash);
+            return resultHash;
+
         } catch (Exception e) {
-            return UUID.randomUUID().toString().replace("-", "");  // 32자 UUID
+            log.error("날짜별 해시 생성 실패 - 날짜: {}", targetDate, e);
+            // 실패 시 UUID + 날짜 조합으로 대체
+            return UUID.randomUUID().toString().replace("-", "") + "_" + targetDate.toString().replace("-", "");
         }
     }
 
@@ -631,144 +597,144 @@ public class WeatherServiceImpl implements WeatherService {
 
         List<WeatherApiResponse.Item> items = response.response().body().items().item();
 
+        // 날짜별로 그룹화
         Map<LocalDate, List<WeatherApiResponse.Item>> groupedByDate = items.stream()
             .collect(Collectors.groupingBy(item -> {
                 String fcstDate = item.fcstDate();
                 return LocalDate.parse(fcstDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
             }, LinkedHashMap::new, Collectors.toList()));
 
-        List<WeatherDto> result = new ArrayList<>();
+        List<Weather> savedWeathers = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
+        log.info("5일치 날씨 데이터 DB 저장 시작");
         for (int i = 0; i < 5; i++) {
             LocalDate targetDate = today.plusDays(i);
             List<WeatherApiResponse.Item> dayItems = groupedByDate.get(targetDate);
 
             if (dayItems != null && !dayItems.isEmpty()) {
-                WeatherDto dayWeather = createDayWeatherDto(dayItems, location, targetDate,
-                    i == 0 ? yesterdayWeather : Optional.empty()); //첫 번째 날만 전날 대비 계산
-                result.add(dayWeather);
+                try {
+                    // 동일한 격자 좌표와 날짜의 최신 데이터가 1시간 이내라면 건너뛰기
+                    Optional<Weather> existingWeather = weatherRepository.findLatestByGridCoordinateAndDate(
+                        grid.getX(), grid.getY(), targetDate.atStartOfDay()
+                    );
+
+                    if (existingWeather.isPresent() &&
+                        existingWeather.get().getForecastedAt().isAfter(LocalDateTime.now().minusHours(1))) {
+                        log.debug("1시간 이내 데이터가 이미 존재하여 DB 저장을 생략합니다 - 날짜: {}", targetDate);
+                        savedWeathers.add(existingWeather.get());
+                        continue;
+                    }
+
+                    // Weather 엔티티 생성 및 저장
+                    Weather weather = createAndSaveWeatherEntity(dayItems, location, response, targetDate);
+                    savedWeathers.add(weather);
+                    log.debug("날씨 데이터 저장 완료 - 날짜: {}, ID: {}", targetDate, weather.getId());
+                } catch (Exception e) {
+                    log.error("날씨 데이터 저장 실패 - 날짜: {}", targetDate, e);
+                    // 저장 실패 시에도 계속 진행
+                }
             }
         }
 
+        log.info("5일치 날씨 데이터 DB 저장 완료 - 저장된 데이터: {}건", savedWeathers.size());
+
+        // 저장된 Weather 엔티티를 사용해서 WeatherDto 생성 (전일 대비 계산 포함)
+        List<WeatherDto> result = new ArrayList<>();
+        for (int i = 0; i < savedWeathers.size(); i++) {
+            Weather currentWeather = savedWeathers.get(i);
+
+            // 전일 대비 계산을 위한 이전 날 데이터 결정
+            Optional<Weather> previousDayWeather;
+            if (i == 0) {
+                // 오늘: DB에서 조회한 전날 데이터 사용
+                previousDayWeather = yesterdayWeather;
+            } else {
+                // 나머지 날들: 바로 전날의 예보 데이터 사용
+                previousDayWeather = Optional.of(savedWeathers.get(i - 1));
+            }
+
+            WeatherDto weatherDto = createWeatherDtoFromEntity(currentWeather, previousDayWeather);
+            result.add(weatherDto);
+
+            log.debug("WeatherDto 생성 완료 - 날짜: {}, UUID: {}",
+                currentWeather.getForecastAt().toLocalDate(), weatherDto.id());
+        }
+
+        log.info("5일치 WeatherDto 생성 완료 - 총 {}건", result.size());
         return result;
     }
 
-    private WeatherDto createDayWeatherDto(List<WeatherApiResponse.Item> dayItems,
-        WeatherAPILocation location, LocalDate date, Optional<Weather> yesterdayWeather) {
+    private Weather createAndSaveWeatherEntity(List<WeatherApiResponse.Item> dayItems,
+        WeatherAPILocation location, WeatherApiResponse apiResponse, LocalDate targetDate) {
 
-        DoubleSummaryStatistics tempStats = dayItems.stream()
+        Weather weather = weatherMapper.fromApiResponse(dayItems, location);
+
+        List<Double> temperatureValues = dayItems.stream()
             .filter(item -> "TMP".equals(item.category()))
-            .mapToDouble(item -> Double.parseDouble(item.fcstValue()))
-            .summaryStatistics();
+            .map(item -> {
+                try {
+                    return Double.parseDouble(item.fcstValue());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .toList();
 
-        double avgHumidity = dayItems.stream()
-            .filter(item -> "REH".equals(item.category()))
-            .mapToDouble(item -> Double.parseDouble(item.fcstValue()))
-            .average()
-            .orElse(0.0);
+        weather.calculateAndSetTemperatureStats(temperatureValues);
 
-        // 전날 대비 온도 변화 계산
+        String responseHash = generateDateSpecificResponseHash(apiResponse, targetDate);
+        weather.setApiResponseHash(responseHash);
+
+        Weather savedWeather = weatherRepository.save(weather);
+        log.debug("Weather 엔티티 저장 완료 - 날짜: {}, ID: {}", targetDate, savedWeather.getId());
+
+        return savedWeather;
+    }
+
+    private WeatherDto createWeatherDtoFromEntity(Weather weather, Optional<Weather> previousDayWeather) {
+
+        // 전일 대비 온도 및 습도 계산
         double tempComparedToDayBefore = 0.0;
         double humidityComparedToDayBefore = 0.0;
 
-        if (yesterdayWeather.isPresent()) {
-            double yesterdayAvgTemp = yesterdayWeather.get().getTemperature().current();
-            double yesterdayAvgHumidity = yesterdayWeather.get().getHumidity().current();
+        if (previousDayWeather.isPresent()) {
+            Weather previousWeather = previousDayWeather.get();
+            double previousTemp = previousWeather.getTemperature().current();
+            double previousHumidity = previousWeather.getHumidity().current();
 
-            tempComparedToDayBefore = tempStats.getAverage() - yesterdayAvgTemp;
-            humidityComparedToDayBefore = avgHumidity - yesterdayAvgHumidity;
+            tempComparedToDayBefore = weather.getTemperature().current() - previousTemp;
+            humidityComparedToDayBefore = weather.getHumidity().current() - previousHumidity;
 
-            log.debug("전날 대비 계산 - 오늘 평균기온: {}, 전날 평균기온: {}, 차이: {}",
-                tempStats.getAverage(), yesterdayAvgTemp, tempComparedToDayBefore);
+            log.debug("전일 대비 계산 완료 - 현재기온: {}, 전날기온: {}, 차이: {}",
+                weather.getTemperature().current(), previousTemp, tempComparedToDayBefore);
         }
 
-        TemperatureDto temperature = new TemperatureDto(
-            tempStats.getAverage(),
-            tempComparedToDayBefore, // 전날 대비 온도 차이
-            tempStats.getMin(),
-            tempStats.getMax()
+        // 전일 대비가 반영된 DTO 생성
+        TemperatureDto temperatureDto = new TemperatureDto(
+            weather.getTemperature().current(),
+            tempComparedToDayBefore, // 전일 대비 반영
+            weather.getTemperature().min(),
+            weather.getTemperature().max()
         );
 
-        HumidityDto humidity = new HumidityDto(avgHumidity, humidityComparedToDayBefore);
-
-        PrecipitationDto precipitation = calculatePrecipitation(dayItems);
-
-        double avgWindSpeed = calculateAverageWindSpeed(dayItems);
-        WindStrength windStrength = determineWindStrength(avgWindSpeed);
-        WindSpeedDto windSpeed = new WindSpeedDto(avgWindSpeed, windStrength);
-
-        SkyStatus skyStatus = determineDominantSkyStatus(dayItems);
+        HumidityDto humidityDto = new HumidityDto(
+            weather.getHumidity().current(),
+            humidityComparedToDayBefore // 전일 대비 반영
+        );
 
         return new WeatherDto(
-            UUID.randomUUID(),
-            LocalDateTime.now(),
-            date.atStartOfDay(),
-            location,
-            skyStatus,
-            precipitation,
-            humidity,
-            temperature,
-            windSpeed
+            weather.getId(),
+            weather.getForecastedAt(),
+            weather.getForecastAt(),
+            weather.getLocation(),
+            weather.getSkyStatus(),
+            weather.getPrecipitation(),
+            humidityDto,
+            temperatureDto,
+            weather.getWindSpeed()
         );
-    }
-
-    private SkyStatus determineDominantSkyStatus(List<WeatherApiResponse.Item> items) {
-        Map<String, Long> skyCount = items.stream()
-            .filter(item -> "SKY".equals(item.category()))
-            .collect(Collectors.groupingBy(
-                WeatherApiResponse.Item::fcstValue,
-                Collectors.counting()
-            ));
-
-        return skyCount.entrySet().stream()
-            .max(Map.Entry.comparingByValue())
-            .map(entry -> mapSkyStatus(entry.getKey()))
-            .orElse(SkyStatus.CLEAR);
-    }
-
-    private PrecipitationDto calculatePrecipitation(List<WeatherApiResponse.Item> items) {
-        Set<String> ptyValues = items.stream()
-            .filter(item -> "PTY".equals(item.category()))
-            .map(WeatherApiResponse.Item::fcstValue)
-            .filter(value -> !"0".equals(value))
-            .collect(Collectors.toSet());
-
-        PrecipitationType type = ptyValues.isEmpty() ? PrecipitationType.NONE :
-            mapPrecipitationType(ptyValues.iterator().next());
-
-        double maxPop = items.stream()
-            .filter(item -> "POP".equals(item.category()))
-            .mapToDouble(item -> Double.parseDouble(item.fcstValue()))
-            .max()
-            .orElse(0.0);
-
-        double totalPcp = items.stream()
-            .filter(item -> "PCP".equals(item.category()))
-            .map(WeatherApiResponse.Item::fcstValue)
-            .filter(value -> !"강수없음".equals(value))
-            .mapToDouble(this::parseAmount)
-            .sum();
-
-        return new PrecipitationDto(type, totalPcp, maxPop);
-    }
-
-    private double calculateAverageWindSpeed(List<WeatherApiResponse.Item> items) {
-        return items.stream()
-            .filter(item -> "WSD".equals(item.category()))
-            .mapToDouble(item -> Double.parseDouble(item.fcstValue()))
-            .average()
-            .orElse(0.0);
-    }
-
-    private WindStrength determineWindStrength(double speed) {
-        if (speed < 4.0) {
-            return WindStrength.WEAK;
-        }
-        if (speed < 9.0) {
-            return WindStrength.MODERATE;
-        }
-        return WindStrength.STRONG;
     }
 
     private SkyStatus mapSkyStatus(String value) {

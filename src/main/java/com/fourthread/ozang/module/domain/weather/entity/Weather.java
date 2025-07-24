@@ -16,6 +16,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.DoubleSummaryStatistics;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -105,6 +107,26 @@ public class Weather extends BaseEntity {
             }
         } catch (Exception e) {
             // 개별 데이터 파싱 실패는 무시
+        }
+    }
+
+    public void calculateAndSetTemperatureStats(List<Double> temperatureValues) {
+        if (temperatureValues == null || temperatureValues.isEmpty()) {
+            return;
+        }
+
+        DoubleSummaryStatistics stats = temperatureValues.stream()
+            .mapToDouble(Double::doubleValue)
+            .summaryStatistics();
+
+        this.temperature.setCurrent(stats.getAverage());
+
+        // TMN, TMX 값이 없는 경우에만 통계값으로 설정
+        if (this.temperature.getMin() == 0.0) {
+            this.temperature.setMin(stats.getMin());
+        }
+        if (this.temperature.getMax() == 0.0) {
+            this.temperature.setMax(stats.getMax());
         }
     }
 

@@ -4,6 +4,7 @@ import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
 import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
+import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -59,7 +60,7 @@ public interface WeatherMapper {
         LocalDateTime forecastedAt = parseDateTime(firstItem.baseDate(), firstItem.baseTime());
         LocalDateTime forecastAt = parseDateTime(firstItem.fcstDate(), firstItem.fcstTime());
 
-        Weather entity = Weather.create(forecastedAt, forecastAt, location, com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus.CLEAR);
+        Weather entity = Weather.create(forecastedAt, forecastAt, location, SkyStatus.CLEAR);
 
         // 카테고리별 데이터 적용
         for (WeatherApiResponse.Item item : items) {
