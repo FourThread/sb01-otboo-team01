@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 public class ImageServiceConfig {
 
   @Bean(name = "clothesImageService")
-  @Profile("!test")  // 테스트 환경이 아닐 때만 S3ImageService 사용
+  @Profile({"!test", "!batch"})  // 테스트 환경과 배치 환경이 아닐 때만 S3ImageService 사용
   public ImageService clothesImageService(
       S3Client s3Client,
       @Value("${file.upload.clothes.path}") String clothesPath
@@ -23,7 +23,7 @@ public class ImageServiceConfig {
   }
 
   @Bean(name = "profileImageService")
-  @Profile("!test")  // 테스트 환경이 아닐 때만 S3ImageService 사용
+  @Profile({"!test", "!batch"})  // 테스트 환경과 배치 환경이 아닐 때만 S3ImageService 사용
   public ImageService profileImageService(
       S3Client s3Client,
       @Value("${file.upload.profiles.path}") String profilePath
