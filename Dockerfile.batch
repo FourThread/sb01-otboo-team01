@@ -17,8 +17,8 @@ RUN ./gradlew clean build -x test --no-daemon --quiet
 FROM --platform=linux/amd64 amazoncorretto:17-alpine
 WORKDIR /app
 
-# 환경 변수 설정
-ENV PROJECT_NAME=O-ZANG
+# 환경 변수 설정 (배치 전용)
+ENV PROJECT_NAME=O-ZANG-BATCH
 ARG VERSION
 ARG BUILD_DATE
 ARG VCS_REF
@@ -30,13 +30,13 @@ LABEL maintainer="fourthread" \
       version="${VERSION}" \
       build-date="${BUILD_DATE}" \
       vcs-ref="${VCS_REF}" \
-      description="O-ZANG Application optimized for t3.small" \
-      platform="linux/amd64" \
+      description="O-ZANG Batch Application optimized for t3.small" \
       instance-type="t3.small" \
       cpu="2-vcpu" \
-      memory="2gb"
+      memory="2gb" \
+      platform="linux/amd64" \
+      application-type="batch-processor"
 
-# t3.small 최적화된 JAVA_OPTS
 ENV JAVA_OPTS="-Xmx1024m \
     -Xms512m \
     -XX:MaxMetaspaceSize=256m \
@@ -46,7 +46,7 @@ ENV JAVA_OPTS="-Xmx1024m \
     -XX:+UseCompressedOops \
     -XX:+UseCompressedClassPointers \
     -XX:+HeapDumpOnOutOfMemoryError \
-    -XX:HeapDumpPath=/app/logs/heapdump.hprof \
+    -XX:HeapDumpPath=/app/logs/batch-heapdump.hprof \
     -XX:+ExitOnOutOfMemoryError \
     -XX:+UseContainerSupport \
     -XX:InitialRAMPercentage=25.0 \
@@ -57,7 +57,7 @@ ENV JAVA_OPTS="-Xmx1024m \
     -Duser.timezone=Asia/Seoul \
     -Dspring.output.ansi.enabled=never"
 
-# 시간대 설정 및 필수 패키지 설치 (t3.small 최적화)
+# 시간대 설정 및 필수 패키지 설치
 RUN apk update && apk upgrade && \
     apk add --no-cache \
         tzdata \
@@ -70,25 +70,25 @@ RUN apk update && apk upgrade && \
     echo "${TZ}" > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
 
-# 애플리케이션 사용자 생성 (보안)
+# 애플리케이션 사용자 생성
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup -s /bin/sh -D
 
 # 로그 및 데이터 디렉토리 생성
-RUN mkdir -p /app/logs /app/data /app/tmp && \
+RUN mkdir -p /app/logs /app/data && \
     chown -R appuser:appgroup /app
 
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/*.jar app.jar
 
-# 애플리케이션 정보 파일 생성 (동적 정보 포함)
-RUN echo "Application: ${PROJECT_NAME}" > /app/app-info.txt && \
-    echo "Version: ${PROJECT_VERSION:-unknown}" >> /app/app-info.txt && \
-    echo "Build Date: ${BUILD_DATE:-unknown}" >> /app/app-info.txt && \
-    echo "Git Commit: ${VCS_REF:-unknown}" >> /app/app-info.txt && \
-    echo "Java Version: $(java -version 2>&1 | head -n 1)" >> /app/app-info.txt && \
-    echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/app-info.txt && \
-    echo "Build Time: $(date)" >> /app/app-info.txt && \
-    chown appuser:appgroup /app/app-info.txt
+RUN echo "Application: ${PROJECT_NAME}" > /app/batch-app-info.txt && \
+    echo "Version: ${PROJECT_VERSION:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Build Date: ${BUILD_DATE:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Git Commit: ${VCS_REF:-unknown}" >> /app/batch-app-info.txt && \
+    echo "Java Version: $(java -version 2>&1 | head -n 1)" >> /app/batch-app-info.txt && \
+    echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/batch-app-info.txt && \
+    echo "Application Type: Batch Processor" >> /app/batch-app-info.txt && \
+    echo "Build Time: $(date)" >> /app/batch-app-info.txt && \
+    chown appuser:appgroup /app/batch-app-info.txt
 
 # 빌드 검증 (JAR 파일 존재 확인)
 RUN if [ ! -f app.jar ]; then \
@@ -96,31 +96,34 @@ RUN if [ ! -f app.jar ]; then \
         ls -la /app/build/libs/ && \
         exit 1; \
     fi && \
-    echo "JAR file validated: $(ls -lh app.jar)"
-
+    echo "Batch JAR file validated: $(ls -lh app.jar)"
 # 사용자 전환
 USER appuser
 
-# 포트 노출
-EXPOSE 80
+EXPOSE 8081
 
 # 헬스체크 설정
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f --max-time 8 --connect-timeout 5 http://localhost:80/actuator/health/readiness || \
-        curl -f --max-time 5 --connect-timeout 3 http://localhost:80/actuator/health || \
+HEALTHCHECK --interval=30s --timeout=12s --start-period=120s --retries=3 \
+    CMD curl -f --max-time 10 --connect-timeout 8 http://localhost:8081/batch/actuator/health/readiness || \
+        curl -f --max-time 8 --connect-timeout 5 http://localhost:8081/batch/actuator/health || \
         exit 1
 
-# 애플리케이션 실행 (환경변수 검증 포함)
+# 배치 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "\
-    echo 'Starting O-ZANG Application...'; \
+    echo 'Starting O-ZANG Batch Application...'; \
+    echo 'Platform: linux/amd64'; \
     echo 'Version: '${PROJECT_VERSION:-unknown}; \
     echo 'Instance: t3.small (2vCPU, 2GB RAM)'; \
+    echo 'Application Type: Batch Processor'; \
+    echo 'Profile: batch'; \
     echo 'Java Options: '${JAVA_OPTS}; \
-    echo 'Profile: '${SPRING_PROFILES_ACTIVE:-prod}; \
+    echo 'Port: 8081'; \
+    echo 'Context Path: /batch'; \
     echo ''; \
     exec java ${JAVA_OPTS} -jar app.jar \
-    --server.port=80 \
-    --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} \
+    --server.port=8081 \
+    --spring.profiles.active=batch \
     --spring.application.name=${PROJECT_NAME} \
     --spring.application.version=${PROJECT_VERSION:-unknown} \
+    --server.servlet.context-path=/batch \
 "]
