@@ -41,6 +41,49 @@ spring:
     jdbc:
       initialize-schema: never
 
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET:ozang-prod-bucket}
+
+file:
+  upload:
+    clothes:
+      path: ${FILE_UPLOAD_CLOTHES_PATH:batch/clothes/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+    profiles:
+      path: ${FILE_UPLOAD_PROFILES_PATH:batch/profiles/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+
+openai:
+  api:
+    key: ${OPEN_AI_API_KEY}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${PROMPT_ID}
+    version: ${PROMPT_VERSION}
+
+elasticsearch:
+  enabled: ${ELASTICSEARCH_ENABLED:false}
+  cloud:
+    host: ${ELASTICSEARCH_HOST}
+    api-key: ${ELASTICSEARCH_API_KEY}
+
+
 # 배치 스케줄링 활성화
 batch:
   weather:
@@ -59,6 +102,8 @@ logging:
     root: INFO
     com.fourthread.ozang: INFO
     org.springframework.batch: INFO
+    org.springframework.web: WARN    # 웹 관련 로그 최소화
+    org.hibernate: WARN              # Hibernate 로그 최소화
   pattern:
     console: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
     file: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"

@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
-@Profile("!test")  // 테스트 환경이 아닐 때만 활성화
+@Profile({"!test", "!batch"})  // 테스트 환경과 배치 환경이 아닐 때만 활성화
 public class S3ImageService implements ImageService {
 
     private final S3Client s3Client;
