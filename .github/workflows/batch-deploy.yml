@@ -411,7 +411,7 @@ jobs:
           
             # 로그 그룹에서 배치 스케줄러 관련 로그 확인
             aws logs describe-log-streams \
-              --log-group-name "/ecs/ozang-batch" \
+              --log-group-name "/ecs/ozang-batch-app" \
               --order-by LastEventTime \
               --descending \
               --max-items 1 \
@@ -424,7 +424,7 @@ jobs:
           
               # 최근 로그에서 배치 관련 메시지 확인
               aws logs get-log-events \
-                --log-group-name "/ecs/ozang-batch" \
+                --log-group-name "/ecs/ozang-batch-app" \
                 --log-stream-name "$LATEST_STREAM" \
                 --start-time $(date -d '5 minutes ago' +%s)000 \
                 --query 'events[].message' \
