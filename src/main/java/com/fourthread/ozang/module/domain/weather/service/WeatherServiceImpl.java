@@ -739,6 +739,20 @@ public class WeatherServiceImpl implements WeatherService {
 
         Weather weather = weatherMapper.fromApiResponse(dayItems, location);
 
+        List<Double> temperatureValues = dayItems.stream()
+            .filter(item -> "TMP".equals(item.category()))
+            .map(item -> {
+                try {
+                    return Double.parseDouble(item.fcstValue());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            })
+            .filter(value -> value != null)
+            .toList();
+
+        weather.calculateAndSetTemperatureStats(temperatureValues);
+
         String responseHash = generateDateSpecificResponseHash(apiResponse, targetDate);
         weather.setApiResponseHash(responseHash);
 
