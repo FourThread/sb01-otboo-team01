@@ -47,6 +47,7 @@ public class NotificationEventListener {
             log.info("권한 변경 이벤트 처리 완료: receiverId={}", receiverId);
         } catch (Exception e) {
             log.error("권한 변경 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -70,6 +71,7 @@ public class NotificationEventListener {
             log.info("의상 속성 추가 이벤트 처리 완료: count={}", otherUserIds.size());
         } catch (Exception e) {
             log.error("의상 속성 추가 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -93,6 +95,7 @@ public class NotificationEventListener {
             log.info("의상 속성 수정 이벤트 처리 완료: count={}", otherUserIds.size());
         } catch (Exception e) {
             log.error("의상 속성 수정 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -112,6 +115,7 @@ public class NotificationEventListener {
             log.info("피드 좋아요 이벤트 처리 완료: receiverId={}", event.feedUserId());
         } catch (Exception e) {
             log.error("피드 좋아요 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -132,6 +136,7 @@ public class NotificationEventListener {
             log.info("피드 댓글 이벤트 처리 완료: receiverId={}", event.feedAuthorUserId());
         } catch (Exception e) {
             log.error("피드 댓글 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -153,6 +158,7 @@ public class NotificationEventListener {
             log.info("팔로잉 피드 작성 이벤트 처리 완료: count={}", followerIds.size());
         } catch (Exception e) {
             log.error("팔로잉 피드 작성 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -174,6 +180,7 @@ public class NotificationEventListener {
             log.info("팔로우 이벤트 처리 완료: receiverId={}", receiverId);
         } catch (Exception e) {
             log.error("팔로우 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -195,6 +202,7 @@ public class NotificationEventListener {
             log.info("DM 수신 이벤트 처리 완료: receiverId={}", receiverId);
         } catch (Exception e) {
             log.error("DM 수신 이벤트 처리 실패: error={}", e.getMessage(), e);
+            throw e;
         }
     }
 }
