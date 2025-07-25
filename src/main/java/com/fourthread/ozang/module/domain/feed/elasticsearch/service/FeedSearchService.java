@@ -115,6 +115,7 @@ public class FeedSearchService {
   public CompletableFuture<FeedDocument> create(Feed feed, List<String> clothesIds) {
     return CompletableFuture.supplyAsync(() -> {
       FeedDocument document = FeedDocument.from(feed, clothesIds);
+      document.setLikedByMe(getLikeByMe(document));
       return elasticsearchRepository.save(document);
     }, feedSearchExecutor);
   }
