@@ -1,14 +1,12 @@
 package com.fourthread.ozang.module.domain.notification.event;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
-import java.time.Instant;
-import java.util.List;
+import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
+
 
 public record WeatherChangeDetectedEvent(
-    Instant createdAt,
-    List<WeatherChangeDto> weatherChanges
+        String region,
+        String title,
+        String content,
+        NotificationLevel level
 ) {
-    public WeatherChangeDetectedEvent(List<WeatherChangeDto> weatherChanges) {
-        this(Instant.now(), weatherChanges);
-    }
 }

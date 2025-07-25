@@ -35,6 +35,18 @@ spring:
             min-idle: 0
             max-wait: 1000ms
           shutdown-timeout: 100ms
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ozang-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   ai:
     openai:
       api-key: ${OPEN_AI_API_KEY}

@@ -107,10 +107,10 @@ public class WeatherChangeDetectionBatch {
                             totalChanges += changes.size();
 
                             // 해당 지역 사용자들에게 알림 전송
-                            sendWeatherChangeNotifications(changes);
+                            //sendWeatherChangeNotifications(changes);
 
-                            // 이벤트 발행
-                            eventPublisher.publishEvent(new WeatherChangeDetectedEvent(changes));
+                            sendWeatherChangeEvents(changes);
+
 
                             log.info("[BATCH-JOB] 날씨 변화 감지됨 - 지역: {}, 변화 수: {}",
                                 getLocationDescription(changes.get(0)), changes.size());
@@ -149,26 +149,45 @@ public class WeatherChangeDetectionBatch {
     /**
      * 날씨 변화 알림 전송
      */
-    private void sendWeatherChangeNotifications(List<WeatherChangeDto> changes) {
-        try {
-            /// (임시)모든 사용자에게 알림 TODO: 해당 지역 사용자만 필터링해야 함
-            Set<UUID> allUserIds = userRepository.findAllUserIds();
+//    private void sendWeatherChangeNotifications(List<WeatherChangeDto> changes) {
+//        try {
+//            /// (임시)모든 사용자에게 알림 TODO: 해당 지역 사용자만 필터링해야 함
+//            Set<UUID> allUserIds = userRepository.findAllUserIds();
+//
+//            for (WeatherChangeDto change : changes) {
+//                String title = "날씨 급변 알림";
+//                String content = formatChangeMessage(change);
+//                NotificationLevel level = determineNotificationLevel(change);
+//
+//                notificationService.createAll(allUserIds, title, content, level);
+//
+//                log.debug("날씨 변화 알림 전송 완료 - 변화: {}, 대상 사용자: {}명",
+//                    change.changeType(), allUserIds.size());
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("날씨 변화 알림 전송 실패", e);
+//        }
+//    }
 
-            for (WeatherChangeDto change : changes) {
-                String title = "날씨 급변 알림";
-                String content = formatChangeMessage(change);
-                NotificationLevel level = determineNotificationLevel(change);
+    private void sendWeatherChangeEvents(List<WeatherChangeDto> changes) {
+        for (WeatherChangeDto change : changes) {
+            String title = "날씨 급변 알림";
+            String content = formatChangeMessage(change);
+            NotificationLevel level = determineNotificationLevel(change);
 
-                notificationService.createAll(allUserIds, title, content, level);
+            WeatherChangeDetectedEvent event = new WeatherChangeDetectedEvent(
+                    String.valueOf("더미"), // 해당 지역 사람만 필터링 할 때 필요한 값?
+                    title,
+                    content,
+                    level
+            );
 
-                log.debug("날씨 변화 알림 전송 완료 - 변화: {}, 대상 사용자: {}명",
-                    change.changeType(), allUserIds.size());
-            }
-
-        } catch (Exception e) {
-            log.error("날씨 변화 알림 전송 실패", e);
+            // 이벤트 발행
+            eventPublisher.publishEvent(event);
         }
     }
+
 
     /**
      * 변화 메시지 포맷팅
