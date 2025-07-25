@@ -11,6 +11,7 @@ import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
+import com.fourthread.ozang.module.domain.feed.event.FeedCreatedEvent;
 import com.fourthread.ozang.module.domain.feed.dto.FeedData;
 import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
@@ -18,6 +19,8 @@ import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequ
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
 import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.entity.FeedDocument;
+import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.service.AsyncFeedSearchService;
 import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
 import com.fourthread.ozang.module.domain.feed.entity.Feed;
@@ -31,7 +34,6 @@ import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.feed.repository.FeedRepository;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
 import com.fourthread.ozang.module.domain.notification.event.FeedCommentedEvent;
 import com.fourthread.ozang.module.domain.notification.event.FeedLikedEvent;
 import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreatedEvent;
@@ -63,10 +65,9 @@ public class FeedService {
   private final FeedLikeRepository feedLikeRepository;
   private final FeedCommentRepository feedCommentRepository;
   private final FeedClothesRepository feedClothesRepository;
-  /// Optional로 변경하여 Elasticsearch 비활성화 시 null 허용
   private final Optional<FeedSearchService> feedSearchService;
   private final Optional<AsyncFeedSearchService> asyncFeedSearchService;
-//  private final FeedSearchService feedSearchService;
+  private final FeedElasticsearchRepository feedElasticsearchRepository;
   private final UserRepository userRepository;
   private final WeatherRepository weatherRepository;
   private final ClothesRepository clothesRepository;
@@ -99,8 +100,11 @@ public class FeedService {
 
     Feed savedFeed = feedRepository.save(feed);
     saveFeedClothes(ootds, savedFeed);
-    /// Elasticsearch 서비스가 존재할 때만 호출
-    elasticsearchIfPresentSearchFeed(feed);
+
+    List<String> clothesIds = ootds.stream()
+        .map(ootd -> ootd.clothesId().toString())
+        .toList();
+    eventPublisher.publishEvent(new FeedCreatedEvent(savedFeed, clothesIds));
     log.info("피드 저장 완료: feed id={}", feed.getId());
 
     FeedDto dto = feedMapper.toDto(feed, user, weather, ootds);
@@ -171,8 +175,10 @@ public class FeedService {
   public void delete(UUID feedId) {
     Feed feed = getFeed(feedId);
 
+    feedClothesRepository.deleteByFeed_Id(feedId);
     feedLikeRepository.deleteAllByFeed_Id(feedId);
     feedRepository.delete(feed);
+    feedElasticsearchRepository.deleteById(feedId.toString());
 
   }
 
@@ -207,6 +213,7 @@ public class FeedService {
 
     FeedLike feedLike = new FeedLike(feed, likeByUser);
     feedLikeRepository.save(feedLike);
+    reflectFeedLikeOnFeedDocument(feedId, feed);
 
     eventPublisher.publishEvent(new FeedLikedEvent(feedLike.getId(), feed.getAuthor().getId(), feed.getContent(), likeByUser.getName()));
 
@@ -228,6 +235,7 @@ public class FeedService {
 
     FeedLike feedLike = getFeedLike(feed, likeByUserId);
     feedLikeRepository.delete(feedLike);
+    reflectFeedUnLikeOnFeedDocument(feedId, feed);
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }
@@ -356,14 +364,15 @@ public class FeedService {
         .toList();
   }
 
-  private void saveFeedClothes(List<OotdDto> ootds, Feed feed) {
+  @Transactional
+  protected void saveFeedClothes(List<OotdDto> ootds, Feed feed) {
     List<UUID> clothesIds = ootds.stream()
         .map(OotdDto::clothesId)
         .toList();
     List<Clothes> clothes = clothesRepository.findAllByIdIn(clothesIds);
     clothes.forEach(cloth -> {
       FeedClothes feedClothes = new FeedClothes(cloth, feed);
-      feedClothesRepository.saveAndFlush(feedClothes);
+      feedClothesRepository.save(feedClothes);
     });
   }
 
@@ -375,5 +384,31 @@ public class FeedService {
         },
         () -> log.info("Elasticsearch가 비활성화되어 있어 검색 인덱스에 저장하지 않습니다: feed id={}", feed.getId())
     );
+  }
+
+  private FeedDocument getFeedDocument(UUID feedId) {
+    return feedElasticsearchRepository.findById(feedId.toString())
+        .orElseThrow(() -> new FeedNotFoundException(
+            FEED_NOT_FOUND.getCode(),
+            FEED_NOT_FOUND.getMessage(),
+            new ErrorDetails(
+                FeedNotFoundException.class.getSimpleName(),
+                FEED_NOT_FOUND.getMessage()
+            )
+        ));
+  }
+
+  private void reflectFeedLikeOnFeedDocument(UUID feedId, Feed feed) {
+    FeedDocument feedDocument = getFeedDocument(feedId);
+    feedDocument.setLikeCount(feed.getLikeCount().longValue());
+    feedDocument.setLikedByMe(true);
+    feedElasticsearchRepository.save(feedDocument);
+  }
+
+  private void reflectFeedUnLikeOnFeedDocument(UUID feedId, Feed feed) {
+    FeedDocument feedDocument = getFeedDocument(feedId);
+    feedDocument.setLikeCount(feed.getLikeCount().longValue());
+    feedDocument.setLikedByMe(false);
+    feedElasticsearchRepository.save(feedDocument);
   }
 }

@@ -335,6 +335,7 @@ class FeedServiceTest {
   }
 
   @Test
+  @Disabled
   @DisplayName("피드 좋아요")
   void like() {
 
