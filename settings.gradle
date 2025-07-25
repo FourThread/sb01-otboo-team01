@@ -1,1 +1,5 @@
-rootProject.name = 'O-ZANG'
+rootProject.name = 'sb01-otboo-team01'
+
+include 'ozang-core'
+include 'ozang-web'
+include 'ozang-batch'

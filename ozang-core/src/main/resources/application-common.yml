@@ -1,0 +1,111 @@
+# 공통 설정 (웹/배치 모두 사용)
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/ozang}
+    username: ${DATABASE_USERNAME:ozang}
+    password: ${DATABASE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:validate}
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+        format_sql: false
+        use_sql_comments: false
+    open-in-view: false
+    show-sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# AWS 설정
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:ozang-bucket}
+    stack:
+      auto: false
+
+# 외부 API 설정
+weather:
+  api:
+    key: ${WEATHER_API_KEY:}
+    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    nowcast:
+      url: ${weather.api.base-url}/getUltraSrtNcst
+    forecast:
+      url: ${weather.api.base-url}/getVilageFst
+
+kakao:
+  api:
+    key: ${KAKAO_API_KEY:}
+    url: https://dapi.kakao.com
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${OPENAI_PROMPT_ID:}
+    version: 1
+
+# 파일 업로드 설정
+file:
+  upload:
+    clothes:
+      path: ${FILE_UPLOAD_CLOTHES_PATH:uploads/clothes/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: ${FILE_UPLOAD_MAX_SIZE:10485760}  # 10MB
+    profiles:
+      path: ${FILE_UPLOAD_PROFILES_PATH:uploads/profiles/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: ${FILE_UPLOAD_MAX_SIZE:10485760}  # 10MB
+
+# 공통 로깅 설정
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.fourthread.ozang: ${LOG_LEVEL_APP:INFO}
+    org.hibernate.SQL: ${LOG_LEVEL_SQL:WARN}
+    org.springframework.batch: ${LOG_LEVEL_BATCH:INFO}
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 액추에이터 공통 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true

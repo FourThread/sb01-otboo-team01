@@ -1,0 +1,98 @@
+apply plugin: 'jacoco'
+apply plugin: 'org.springdoc.openapi-gradle-plugin'
+
+dependencies {
+    // Core 모듈 의존성
+    implementation project(':ozang-core')
+
+    // Web 관련
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // Security & OAuth
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
+    // OpenAPI/Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+    // AI
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'com.openai:openai-java:2.14.0'
+
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Elasticsearch (웹 검색용)
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'co.elastic.clients:elasticsearch-java'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // Retry & AOP
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Test
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.instancio:instancio-junit:5.4.0'
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.3"
+    testImplementation "org.testcontainers:elasticsearch"
+    testImplementation "org.testcontainers:testcontainers"
+
+    // Development
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}
+
+springBoot {
+    buildInfo()
+    mainClass = 'com.fourthread.ozang.OzangWebApplication'
+}
+
+// OpenAPI 자동 문서 생성
+openApi {
+    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
+    outputDir.set(layout.buildDirectory.dir("openapi/docs"))
+    outputFileName.set("swagger-${project.version}.json")
+    waitTimeInSeconds.set(100)
+}
+
+// Jacoco 설정
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    'com/fourthread/**/config/**',
+                    'com/fourthread/**/exception/**',
+                    'com/fourthread/**/dto/**',
+                    'com/fourthread/**/entity/**',
+                    'com/fourthread/**/Q*.class',
+                    'com/fourthread/**/*Application.class'
+            ])
+        }))
+    }
+
+    dependsOn test
+}
+
+test {
+    finalizedBy jacocoTestReport
+}

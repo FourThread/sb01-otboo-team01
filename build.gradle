@@ -1,221 +1,60 @@
-
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.3'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.5.3' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'jacoco'
-    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0" apply false
 }
 
-group = 'com.fourthread'
-version = 'v2.2.0'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+    group = 'com.fourthread'
+    version = 'v2.2.0'
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-springBoot {
-    buildInfo()
-}
-
-ext {
-    querydslVersion = '5.1.0'
-    springAiVersion = "1.0.0"
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0"
-    }
-}
-
-dependencies {
-    // Spring Boot Starters
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-    implementation("com.openai:openai-java:2.14.0")
-
-    // Development Tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // Database
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // QueryDSL
-    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // AWS S3
-    implementation 'software.amazon.awssdk:s3:2.31.14'
-    implementation 'software.amazon.awssdk:protocol-core:2.31.14'
-    implementation 'software.amazon.awssdk:s3-transfer-manager:2.31.14'
-    implementation 'software.amazon.awssdk.crt:aws-crt:0.34.1'
-
-    // MapStruct (객체 매핑)
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-
-    // OpenAPI/Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
-
-    // Configuration Processor
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-
-    // Environment Variables
-    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'com.h2database:h2'
-    testImplementation 'org.instancio:instancio-junit:5.4.0'
-    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.3"
-
-    //S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
-
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    // java mail
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
-    //Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // monitoring
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-
-    // elasticsearch
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'co.elastic.clients:elasticsearch-java'
-
-    implementation 'org.jsoup:jsoup:1.17.2'
-
-    // TestContainers (필요시 주석 해제)
-    testImplementation "org.testcontainers:elasticsearch"
-    testImplementation "org.testcontainers:testcontainers"
-    // testImplementation 'org.testcontainers:junit-jupiter'
-    // testImplementation 'org.testcontainers:postgresql'
-
-    // 유틸리티 라이브러리 (필요시 주석 해제)
-    // implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3'
-    // implementation 'org.apache.commons:commons-text:1.10.0'
-}
-
-clean {
-    delete file('src/main/generated')
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-// OpenAPI 자동 문서 생성 (필요시 설정)
-openApi {
-    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
-    outputDir.set(layout.buildDirectory.dir("openapi/docs"))
-    outputFileName.set("swagger-${project.version}.json")
-    waitTimeInSeconds.set(100)
-}
-
-// Jacoco 설정
-jacoco {
-    toolVersion = '0.8.11'
-}
-
-jacocoTestReport {
-    reports {
-        xml.required = true
-        csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
-    }
-
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    'com/fourthread/**/config/**',
-                    'com/fourthread/**/exception/**',
-                    'com/fourthread/**/dto/**',
-                    'com/fourthread/**/entity/**',
-                    'com/fourthread/**/Q*.class',
-                    'com/fourthread/**/*Application.class'
-            ])
-        }))
-    }
-
-    dependsOn test
-}
-
-// 테스트 태스크 분리 (향후 통합/단위 테스트 분리시 사용)
-tasks.register('unitTest', Test) {
-    useJUnitPlatform {
-        excludeTags 'integration'
-    }
-}
-
-tasks.register('integrationTest', Test) {
-    useJUnitPlatform {
-        includeTags 'integration'
-    }
-}
-
-// 테스트 커버리지 검증 (필요시 활성화)
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            enabled = false  // 초기에는 비활성화, 필요시 true로 변경
-            limit {
-                minimum = 0.80
-            }
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
         }
     }
-}
 
-test {
-    finalizedBy jacocoTestReport
-}
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    ext {
+        querydslVersion = '5.1.0'
+        springAiVersion = "1.0.0"
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+        }
+    }
+
+    // 공통 의존성
+    dependencies {
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // Test
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
     }
 }

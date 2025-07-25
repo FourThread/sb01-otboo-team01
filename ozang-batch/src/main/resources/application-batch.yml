@@ -1,0 +1,124 @@
+# 배치 애플리케이션 전용 설정
+server:
+  port: ${BATCH_SERVER_PORT:8081}  # 배치 관리 API용 포트
+  servlet:
+    context-path: /batch
+  tomcat:
+    max-threads: 50  # 배치는 적은 웹 트래픽
+    accept-count: 25
+
+spring:
+  profiles:
+    include: common
+  application:
+    name: ozang-batch
+
+  # 배치 설정
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: embedded  # 배치 테이블 자동 생성
+      schema: classpath:org/springframework/batch/core/schema-postgresql.sql
+
+  # 웹 관련 기능 최소화
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    servlet:
+      load-on-startup: 1
+
+# 배치 작업 설정
+batch:
+  enabled: true
+
+  # 날씨 관련 배치 설정
+  weather:
+    retention-days: ${BATCH_WEATHER_RETENTION_DAYS:30}  # 30일 보관
+    cache-warmup:
+      cities: ${BATCH_WEATHER_CITIES:서울,부산,대구,인천,광주,대전,울산,세종}
+      batch-size: ${BATCH_WEATHER_BATCH_SIZE:10}
+    change-detection:
+      threshold: ${BATCH_WEATHER_CHANGE_THRESHOLD:5.0}  # 온도 변화 임계값 (℃)
+
+  # 스케줄러 설정
+  scheduler:
+    weather-cleanup:
+      enabled: ${BATCH_SCHEDULER_WEATHER_CLEANUP_ENABLED:true}
+      cron: ${BATCH_SCHEDULER_WEATHER_CLEANUP_CRON:0 0 0 * * ?}  # 매일 자정
+    weather-cache-warmup:
+      enabled: ${BATCH_SCHEDULER_WEATHER_CACHE_WARMUP_ENABLED:true}
+      major-cities-cron: ${BATCH_SCHEDULER_MAJOR_CITIES_CRON:0 30 5 * * *}  # 매일 새벽 5:30
+      active-regions-cron: ${BATCH_SCHEDULER_ACTIVE_REGIONS_CRON:0 0 * * * *}  # 매시간 정각
+    weather-change-detection:
+      enabled: ${BATCH_SCHEDULER_WEATHER_CHANGE_DETECTION_ENABLED:true}
+      cron: ${BATCH_SCHEDULER_WEATHER_CHANGE_DETECTION_CRON:0 50 * * * ?}  # 매시 50분
+
+  # 작업 실행 설정
+  execution:
+    async: ${BATCH_EXECUTION_ASYNC:true}
+    timeout-seconds: ${BATCH_EXECUTION_TIMEOUT:3600}  # 1시간
+    retry-count: ${BATCH_EXECUTION_RETRY_COUNT:3}
+
+# 시간대 설정
+timezone:
+  id: ${TIMEZONE_ID:Asia/Seoul}
+
+# 보안 설정 비활성화 (배치는 내부 서비스)
+security:
+  enabled: false
+
+# OAuth 설정 비활성화
+oauth:
+  enabled: false
+
+# JWT 설정 비활성화
+jwt:
+  enabled: false
+
+# WebSocket 설정 비활성화
+websocket:
+  enabled: false
+
+# Elasticsearch 설정 비활성화
+elasticsearch:
+  enabled: false
+
+# 배치 전용 액추에이터 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,batch
+  endpoint:
+    health:
+      show-details: always
+    batch:
+      enabled: true
+  server:
+    port: ${BATCH_MANAGEMENT_PORT:8082}  # 관리 포트 분리
+
+# 배치 전용 로깅 설정
+logging:
+  level:
+    org.springframework.batch: ${LOG_LEVEL_BATCH:INFO}
+    com.fourthread.ozang.domain.weather.batch: ${LOG_LEVEL_WEATHER_BATCH:DEBUG}
+    com.fourthread.ozang.domain.weather.scheduler: ${LOG_LEVEL_WEATHER_SCHEDULER:DEBUG}
+    org.springframework.scheduling: ${LOG_LEVEL_SCHEDULING:INFO}
+  file:
+    name: ${BATCH_LOG_FILE:logs/batch.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+
+# 배치 모니터링 설정
+monitoring:
+  batch:
+    enabled: ${BATCH_MONITORING_ENABLED:true}
+    metrics:
+      job-execution: true
+      step-execution: true
+      item-count: true

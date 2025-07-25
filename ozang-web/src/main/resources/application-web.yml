@@ -1,0 +1,110 @@
+# 웹 애플리케이션 전용 설정
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  tomcat:
+    max-threads: 200
+    accept-count: 100
+
+spring:
+  profiles:
+    include: common
+  application:
+    name: ozang-web
+
+  # 웹 관련 설정
+  web:
+    resources:
+      static-locations: classpath:/static/
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+  # 보안 설정 활성화
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+        registration:
+          kakao:
+            client-id: ${OAUTH_KAKAO_CLIENT_ID:}
+            client-secret: ${OAUTH_KAKAO_CLIENT_SECRET:}
+            scope: profile_nickname, profile_image, account_email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH_KAKAO_REDIRECT_URI:http://localhost:8080/login/oauth2/code/kakao}
+            client-name: Kakao
+
+  # WebSocket 설정
+  websocket:
+    heartbeat:
+      incoming: 25000
+      outgoing: 25000
+    buffer-size: 8192
+
+  # Elasticsearch 설정 (웹 검색용)
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+  data:
+    elasticsearch:
+      repositories:
+        enabled: ${ELASTICSEARCH_ENABLED:false}
+
+  # AI 설정
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: https://api.openai.com
+
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET:your-jwt-secret-key-here}
+  access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}  # 1시간
+  refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION:86400}  # 24시간
+
+# 관리자 설정
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin123}
+  email: ${ADMIN_EMAIL:admin@ozang.com}
+
+# 배치 관련 설정 비활성화
+batch:
+  enabled: false
+
+# 스케줄링 비활성화
+scheduling:
+  enabled: false
+
+# 웹 전용 액추에이터 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# 로깅 설정 (웹 전용)
+logging:
+  level:
+    org.springframework.security: ${LOG_LEVEL_SECURITY:INFO}
+    org.springframework.web: ${LOG_LEVEL_WEB:INFO}
+    org.springframework.websocket: ${LOG_LEVEL_WEBSOCKET:INFO}
+    com.fourthread.ozang.domain.auth: ${LOG_LEVEL_AUTH:INFO}
+    com.fourthread.ozang.domain.feed: ${LOG_LEVEL_FEED:INFO}

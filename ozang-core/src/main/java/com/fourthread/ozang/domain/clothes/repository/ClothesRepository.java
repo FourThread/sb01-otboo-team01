@@ -1,0 +1,31 @@
+package com.fourthread.ozang.domain.clothes.repository;
+
+import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.module.domain.clothes.repository.query.ClothesRepositoryCustom;
+import io.lettuce.core.dynamic.annotation.Param;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface ClothesRepository extends JpaRepository<Clothes, UUID>, ClothesRepositoryCustom {
+
+  List<Clothes> findByIdIn(Collection<UUID> ids);
+
+  List<Clothes> findAllByIdIn(Collection<UUID> ids);
+
+  List<Clothes> findAllByOwnerId(UUID ownerId);
+
+  @Query("SELECT c FROM Clothes c " +
+      "LEFT JOIN FETCH c.attributes a " +
+      "LEFT JOIN FETCH a.definition " +
+      "WHERE c.ownerId = :ownerId")
+  List<Clothes> findAllByOwnerIdWithAttributes(@Param("ownerId") UUID ownerId);
+
+  @Query("SELECT c FROM Clothes c " +
+      "LEFT JOIN FETCH c.attributes a " +
+      "LEFT JOIN FETCH a.definition " +
+      "WHERE c.id IN :clothesIds")
+  List<Clothes> findAllByIdInWithAttributes(@Param("clothesIds") List<UUID> clothesIds);
+}

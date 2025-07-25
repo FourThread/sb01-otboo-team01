@@ -1,0 +1,10 @@
+package com.fourthread.ozang.domain.notification.event;
+
+import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
+import java.util.UUID;
+
+public record ClothesAttributeUpdatedEvent(
+        ClothesAttributeDefDto clothesAttributeDefDto,
+        UUID requesterId
+) {
+}
