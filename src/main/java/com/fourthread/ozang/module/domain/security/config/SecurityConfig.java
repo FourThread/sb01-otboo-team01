@@ -65,6 +65,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.RESET_PASSWORD).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
+            .requestMatchers(HttpMethod.GET, SecurityMatchers.CALLBACK).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()
             .requestMatchers(SecurityMatchers.OAUTH2).permitAll()
             .anyRequest().hasRole(Role.USER.name())

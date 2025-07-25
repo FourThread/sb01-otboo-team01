@@ -56,9 +56,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     refreshTokenCookie.setPath("/api/auth");
     response.addCookie(refreshTokenCookie);
 
-    // 성공 메시지와 함께 홈 화면으로 리다이렉트
-    String redirectUrl = "/?success=oauth_login&message=" + java.net.URLEncoder.encode("소셜 로그인에 성공했습니다!", "UTF-8");
-    response.sendRedirect(redirectUrl);
+      String accessToken = jwtSession.accessToken();
+      String redirectUrl = "/#/oauth2/callback?accessToken=" + accessToken + "&success=oauth_login";
+      response.sendRedirect(redirectUrl);
   }
 
   private String extractEmail(Map<String, Object> attributes) {
