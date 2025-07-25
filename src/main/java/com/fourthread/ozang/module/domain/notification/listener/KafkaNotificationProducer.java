@@ -16,6 +16,17 @@ public class KafkaNotificationProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
+    public void send(String topic, Object event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send(topic, payload);
+            log.debug("Kafka 전송 완료 (key 없음): topic={}", topic);
+        } catch (Exception e) {
+            log.error("Kafka 전송 실패 (key 없음): topic={}, error={}", topic, e.getMessage(), e);
+            throw new RuntimeException("Kafka 전송 실패", e);
+        }
+    }
+
     public void send(String topic, UUID receiverId, Object event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
