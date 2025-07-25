@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.follow.repository;
 
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.repository.query.FollowRepositoryCustom;
+import com.fourthread.ozang.domain.follow.entity.Follow;
+import com.fourthread.ozang.domain.follow.repository.query.FollowRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

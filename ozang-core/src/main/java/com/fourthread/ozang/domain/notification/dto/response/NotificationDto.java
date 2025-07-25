@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.notification.dto.response;
 
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
+import com.fourthread.ozang.domain.notification.entity.NotificationLevel;
 import java.time.Instant;
 import java.util.UUID;
 

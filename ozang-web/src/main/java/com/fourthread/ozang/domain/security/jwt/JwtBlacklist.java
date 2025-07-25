@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.security.jwt;
 
-import com.fourthread.ozang.module.domain.security.redis.RedisDao;
+import com.fourthread.ozang.domain.security.redis.RedisDao;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;

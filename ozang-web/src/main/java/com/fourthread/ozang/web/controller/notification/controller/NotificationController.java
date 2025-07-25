@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.notification.controller;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.module.domain.notification.service.NotificationService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.fourthread.ozang.domain.notification.dto.response.NotificationCursorResponse;
+import com.fourthread.ozang.domain.notification.service.NotificationService;
+import com.fourthread.ozang.domain.security.userdetails.UserDetailsImpl;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

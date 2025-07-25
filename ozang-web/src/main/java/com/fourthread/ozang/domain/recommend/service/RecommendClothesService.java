@@ -1,23 +1,23 @@
 package com.fourthread.ozang.domain.recommend.service;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.OPEN_API_ERROR;
-import static com.fourthread.ozang.module.common.exception.ErrorCode.RECOMMENDATION_ERROR;
+import static com.fourthread.ozang.common.exception.ErrorCode.OPEN_API_ERROR;
+import static com.fourthread.ozang.common.exception.ErrorCode.RECOMMENDATION_ERROR;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.common.exception.ErrorDetails;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.recommend.dto.RecommendRequest;
-import com.fourthread.ozang.module.domain.recommend.dto.RecommendationDto;
-import com.fourthread.ozang.module.domain.recommend.exception.OpenApiException;
-import com.fourthread.ozang.module.domain.recommend.exception.RecommendationException;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
-import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
-import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
+import com.fourthread.ozang.common.exception.ErrorDetails;
+import com.fourthread.ozang.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.fourthread.ozang.domain.clothes.dto.response.OotdDto;
+import com.fourthread.ozang.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.domain.recommend.dto.RecommendRequest;
+import com.fourthread.ozang.domain.recommend.dto.RecommendationDto;
+import com.fourthread.ozang.domain.recommend.exception.OpenApiException;
+import com.fourthread.ozang.domain.recommend.exception.RecommendationException;
+import com.fourthread.ozang.domain.weather.entity.Weather;
+import com.fourthread.ozang.domain.weather.exception.WeatherNotFoundException;
+import com.fourthread.ozang.domain.weather.repository.WeatherRepository;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;

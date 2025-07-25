@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.feed.entity;
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.domain.clothes.entity.Clothes;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;

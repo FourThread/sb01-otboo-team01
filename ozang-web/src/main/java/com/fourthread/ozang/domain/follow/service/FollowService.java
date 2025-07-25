@@ -1,19 +1,19 @@
 package com.fourthread.ozang.domain.follow.service;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.fourthread.ozang.common.exception.ErrorCode.*;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.exception.FollowsException;
-import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
-import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.event.FollowedEvent;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.domain.follow.dto.FollowDto;
+import com.fourthread.ozang.domain.follow.dto.FollowListResponse;
+import com.fourthread.ozang.domain.follow.dto.FollowSummaryDto;
+import com.fourthread.ozang.domain.follow.entity.Follow;
+import com.fourthread.ozang.domain.follow.exception.FollowsException;
+import com.fourthread.ozang.domain.follow.mapper.FollowMapper;
+import com.fourthread.ozang.domain.follow.repository.FollowRepository;
+import com.fourthread.ozang.domain.notification.event.FollowedEvent;
+import com.fourthread.ozang.domain.user.entity.User;
+import com.fourthread.ozang.domain.user.exception.UserException;
+import com.fourthread.ozang.domain.user.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

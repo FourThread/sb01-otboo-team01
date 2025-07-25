@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.config;
 
-import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
+import com.fourthread.ozang.domain.feed.elasticsearch.service.FeedSearchService;
 import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

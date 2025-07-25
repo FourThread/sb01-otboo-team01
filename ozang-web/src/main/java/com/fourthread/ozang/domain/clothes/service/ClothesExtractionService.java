@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.clothes.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.fourthread.ozang.common.exception.ErrorCode;
+import com.fourthread.ozang.domain.clothes.dto.response.ClothesDto;
+import com.fourthread.ozang.domain.clothes.exception.ClothesException;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

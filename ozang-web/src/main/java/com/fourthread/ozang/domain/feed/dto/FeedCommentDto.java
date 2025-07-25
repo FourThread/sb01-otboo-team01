@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.feed.dto;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.fourthread.ozang.domain.user.dto.data.UserSummary;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

@@ -1,21 +1,21 @@
 package com.fourthread.ozang.domain.clothes.service;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.fourthread.ozang.common.exception.ErrorCode.*;
 
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
-import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.storage.ImageService;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.domain.clothes.dto.requeset.ClothesCreateRequest;
+import com.fourthread.ozang.domain.clothes.dto.requeset.ClothesUpdateRequest;
+import com.fourthread.ozang.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttribute;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.fourthread.ozang.domain.clothes.exception.ClothesException;
+import com.fourthread.ozang.domain.clothes.mapper.ClothesMapper;
+import com.fourthread.ozang.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.fourthread.ozang.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.domain.storage.ImageService;
+import com.fourthread.ozang.domain.user.exception.UserException;
+import com.fourthread.ozang.domain.user.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;

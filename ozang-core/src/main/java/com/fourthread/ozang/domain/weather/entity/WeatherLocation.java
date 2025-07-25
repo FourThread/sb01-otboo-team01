@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.weather.entity;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.domain.weather.dto.WeatherAPILocation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.List;

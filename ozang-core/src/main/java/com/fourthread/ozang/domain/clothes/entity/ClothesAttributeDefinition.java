@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.clothes.entity;
 
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.clothes.StringListConverter;
+import com.fourthread.ozang.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.domain.clothes.StringListConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;

@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.user.config;
 
-import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
+import com.fourthread.ozang.domain.user.dto.type.SortBy;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

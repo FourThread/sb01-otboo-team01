@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.weather.controller;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
-import com.fourthread.ozang.module.domain.weather.service.WeatherService;
+import com.fourthread.ozang.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.domain.weather.dto.WeatherDto;
+import com.fourthread.ozang.domain.weather.service.WeatherService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;

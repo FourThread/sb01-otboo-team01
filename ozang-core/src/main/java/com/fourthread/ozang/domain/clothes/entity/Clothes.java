@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.clothes.entity;
 
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
+import com.fourthread.ozang.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttribute;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

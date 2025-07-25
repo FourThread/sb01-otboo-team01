@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.security.oauth.parser;
 
-import com.fourthread.ozang.module.domain.security.oauth.dto.OAuthAttributes;
-import com.fourthread.ozang.module.domain.security.oauth.parser.OAuthAttributesParser;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.domain.security.oauth.dto.OAuthAttributes;
+import com.fourthread.ozang.domain.security.oauth.parser.OAuthAttributesParser;
+import com.fourthread.ozang.domain.user.dto.type.Role;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 

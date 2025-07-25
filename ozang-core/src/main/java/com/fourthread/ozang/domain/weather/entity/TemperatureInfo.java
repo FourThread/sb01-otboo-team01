@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.weather.entity;
 
-import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
+import com.fourthread.ozang.domain.weather.dto.TemperatureDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;

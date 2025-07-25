@@ -1,12 +1,12 @@
 package com.fourthread.ozang.domain.follow.repository.query;
 
-import static com.fourthread.ozang.module.domain.follow.entity.QFollow.*;
-import static com.fourthread.ozang.module.domain.user.entity.QUser.*;
+import static com.fourthread.ozang.domain.follow.entity.QFollow.*;
+import static com.fourthread.ozang.domain.user.entity.QUser.*;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.repository.query.FollowRepositoryCustom;
+import com.fourthread.ozang.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.domain.follow.dto.FollowSummaryProjection;
+import com.fourthread.ozang.domain.follow.entity.Follow;
+import com.fourthread.ozang.domain.follow.repository.query.FollowRepositoryCustom;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;

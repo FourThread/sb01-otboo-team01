@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.user.dto.response;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.domain.user.dto.type.Role;
 import java.util.UUID;
 
 public record MeResponse(

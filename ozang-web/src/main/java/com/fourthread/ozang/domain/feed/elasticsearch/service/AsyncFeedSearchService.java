@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.feed.elasticsearch.service;
 
-import com.fourthread.ozang.module.domain.feed.dto.FeedData;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
+import com.fourthread.ozang.domain.feed.dto.FeedData;
+import com.fourthread.ozang.domain.feed.dto.request.FeedPaginationRequest;
+import com.fourthread.ozang.domain.feed.elasticsearch.service.FeedSearchService;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.weather.client;
 
-import com.fourthread.ozang.module.domain.weather.dto.external.KakaoLocalResponse;
-import com.fourthread.ozang.module.domain.weather.exception.WeatherApiException;
+import com.fourthread.ozang.domain.weather.dto.external.KakaoLocalResponse;
+import com.fourthread.ozang.domain.weather.exception.WeatherApiException;
 import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

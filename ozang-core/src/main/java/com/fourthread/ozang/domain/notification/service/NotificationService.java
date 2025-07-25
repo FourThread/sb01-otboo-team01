@@ -1,17 +1,17 @@
 package com.fourthread.ozang.domain.notification.service;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.fourthread.ozang.common.exception.ErrorCode.*;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.execption.NotificationException;
-import com.fourthread.ozang.module.domain.notification.mapper.NotificationMapper;
-import com.fourthread.ozang.module.domain.notification.repository.NotificationRepository;
+import com.fourthread.ozang.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.domain.notification.dto.response.NotificationCursorResponse;
+import com.fourthread.ozang.domain.notification.dto.response.NotificationDto;
+import com.fourthread.ozang.domain.notification.entity.Notification;
+import com.fourthread.ozang.domain.notification.entity.NotificationLevel;
+import com.fourthread.ozang.domain.notification.event.MultipleNotificationCreatedEvent;
+import com.fourthread.ozang.domain.notification.event.NotificationCreatedEvent;
+import com.fourthread.ozang.domain.notification.execption.NotificationException;
+import com.fourthread.ozang.domain.notification.mapper.NotificationMapper;
+import com.fourthread.ozang.domain.notification.repository.NotificationRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

@@ -1,8 +1,8 @@
 package com.fourthread.ozang.common.exception;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.common.exception.ErrorResponse;
-import com.fourthread.ozang.module.common.exception.GlobalException;
+import com.fourthread.ozang.common.exception.ErrorCode;
+import com.fourthread.ozang.common.exception.ErrorResponse;
+import com.fourthread.ozang.common.exception.GlobalException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

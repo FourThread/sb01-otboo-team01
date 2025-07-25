@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.user.dto.data;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Items;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.fourthread.ozang.domain.user.dto.type.Items;
+import com.fourthread.ozang.domain.user.dto.type.Role;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

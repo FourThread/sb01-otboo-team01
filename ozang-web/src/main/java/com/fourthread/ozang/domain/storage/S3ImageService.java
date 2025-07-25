@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.storage;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.fourthread.ozang.common.exception.ErrorCode;
+import com.fourthread.ozang.domain.clothes.exception.ClothesException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;

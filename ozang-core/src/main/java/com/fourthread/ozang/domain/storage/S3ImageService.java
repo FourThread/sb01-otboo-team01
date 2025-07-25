@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.storage;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.fourthread.ozang.common.exception.ErrorCode;
+import com.fourthread.ozang.domain.clothes.exception.ClothesException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;

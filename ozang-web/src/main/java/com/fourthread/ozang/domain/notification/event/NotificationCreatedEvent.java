@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.notification.event;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
+import com.fourthread.ozang.domain.notification.dto.response.NotificationDto;
 import java.time.Instant;
 
 public record NotificationCreatedEvent(

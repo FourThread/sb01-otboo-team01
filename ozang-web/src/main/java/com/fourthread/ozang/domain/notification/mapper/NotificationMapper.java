@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.notification.mapper;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
+import com.fourthread.ozang.domain.notification.dto.response.NotificationDto;
+import com.fourthread.ozang.domain.notification.entity.Notification;
 import java.time.ZoneId;
 import java.util.List;
 import org.springframework.stereotype.Component;

@@ -1,10 +1,10 @@
 package com.fourthread.ozang.domain.dm.controller;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageCreateRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDto;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorResponse;
-import com.fourthread.ozang.module.domain.dm.service.DirectMessageService;
+import com.fourthread.ozang.domain.dm.dto.DirectMessageCreateRequest;
+import com.fourthread.ozang.domain.dm.dto.DirectMessageDto;
+import com.fourthread.ozang.domain.dm.dto.DirectMessageDtoCursorRequest;
+import com.fourthread.ozang.domain.dm.dto.DirectMessageDtoCursorResponse;
+import com.fourthread.ozang.domain.dm.service.DirectMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;

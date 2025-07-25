@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.weather.batch;
+package com.fourthread.ozang.batch.weather.batch;
 
 import com.fourthread.ozang.config.BatchJobExecutionListener;
 import com.fourthread.ozang.domain.notification.entity.NotificationLevel;

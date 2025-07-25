@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.clothes.entity;
 
-import com.fourthread.ozang.module.domain.BaseEntity;
+import com.fourthread.ozang.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

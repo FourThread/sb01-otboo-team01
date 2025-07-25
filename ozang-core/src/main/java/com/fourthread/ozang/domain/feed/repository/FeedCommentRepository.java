@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.feed.repository;
 
-import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
-import com.fourthread.ozang.module.domain.feed.repository.FeedCommentRepositoryCustom;
+import com.fourthread.ozang.domain.feed.entity.FeedComment;
+import com.fourthread.ozang.domain.feed.repository.FeedCommentRepositoryCustom;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

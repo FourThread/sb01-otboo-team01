@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.security;
 
-import com.fourthread.ozang.module.domain.security.service.AuthService;
+import com.fourthread.ozang.domain.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

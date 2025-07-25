@@ -1,7 +1,7 @@
 package com.fourthread.ozang.config.s3;
 
-import com.fourthread.ozang.module.domain.storage.ImageService;
-import com.fourthread.ozang.module.domain.storage.S3ImageService;
+import com.fourthread.ozang.domain.storage.ImageService;
+import com.fourthread.ozang.domain.storage.S3ImageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

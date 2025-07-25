@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.follow.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
+import com.fourthread.ozang.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.domain.follow.dto.FollowSummaryProjection;
+import com.fourthread.ozang.domain.follow.entity.Follow;
 import java.util.List;
 import java.util.UUID;
 

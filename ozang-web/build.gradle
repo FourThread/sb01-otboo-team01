@@ -27,6 +27,12 @@ dependencies {
     // Mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // AWS S3
+    implementation 'software.amazon.awssdk:s3:2.31.14'
+    implementation 'software.amazon.awssdk:protocol-core:2.31.14'
+    implementation 'software.amazon.awssdk:s3-transfer-manager:2.31.14'
+    implementation 'software.amazon.awssdk.crt:aws-crt:0.34.1'
+
     // Elasticsearch (웹 검색용)
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

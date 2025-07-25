@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.weather.dto.external;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiHeader;
+import com.fourthread.ozang.domain.weather.dto.external.WeatherApiHeader;
 import java.util.List;
 
 /**

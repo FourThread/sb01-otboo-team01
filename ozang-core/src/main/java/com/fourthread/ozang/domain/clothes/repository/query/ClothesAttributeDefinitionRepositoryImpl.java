@@ -1,11 +1,11 @@
 package com.fourthread.ozang.domain.clothes.repository.query;
 
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.*;
+import static com.fourthread.ozang.domain.clothes.entity.QClothesAttributeDefinition.*;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition;
+import com.fourthread.ozang.domain.clothes.dto.response.SortBy;
+import com.fourthread.ozang.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.domain.clothes.entity.QClothesAttributeDefinition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;

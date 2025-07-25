@@ -1,9 +1,9 @@
 package com.fourthread.ozang.domain.notification.listener;
 
-import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.module.domain.notification.service.NotificationService;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.domain.follow.repository.FollowRepository;
+import com.fourthread.ozang.domain.notification.entity.NotificationLevel;
+import com.fourthread.ozang.domain.notification.service.NotificationService;
+import com.fourthread.ozang.domain.user.repository.UserRepository;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;

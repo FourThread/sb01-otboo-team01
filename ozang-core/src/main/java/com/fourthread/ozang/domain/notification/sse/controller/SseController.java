@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.notification.sse.controller;
 
 
-import com.fourthread.ozang.module.domain.notification.sse.service.SseService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.fourthread.ozang.domain.notification.sse.service.SseService;
+import com.fourthread.ozang.domain.security.userdetails.UserDetailsImpl;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

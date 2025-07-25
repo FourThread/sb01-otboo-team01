@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.clothes.repository;
 
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttribute;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

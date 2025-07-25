@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.weather.batch.scheduler;
+package com.fourthread.ozang.batch.weather.batch.scheduler;
 
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;

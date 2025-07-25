@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.security.userdetails;
 
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
+import com.fourthread.ozang.domain.security.jwt.dto.data.JwtPayloadDto;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;

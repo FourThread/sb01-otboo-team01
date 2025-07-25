@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.user.dto.data;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Gender;
+import com.fourthread.ozang.domain.user.dto.type.Gender;
 import java.time.LocalDate;
 import java.util.UUID;
 

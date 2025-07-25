@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.clothes.mapper;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.fourthread.ozang.domain.clothes.entity.ClothesAttributeDefinition;
 import org.springframework.stereotype.Component;
 
 

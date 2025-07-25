@@ -1,6 +1,6 @@
-package com.fourthread.ozang.domain.security.jwt;//package com.fourthread.ozang.module.domain.security.jwt;
+package com.fourthread.ozang.domain.security.jwt;//package com.fourthread.ozang.domain.security.jwt;
 //
-//import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
+//import com.fourthread.ozang.domain.BaseUpdatableEntity;
 //import jakarta.persistence.Column;
 //import jakarta.persistence.Entity;
 //import java.time.Instant;

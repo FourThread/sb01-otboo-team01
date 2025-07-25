@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.user.mapper;
-import com.fourthread.ozang.module.domain.user.dto.data.LocationDto;
-import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.module.domain.user.dto.type.Location;
-import com.fourthread.ozang.module.domain.user.entity.Profile;
+import com.fourthread.ozang.domain.user.dto.data.LocationDto;
+import com.fourthread.ozang.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.domain.user.dto.type.Location;
+import com.fourthread.ozang.domain.user.entity.Profile;
 import org.springframework.stereotype.Component;
 
 @Component

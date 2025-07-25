@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.notification.sse.repository;
 
-import com.fourthread.ozang.module.domain.notification.sse.SseMessage;
+import com.fourthread.ozang.domain.notification.sse.SseMessage;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;

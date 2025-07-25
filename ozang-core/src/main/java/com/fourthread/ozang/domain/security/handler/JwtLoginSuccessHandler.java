@@ -1,9 +1,9 @@
 package com.fourthread.ozang.domain.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.fourthread.ozang.domain.security.jwt.JwtService;
+import com.fourthread.ozang.domain.security.jwt.dto.response.JwtTokenResponse;
+import com.fourthread.ozang.domain.security.userdetails.UserDetailsImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

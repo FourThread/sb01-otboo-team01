@@ -1,6 +1,6 @@
 package com.fourthread.ozang.domain.notification.event;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
+import com.fourthread.ozang.domain.weather.dto.WeatherChangeDto;
 import java.time.Instant;
 import java.util.List;
 

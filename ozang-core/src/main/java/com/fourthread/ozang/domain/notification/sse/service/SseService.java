@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.notification.sse.service;
 
-import com.fourthread.ozang.module.domain.notification.sse.SseMessage;
-import com.fourthread.ozang.module.domain.notification.sse.repository.SseEmitterRepository;
-import com.fourthread.ozang.module.domain.notification.sse.repository.SseMessageRepository;
+import com.fourthread.ozang.domain.notification.sse.SseMessage;
+import com.fourthread.ozang.domain.notification.sse.repository.SseEmitterRepository;
+import com.fourthread.ozang.domain.notification.sse.repository.SseMessageRepository;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;

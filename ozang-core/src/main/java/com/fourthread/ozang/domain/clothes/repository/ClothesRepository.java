@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.clothes.repository;
 
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.repository.query.ClothesRepositoryCustom;
+import com.fourthread.ozang.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.domain.clothes.repository.query.ClothesRepositoryCustom;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.Collection;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.fourthread.ozang.domain.user.dto.request;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Gender;
-import com.fourthread.ozang.module.domain.user.dto.type.Location;
+import com.fourthread.ozang.domain.user.dto.type.Gender;
+import com.fourthread.ozang.domain.user.dto.type.Location;
 import java.time.LocalDate;
 
 public record ProfileUpdateRequest(

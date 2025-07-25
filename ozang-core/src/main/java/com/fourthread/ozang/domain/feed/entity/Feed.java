@@ -1,8 +1,8 @@
 package com.fourthread.ozang.domain.feed.entity;
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.fourthread.ozang.domain.BaseUpdatableEntity;
+import com.fourthread.ozang.domain.user.entity.User;
+import com.fourthread.ozang.domain.weather.entity.Weather;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
