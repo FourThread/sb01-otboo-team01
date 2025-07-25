@@ -1,0 +1,156 @@
+spring:
+  application:
+    name: O-ZANG-BATCH
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ozang_db}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5    # 배치용으로 줄임
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      database: 0
+      ssl:
+        enabled: true
+      lettuce:
+        pool:
+          max-active: 2  # 배치용으로 줄임
+          max-idle: 2
+          min-idle: 1
+
+  # 배치 전용 설정
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: never
+
+  autoconfigure:
+    exclude:
+          - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+          - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+          - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+          - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+          - org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
+          - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+          - org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET:ozang-prod-bucket}
+
+file:
+  upload:
+    clothes:
+      path: ${FILE_UPLOAD_CLOTHES_PATH:batch/clothes/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+    profiles:
+      path: ${FILE_UPLOAD_PROFILES_PATH:batch/profiles/images/}
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+
+openai:
+  api:
+    key: ${OPEN_AI_API_KEY}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${PROMPT_ID}
+    version: ${PROMPT_VERSION}
+
+elasticsearch:
+  enabled: false
+  cloud:
+    host: ${ELASTICSEARCH_HOST}
+    api-key: ${ELASTICSEARCH_API_KEY}
+
+
+# 배치 스케줄링 활성화
+batch:
+  weather:
+    retention-days: 5
+  scheduler:
+    weather-cleanup:
+      enabled: true
+    weather-cache-warmup:
+      enabled: true
+    weather-change-detection:
+      enabled: true
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.fourthread.ozang: INFO
+    org.springframework.batch: INFO
+    org.springframework.web: WARN    # 웹 관련 로그 최소화
+    org.hibernate: WARN              # Hibernate 로그 최소화
+  pattern:
+    console: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+    file: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+  file:
+    name: /app/logs/batch-application.log
+
+# Health check 최소한으로 유지
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always #when_authorized
+  health:
+    defaults:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+    redis:
+      enabled: false  # 외부 의존성 체크 비활성화
+    elasticsearch:
+      enabled: false
+
+# Security 최소한으로 설정
+security:
+  batch:
+    admin-only: true
+
+server:
+  port: 8081  # 배치 전용 포트
+  servlet:
+    context-path: /batch
