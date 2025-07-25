@@ -28,6 +28,26 @@ project(':ozang-core').name = 'ozang-core'
 project(':ozang-batch').name = 'ozang-batch'
 project(':ozang-app').name = 'ozang-app'
 
+// Gradle 기능 활성화
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
+//
+//// 플러그인 관리
+//pluginManagement {
+//    repositories {
+//        gradlePluginPortal()
+//        mavenCentral()
+//    }
+//}
+
+// 의존성 관리
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 // Gradle Enterprise 설정 (선택사항 - 빌드 성능 향상)
 if (System.getenv('CI') == 'true') {
     gradle.projectsEvaluated {

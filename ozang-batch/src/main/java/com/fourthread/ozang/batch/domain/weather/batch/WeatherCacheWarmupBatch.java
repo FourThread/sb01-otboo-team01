@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.weather.batch;
+package com.fourthread.ozang.batch.domain.weather.batch;
 
 import com.fourthread.ozang.core.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherDto;

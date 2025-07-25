@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config.batch;
+package com.fourthread.ozang.batch.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
