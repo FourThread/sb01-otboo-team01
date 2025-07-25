@@ -1,10 +1,11 @@
-package com.fourthread.ozang.module.domain.weather.batch;
+package com.fourthread.ozang.domain.weather.batch;
 
+import com.fourthread.ozang.core.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.core.domain.weather.dto.WeatherDto;
+import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
+import com.fourthread.ozang.core.domain.weather.service.WeatherService;
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
-import com.fourthread.ozang.module.domain.weather.service.WeatherCacheService;
-import com.fourthread.ozang.module.domain.weather.service.WeatherService;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;

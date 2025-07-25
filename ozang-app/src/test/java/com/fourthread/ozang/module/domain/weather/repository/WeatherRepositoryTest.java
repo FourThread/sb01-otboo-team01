@@ -5,9 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.fourthread.ozang.core.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.core.domain.weather.dto.type.SkyStatus;
+import com.fourthread.ozang.core.domain.weather.entity.Weather;
+import com.fourthread.ozang.core.domain.weather.repository.WeatherRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

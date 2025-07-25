@@ -2,9 +2,9 @@ package com.fourthread.ozang.module.domain.recommend.dto;
 
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
-import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.fourthread.ozang.core.domain.weather.dto.type.PrecipitationType;
+import com.fourthread.ozang.core.domain.weather.dto.type.SkyStatus;
+import com.fourthread.ozang.core.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;

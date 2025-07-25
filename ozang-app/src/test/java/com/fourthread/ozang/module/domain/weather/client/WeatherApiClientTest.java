@@ -3,8 +3,9 @@ package com.fourthread.ozang.module.domain.weather.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
-import com.fourthread.ozang.module.domain.weather.entity.GridCoordinate;
+import com.fourthread.ozang.core.domain.weather.client.WeatherApiClient;
+import com.fourthread.ozang.core.domain.weather.dto.external.WeatherApiResponse;
+import com.fourthread.ozang.core.domain.weather.entity.GridCoordinate;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

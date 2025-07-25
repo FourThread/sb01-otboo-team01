@@ -24,7 +24,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
-import static com.fourthread.ozang.module.domain.weather.dto.type.WeatherChangeType.*;
 
 
 @Slf4j

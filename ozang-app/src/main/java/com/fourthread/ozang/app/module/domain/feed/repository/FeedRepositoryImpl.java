@@ -19,11 +19,11 @@ import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
-import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
-import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
+import com.fourthread.ozang.core.domain.weather.dto.PrecipitationDto;
+import com.fourthread.ozang.core.domain.weather.dto.TemperatureDto;
+import com.fourthread.ozang.core.domain.weather.dto.WeatherSummaryDto;
+import com.fourthread.ozang.core.domain.weather.dto.type.PrecipitationType;
+import com.fourthread.ozang.core.domain.weather.dto.type.SkyStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.OrderSpecifier;

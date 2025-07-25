@@ -1,7 +1,8 @@
-package com.fourthread.ozang.module.domain.weather.batch;
+package com.fourthread.ozang.domain.weather.batch;
 
+import com.fourthread.ozang.core.domain.weather.service.WeatherService;
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
-import com.fourthread.ozang.module.domain.weather.service.WeatherService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;

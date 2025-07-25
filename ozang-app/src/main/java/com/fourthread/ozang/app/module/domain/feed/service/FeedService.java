@@ -40,9 +40,9 @@ import com.fourthread.ozang.module.domain.notification.event.FollowingFeedCreate
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.exception.UserException;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
-import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
-import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;
+import com.fourthread.ozang.core.domain.weather.entity.Weather;
+import com.fourthread.ozang.core.domain.weather.exception.WeatherNotFoundException;
+import com.fourthread.ozang.core.domain.weather.repository.WeatherRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
