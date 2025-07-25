@@ -1,4 +1,4 @@
-//package com.fourthread.ozang.module.domain.security.jwt;
+//package com.ozang.web.security.jwt;
 //
 //import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
 //import jakarta.persistence.Column;

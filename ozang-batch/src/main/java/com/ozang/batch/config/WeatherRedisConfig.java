@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.config;
+package com.ozang.batch.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;

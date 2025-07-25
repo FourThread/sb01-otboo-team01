@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.clothes.entity;
+package com.ozang.common.domain.clothes.entity;
 
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
+import com.ozang.common.domain.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.user.mapper;
+package com.ozang.web.user.mapper;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.web.user.dto.data.UserDto;
+import com.ozang.web.user.entity.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

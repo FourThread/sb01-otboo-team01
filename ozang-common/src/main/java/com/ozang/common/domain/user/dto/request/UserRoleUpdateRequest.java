@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.user.dto.request;
+package com.ozang.common.domain.user.dto.request;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.ozang.common.domain.user.dto.type.Role;
 
 public record UserRoleUpdateRequest(
     Role role

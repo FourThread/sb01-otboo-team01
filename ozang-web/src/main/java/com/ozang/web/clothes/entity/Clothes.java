@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.entity;
+package com.ozang.web.clothes.entity;
 
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;

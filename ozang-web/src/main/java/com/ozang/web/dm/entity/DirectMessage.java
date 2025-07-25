@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.dm.entity;
+package com.ozang.web.dm.entity;
 
 import com.fourthread.ozang.module.domain.BaseEntity;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.web.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;

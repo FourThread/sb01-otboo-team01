@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.jwt.dto.data;
+package com.ozang.web.security.jwt.dto.data;
 
 import java.time.Instant;
 

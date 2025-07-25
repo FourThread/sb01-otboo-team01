@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.clothes.entity;
+package com.ozang.web.clothes.entity;
 
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.clothes.StringListConverter;
+import com.ozang.web.clothes.StringListConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

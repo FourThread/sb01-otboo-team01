@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain;
+package com.ozang.common.domain;
 
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;

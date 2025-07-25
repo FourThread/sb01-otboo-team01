@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.dm.repository;
+package com.ozang.common.domain.dm.repository;
 
-import com.fourthread.ozang.module.domain.dm.entity.DirectMessage;
+import com.ozang.common.domain.dm.entity.DirectMessage;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 

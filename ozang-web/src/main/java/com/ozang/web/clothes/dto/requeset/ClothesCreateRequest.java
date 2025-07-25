@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.clothes.dto.requeset;
+package com.ozang.web.clothes.dto.requeset;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDto;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.ozang.web.clothes.dto.response.ClothesAttributeDto;
+import com.ozang.web.clothes.entity.ClothesType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

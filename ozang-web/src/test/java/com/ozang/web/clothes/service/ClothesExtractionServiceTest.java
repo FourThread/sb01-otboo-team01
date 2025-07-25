@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.ozang.web.clothes.service;
 
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.ozang.web.clothes.exception.ClothesException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

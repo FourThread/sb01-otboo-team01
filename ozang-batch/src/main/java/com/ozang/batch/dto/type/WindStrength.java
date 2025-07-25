@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto.type;
+package com.ozang.batch.dto.type;
 
 /**
  * 풍력(정성 정보)

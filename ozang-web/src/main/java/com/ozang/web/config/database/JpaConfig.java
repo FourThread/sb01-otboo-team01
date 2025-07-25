@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config.database;
+package com.ozang.web.config.database;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

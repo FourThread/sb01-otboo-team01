@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.notification.execption;
+package com.ozang.common.domain.notification.execption;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.common.exception.ErrorDetails;
-import com.fourthread.ozang.module.common.exception.GlobalException;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.exception.ErrorDetails;
+import com.ozang.common.exception.GlobalException;
 
 public class NotificationException extends GlobalException {
     public NotificationException(ErrorCode errorCode, String exceptionClass, String exceptionMessage)  {

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.service;
+package com.ozang.web.user.service;
 
 public interface MailService {
 

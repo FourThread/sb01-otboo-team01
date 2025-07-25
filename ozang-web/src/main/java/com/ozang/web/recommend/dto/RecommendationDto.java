@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.recommend.dto;
+package com.ozang.web.recommend.dto;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
+import com.ozang.web.clothes.dto.response.OotdDto;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;

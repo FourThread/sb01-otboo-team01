@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.dto.type;
+package com.ozang.web.user.dto.type;
 
 public enum Role {
   ADMIN, USER

@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.recommend.controller;
+package com.ozang.common.domain.recommend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fourthread.ozang.module.domain.recommend.dto.RecommendationDto;
-import com.fourthread.ozang.module.domain.recommend.service.RecommendClothesService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.common.domain.recommend.dto.RecommendationDto;
+import com.ozang.common.domain.recommend.service.RecommendClothesService;
+import com.ozang.common.domain.security.userdetails.UserDetailsImpl;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

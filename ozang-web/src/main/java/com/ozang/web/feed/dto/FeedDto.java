@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.feed.dto;
+package com.ozang.web.feed.dto;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
+import com.ozang.web.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.ozang.web.user.dto.data.UserSummary;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

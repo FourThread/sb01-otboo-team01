@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.ozang.batch.entity;
 
-import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
+import com.ozang.batch.dto.HumidityDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;

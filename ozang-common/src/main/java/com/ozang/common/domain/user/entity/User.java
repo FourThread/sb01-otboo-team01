@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.user.entity;
+package com.ozang.common.domain.user.entity;
 
-import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.user.dto.type.Items;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.ozang.common.domain.BaseUpdatableEntity;
+import com.ozang.common.domain.user.dto.type.Items;
+import com.ozang.common.domain.user.dto.type.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;

@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.clothes.repository;
+package com.ozang.common.domain.clothes.repository;
 
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
+import com.ozang.common.domain.clothes.entity.ClothesAttribute;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

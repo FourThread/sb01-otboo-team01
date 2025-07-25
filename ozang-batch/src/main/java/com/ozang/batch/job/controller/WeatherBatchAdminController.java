@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.batch.controller;
+package com.ozang.batch.batch.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.HashMap;

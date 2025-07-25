@@ -1,16 +1,16 @@
-package com.fourthread.ozang.module.domain.notification.service;
+package com.ozang.web.notification.service;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.execption.NotificationException;
-import com.fourthread.ozang.module.domain.notification.mapper.NotificationMapper;
-import com.fourthread.ozang.module.domain.notification.repository.NotificationRepository;
+import com.ozang.web.clothes.dto.response.SortDirection;
+import com.ozang.web.notification.dto.response.NotificationCursorResponse;
+import com.ozang.web.notification.dto.response.NotificationDto;
+import com.ozang.web.notification.entity.Notification;
+import com.ozang.web.notification.entity.NotificationLevel;
+import com.ozang.web.notification.event.MultipleNotificationCreatedEvent;
+import com.ozang.web.notification.event.NotificationCreatedEvent;
+import com.ozang.web.notification.execption.NotificationException;
+import com.ozang.web.notification.mapper.NotificationMapper;
+import com.ozang.web.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;

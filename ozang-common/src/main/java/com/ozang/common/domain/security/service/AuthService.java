@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.security.service;
+package com.ozang.common.domain.security.service;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
+import com.ozang.common.domain.user.dto.data.UserDto;
 
 public interface AuthService {
 

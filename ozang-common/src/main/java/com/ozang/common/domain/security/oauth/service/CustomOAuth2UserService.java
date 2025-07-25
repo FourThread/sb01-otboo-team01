@@ -1,11 +1,11 @@
-package com.fourthread.ozang.module.domain.security.oauth.service;
+package com.ozang.common.domain.security.oauth.service;
 
-import com.fourthread.ozang.module.domain.security.oauth.dto.OAuthAttributes;
-import com.fourthread.ozang.module.domain.security.oauth.parser.OAuthAttributesParser;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.entity.Profile;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.user.dto.type.Items;
+import com.ozang.common.domain.security.oauth.dto.OAuthAttributes;
+import com.ozang.common.domain.security.oauth.parser.OAuthAttributesParser;
+import com.ozang.common.domain.user.entity.User;
+import com.ozang.common.domain.user.entity.Profile;
+import com.ozang.common.domain.user.repository.UserRepository;
+import com.ozang.common.domain.user.dto.type.Items;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

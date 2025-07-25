@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.elasticsearch.entity;
+package com.ozang.web.feed.elasticsearch.entity;
 
 public enum SearchField {
 

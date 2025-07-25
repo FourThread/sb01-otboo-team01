@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config.batch;
+package com.ozang.web.config.batch;
 
 
 import java.time.ZoneId;

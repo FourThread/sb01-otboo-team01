@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.exception;
+package com.ozang.web.user.exception;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;

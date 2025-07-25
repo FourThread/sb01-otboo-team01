@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.dto.request;
+package com.ozang.web.user.dto.request;
 
 public record UserLockUpdateRequest(
     boolean locked

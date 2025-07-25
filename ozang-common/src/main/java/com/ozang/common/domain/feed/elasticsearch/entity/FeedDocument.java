@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.elasticsearch.entity;
+package com.ozang.common.domain.feed.elasticsearch.entity;
 
 import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Integer;
@@ -6,7 +6,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Keywo
 import static org.springframework.data.elasticsearch.annotations.FieldType.Long;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-import com.fourthread.ozang.module.domain.feed.entity.Feed;
+import com.ozang.common.domain.feed.entity.Feed;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.config;
+package com.ozang.common.domain.user.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;

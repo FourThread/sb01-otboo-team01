@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.batch.dto;
 
 
-import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
+import com.ozang.batch.dto.type.PrecipitationType;
 
 /**
  * 강수 정보

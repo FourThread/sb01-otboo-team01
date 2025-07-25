@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.handler;
+package com.ozang.web.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;

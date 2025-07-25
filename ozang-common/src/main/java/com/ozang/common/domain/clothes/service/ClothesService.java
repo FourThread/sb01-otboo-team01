@@ -1,21 +1,21 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.ozang.common.domain.clothes.service;
 
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.*;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
-import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.storage.ImageService;
+import com.ozang.common.domain.clothes.dto.requeset.ClothesCreateRequest;
+import com.ozang.common.domain.clothes.dto.requeset.ClothesUpdateRequest;
+import com.ozang.common.domain.clothes.dto.response.*;
+import com.ozang.common.domain.clothes.entity.Clothes;
+import com.ozang.common.domain.clothes.entity.ClothesAttribute;
+import com.ozang.common.domain.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.common.domain.clothes.entity.ClothesType;
+import com.ozang.common.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.ozang.common.domain.clothes.exception.ClothesException;
+import com.ozang.common.domain.clothes.mapper.ClothesMapper;
+import com.ozang.common.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.ozang.common.domain.clothes.repository.ClothesRepository;
+import com.ozang.common.domain.storage.ImageService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.common.domain.user.exception.UserException;
+import com.ozang.common.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.ozang.common.exception.ErrorCode.*;
 
 @Slf4j
 @Service

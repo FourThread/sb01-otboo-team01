@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.dto.requeset;
+package com.ozang.common.domain.clothes.dto.requeset;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;

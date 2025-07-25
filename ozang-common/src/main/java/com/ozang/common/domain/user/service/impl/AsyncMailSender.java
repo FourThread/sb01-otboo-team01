@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.service.impl;
+package com.ozang.common.domain.user.service.impl;
 
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;

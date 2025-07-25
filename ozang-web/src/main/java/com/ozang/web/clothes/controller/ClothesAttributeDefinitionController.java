@@ -1,11 +1,11 @@
-package com.fourthread.ozang.module.domain.clothes.controller;
+package com.ozang.web.clothes.controller;
 
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.service.ClothesAttributeDefinitionService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.web.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
+import com.ozang.web.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
+import com.ozang.web.clothes.dto.response.ClothesAttributeDefDto;
+import com.ozang.web.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
+import com.ozang.web.clothes.service.ClothesAttributeDefinitionService;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

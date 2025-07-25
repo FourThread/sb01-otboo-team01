@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.clothes.dto.response;
+package com.ozang.common.domain.clothes.dto.response;
 
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.ozang.common.domain.clothes.entity.ClothesType;
 
 import java.util.List;
 import java.util.UUID;

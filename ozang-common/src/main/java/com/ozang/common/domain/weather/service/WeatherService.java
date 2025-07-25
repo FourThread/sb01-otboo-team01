@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.weather.service;
+package com.ozang.common.domain.weather.service;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
+import com.ozang.common.domain.weather.dto.WeatherAPILocation;
+import com.ozang.common.domain.weather.dto.WeatherChangeDto;
+import com.ozang.common.domain.weather.dto.WeatherDto;
 import java.util.List;
 
 public interface WeatherService {

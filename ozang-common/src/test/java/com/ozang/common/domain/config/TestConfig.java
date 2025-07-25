@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.config;
+package com.ozang.common.domain.config;
 
-import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
+import com.ozang.common.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
+import com.ozang.common.domain.feed.elasticsearch.service.FeedSearchService;
 import java.util.Optional;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.weather.service;
+package com.ozang.common.domain.weather.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
-import com.fourthread.ozang.module.domain.weather.util.WeatherCacheKeyGenerator;
+import com.ozang.common.domain.weather.dto.WeatherAPILocation;
+import com.ozang.common.domain.weather.dto.WeatherDto;
+import com.ozang.common.domain.weather.util.WeatherCacheKeyGenerator;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;

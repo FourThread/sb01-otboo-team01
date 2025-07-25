@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.dto.response;
+package com.ozang.common.domain.notification.dto.response;
 
 import java.util.List;
 import java.util.UUID;

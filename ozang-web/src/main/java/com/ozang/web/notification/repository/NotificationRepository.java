@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.notification.repository;
+package com.ozang.web.notification.repository;
 
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
-import com.fourthread.ozang.module.domain.notification.repository.query.NotificationRepositoryCustom;
+import com.ozang.web.notification.entity.Notification;
+import com.ozang.web.notification.repository.query.NotificationRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

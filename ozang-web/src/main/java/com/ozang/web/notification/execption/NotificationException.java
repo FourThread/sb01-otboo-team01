@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.execption;
+package com.ozang.web.notification.execption;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;

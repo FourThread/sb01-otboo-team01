@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.repository;
+package com.ozang.common.domain.weather.repository;
 
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.ozang.common.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;

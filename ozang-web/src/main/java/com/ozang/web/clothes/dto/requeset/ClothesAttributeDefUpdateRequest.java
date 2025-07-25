@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.dto.requeset;
+package com.ozang.web.clothes.dto.requeset;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

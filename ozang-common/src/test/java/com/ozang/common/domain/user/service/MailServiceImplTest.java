@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.user.service;
+package com.ozang.common.domain.user.service;
 
-import com.fourthread.ozang.module.domain.user.service.impl.AsyncMailSender;
-import com.fourthread.ozang.module.domain.user.service.impl.MailServiceImpl;
+import com.ozang.common.domain.user.service.impl.AsyncMailSender;
+import com.ozang.common.domain.user.service.impl.MailServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;

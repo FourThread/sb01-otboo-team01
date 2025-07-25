@@ -1,11 +1,11 @@
-package com.fourthread.ozang.module.domain.dm.repository;
+package com.ozang.web.dm.repository;
 
-import static com.fourthread.ozang.module.domain.dm.entity.QDirectMessage.directMessage;
+import static com.ozang.web.dm.entity.QDirectMessage.directMessage;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DmItems;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.entity.QUser;
+import com.ozang.web.dm.dto.DirectMessageDtoCursorRequest;
+import com.ozang.web.dm.dto.DmItems;
+import com.ozang.web.user.dto.data.UserSummary;
+import com.ozang.web.user.entity.QUser;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.follow.dto;
+package com.ozang.common.domain.follow.dto;
 
 import java.util.List;
 import java.util.UUID;

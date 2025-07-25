@@ -1,12 +1,12 @@
-package com.fourthread.ozang.module.domain.feed.repository;
+package com.ozang.web.feed.repository;
 
-import static com.fourthread.ozang.module.domain.feed.entity.QFeed.feed;
-import static com.fourthread.ozang.module.domain.feed.entity.QFeedComment.feedComment;
-import static com.fourthread.ozang.module.domain.user.entity.QUser.user;
+import static com.ozang.web.feed.entity.QFeed.feed;
+import static com.ozang.web.feed.entity.QFeedComment.feedComment;
+import static com.ozang.web.user.entity.QUser.user;
 
-import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.ozang.web.feed.dto.FeedCommentDto;
+import com.ozang.web.feed.dto.request.CommentPaginationRequest;
+import com.ozang.web.user.dto.data.UserSummary;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;

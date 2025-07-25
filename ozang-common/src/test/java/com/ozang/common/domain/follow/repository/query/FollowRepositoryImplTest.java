@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.follow.repository.query;
+package com.ozang.common.domain.follow.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.follow.dto.FollowSummaryProjection;
+import com.ozang.common.domain.follow.entity.Follow;
+import com.ozang.common.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

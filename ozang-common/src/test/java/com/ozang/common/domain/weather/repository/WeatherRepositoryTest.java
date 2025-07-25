@@ -1,13 +1,13 @@
-package com.fourthread.ozang.module.domain.weather.repository;
+package com.ozang.common.domain.weather.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.ozang.common.domain.weather.dto.WeatherAPILocation;
+import com.ozang.common.domain.weather.dto.type.SkyStatus;
+import com.ozang.common.domain.weather.entity.Weather;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -25,7 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("Weather Repository 테스트")
-@EnableJpaRepositories(basePackages = "com.fourthread.ozang.module.domain.weather.repository")
+@EnableJpaRepositories(basePackages = "com.ozang.common.domain.weather.repository")
 @EnableJpaAuditing
 class WeatherRepositoryTest {
 

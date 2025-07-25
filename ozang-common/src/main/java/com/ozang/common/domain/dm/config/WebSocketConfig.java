@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.dm.config;
+package com.ozang.common.domain.dm.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

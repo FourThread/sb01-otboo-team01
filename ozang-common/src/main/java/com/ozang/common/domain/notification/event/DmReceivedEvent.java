@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.common.domain.notification.event;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDto;
+import com.ozang.common.domain.dm.dto.DirectMessageDto;
 
 public record DmReceivedEvent(
         DirectMessageDto dmDto

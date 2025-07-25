@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto.type;
+package com.ozang.common.domain.weather.dto.type;
 
 public enum SkyStatus {
     CLEAR("맑음"),

@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.notification.sse.controller;
+package com.ozang.web.notification.sse.controller;
 
 
-import com.fourthread.ozang.module.domain.notification.sse.service.SseService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.web.notification.sse.service.SseService;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

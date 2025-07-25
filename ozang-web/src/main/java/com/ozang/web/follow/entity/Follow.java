@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.follow.entity;
+package com.ozang.web.follow.entity;
 
 import com.fourthread.ozang.module.domain.BaseEntity;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.web.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

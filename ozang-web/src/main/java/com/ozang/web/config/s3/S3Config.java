@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config.s3;
+package com.ozang.web.config.s3;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -1,10 +1,10 @@
-package com.fourthread.ozang.module.domain.notification.listener;
+package com.ozang.web.notification.listener;
 
-import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.module.domain.notification.event.*;
-import com.fourthread.ozang.module.domain.notification.service.NotificationService;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.follow.repository.FollowRepository;
+import com.ozang.web.notification.entity.NotificationLevel;
+import com.ozang.web.notification.event.*;
+import com.ozang.web.notification.service.NotificationService;
+import com.ozang.web.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

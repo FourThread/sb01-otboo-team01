@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.util;
+package com.ozang.common.domain.weather.util;
 
-import com.fourthread.ozang.module.domain.weather.entity.GridCoordinate;
+import com.ozang.common.domain.weather.entity.GridCoordinate;
 import org.springframework.stereotype.Component;
 
 @Component

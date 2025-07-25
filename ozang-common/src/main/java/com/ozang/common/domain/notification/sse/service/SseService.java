@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.notification.sse.service;
+package com.ozang.common.domain.notification.sse.service;
 
-import com.fourthread.ozang.module.domain.notification.sse.repository.SseEmitterRepository;
-import com.fourthread.ozang.module.domain.notification.sse.SseMessage;
-import com.fourthread.ozang.module.domain.notification.sse.repository.SseMessageRepository;
+import com.ozang.common.domain.notification.sse.repository.SseEmitterRepository;
+import com.ozang.common.domain.notification.sse.SseMessage;
+import com.ozang.common.domain.notification.sse.repository.SseMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

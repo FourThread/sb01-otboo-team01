@@ -1,15 +1,15 @@
-package com.fourthread.ozang.module.domain.dm.service;
+package com.ozang.common.domain.dm.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorResponse;
-import com.fourthread.ozang.module.domain.dm.dto.DmItems;
-import com.fourthread.ozang.module.domain.dm.repository.DirectMessageRepository;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.common.domain.dm.dto.DirectMessageDtoCursorRequest;
+import com.ozang.common.domain.dm.dto.DirectMessageDtoCursorResponse;
+import com.ozang.common.domain.dm.dto.DmItems;
+import com.ozang.common.domain.dm.repository.DirectMessageRepository;
+import com.ozang.common.domain.user.dto.data.UserSummary;
+import com.ozang.common.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

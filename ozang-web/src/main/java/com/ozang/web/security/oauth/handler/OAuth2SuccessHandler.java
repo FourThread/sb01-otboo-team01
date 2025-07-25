@@ -1,10 +1,10 @@
-package com.fourthread.ozang.module.domain.security.oauth.handler;
+package com.ozang.web.security.oauth.handler;
 
-import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
-import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.security.jwt.JwtService;
+import com.ozang.web.security.jwt.dto.data.JwtPayloadDto;
+import com.ozang.web.security.jwt.dto.response.JwtTokenResponse;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

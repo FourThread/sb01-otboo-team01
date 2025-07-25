@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security;
+package com.ozang.web.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.test.context.ActiveProfiles;
@@ -8,13 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.feed.controller.FeedController;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
-import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.feed.controller.FeedController;
+import com.ozang.web.feed.elasticsearch.repository.FeedElasticsearchRepository;
+import com.ozang.web.feed.elasticsearch.service.FeedSearchService;
+import com.ozang.web.user.dto.request.UserLockUpdateRequest;
+import com.ozang.web.user.dto.type.Role;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.repository.UserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

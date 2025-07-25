@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.redis;
+package com.ozang.web.security.redis;
 
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;

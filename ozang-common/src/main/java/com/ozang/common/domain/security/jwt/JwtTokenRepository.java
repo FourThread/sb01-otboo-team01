@@ -1,4 +1,4 @@
-//package com.fourthread.ozang.module.domain.security.jwt;
+//package com.ozang.common.domain.security.jwt;
 //
 //import java.time.Instant;
 //import java.time.LocalDateTime;

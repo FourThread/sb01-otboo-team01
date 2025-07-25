@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.config;
+package com.ozang.batch.config;
 
-import com.fourthread.ozang.module.domain.weather.exception.WeatherApiException;
+import com.ozang.batch.exception.WeatherApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

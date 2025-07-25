@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.sse.repository;
+package com.ozang.web.notification.sse.repository;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

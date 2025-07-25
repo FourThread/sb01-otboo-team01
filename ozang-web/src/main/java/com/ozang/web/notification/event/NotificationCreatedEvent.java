@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.web.notification.event;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
+import com.ozang.web.notification.dto.response.NotificationDto;
 
 import java.time.Instant;
 

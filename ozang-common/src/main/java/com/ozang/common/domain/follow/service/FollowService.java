@@ -1,20 +1,20 @@
-package com.fourthread.ozang.module.domain.follow.service;
+package com.ozang.common.domain.follow.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.exception.FollowsException;
-import com.fourthread.ozang.module.domain.follow.mapper.FollowMapper;
-import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
-import com.fourthread.ozang.module.domain.notification.event.FollowedEvent;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.follow.dto.FollowDto;
+import com.ozang.common.domain.follow.dto.FollowListResponse;
+import com.ozang.common.domain.follow.dto.FollowSummaryDto;
+import com.ozang.common.domain.follow.dto.FollowSummaryProjection;
+import com.ozang.common.domain.follow.entity.Follow;
+import com.ozang.common.domain.follow.exception.FollowsException;
+import com.ozang.common.domain.follow.mapper.FollowMapper;
+import com.ozang.common.domain.follow.repository.FollowRepository;
+import com.ozang.common.domain.notification.event.ClothesAttributeAddedEvent;
+import com.ozang.common.domain.notification.event.FollowedEvent;
+import com.ozang.common.domain.user.entity.User;
+import com.ozang.common.domain.user.exception.UserException;
+import com.ozang.common.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.ozang.common.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor

@@ -1,18 +1,18 @@
-package com.fourthread.ozang.module.domain.feed.controller;
+package com.ozang.common.domain.feed.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-import com.fourthread.ozang.module.domain.feed.dto.FeedCommentData;
-import com.fourthread.ozang.module.domain.feed.dto.FeedData;
-import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentCreateRequest;
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedCreateRequest;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedUpdateRequest;
-import com.fourthread.ozang.module.domain.feed.service.FeedService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.common.domain.feed.dto.FeedCommentData;
+import com.ozang.common.domain.feed.dto.FeedData;
+import com.ozang.common.domain.feed.dto.FeedDto;
+import com.ozang.common.domain.feed.dto.request.CommentCreateRequest;
+import com.ozang.common.domain.feed.dto.request.CommentPaginationRequest;
+import com.ozang.common.domain.feed.dto.request.FeedCreateRequest;
+import com.ozang.common.domain.feed.dto.request.FeedPaginationRequest;
+import com.ozang.common.domain.feed.dto.request.FeedUpdateRequest;
+import com.ozang.common.domain.feed.service.FeedService;
+import com.ozang.common.domain.security.userdetails.UserDetailsImpl;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

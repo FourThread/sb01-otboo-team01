@@ -1,6 +1,6 @@
-//package com.fourthread.ozang.module.domain.security.jwt.batch;
+//package com.ozang.common.domain.security.jwt.batch;
 //
-//import com.fourthread.ozang.module.domain.security.jwt.JwtTokenRepository;
+//import com.ozang.common.domain.security.jwt.JwtTokenRepository;
 //import java.time.Instant;
 //import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;

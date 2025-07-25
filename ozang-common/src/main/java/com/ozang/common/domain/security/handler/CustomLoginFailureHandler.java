@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.security.handler;
+package com.ozang.common.domain.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.common.exception.ErrorResponse;
+import com.ozang.common.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.dto.response;
+package com.ozang.web.clothes.dto.response;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config;
+package com.ozang.web.config;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;

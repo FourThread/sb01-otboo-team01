@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.web.notification.event;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.ozang.web.user.dto.data.UserSummary;
 
 public record FollowingFeedCreatedEvent(
         UserSummary userSummary,

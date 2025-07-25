@@ -1,15 +1,15 @@
-package com.fourthread.ozang.module.domain.security.controller;
+package com.ozang.web.security.controller;
 
-import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
-import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
-import com.fourthread.ozang.module.domain.user.dto.response.MeResponse;
+import com.ozang.web.security.jwt.JwtService;
+import com.ozang.web.security.jwt.dto.data.JwtPayloadDto;
+import com.ozang.web.security.jwt.dto.response.JwtTokenResponse;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
+import com.ozang.web.user.dto.response.MeResponse;
 import com.nimbusds.oauth2.sdk.auth.JWTAuthentication;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import com.fourthread.ozang.module.domain.user.dto.request.ResetPasswordRequest;
-import com.fourthread.ozang.module.domain.user.service.UserService;
+import com.ozang.web.user.dto.request.ResetPasswordRequest;
+import com.ozang.web.user.service.UserService;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;

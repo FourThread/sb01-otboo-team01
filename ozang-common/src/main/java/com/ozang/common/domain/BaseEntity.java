@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain;
+package com.ozang.common.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

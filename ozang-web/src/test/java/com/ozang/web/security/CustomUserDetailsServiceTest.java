@@ -1,16 +1,16 @@
-package com.fourthread.ozang.module.domain.security;
+package com.ozang.web.security;
 
-import com.fourthread.ozang.module.domain.security.userdetails.CustomUserDetailsService;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
+import com.ozang.web.security.userdetails.CustomUserDetailsService;
+import com.ozang.web.user.exception.UserException;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Nested;
 import static org.mockito.BDDMockito.*;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.user.dto.data.UserDto;
+import com.ozang.web.user.dto.type.Role;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.mapper.UserMapper;
+import com.ozang.web.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;

@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.clothes.repository.query;
+package com.ozang.web.clothes.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition;
+import com.ozang.web.clothes.dto.response.SortBy;
+import com.ozang.web.clothes.dto.response.SortDirection;
+import com.ozang.web.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.web.clothes.entity.QClothesAttributeDefinition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.*;
+import static com.ozang.web.clothes.entity.QClothesAttributeDefinition.*;
 
 @Repository
 @RequiredArgsConstructor

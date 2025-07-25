@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.notification.controller;
+package com.ozang.web.notification.controller;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.module.domain.notification.service.NotificationService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.web.notification.dto.response.NotificationCursorResponse;
+import com.ozang.web.notification.service.NotificationService;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.config;
+package com.ozang.web.notification.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

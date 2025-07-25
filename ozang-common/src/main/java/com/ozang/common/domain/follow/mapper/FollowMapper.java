@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.follow.mapper;
+package com.ozang.common.domain.follow.mapper;
 
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.common.domain.follow.dto.FollowDto;
+import com.ozang.common.domain.follow.entity.Follow;
+import com.ozang.common.domain.user.dto.data.UserSummary;
+import com.ozang.common.domain.user.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component

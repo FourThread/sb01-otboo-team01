@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.elasticsearch.config;
+package com.ozang.web.feed.elasticsearch.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,7 +10,7 @@ import org.springframework.data.elasticsearch.support.HttpHeaders;
 
 @Configuration
 @ConditionalOnProperty(name = "elasticsearch.enabled", havingValue = "true", matchIfMissing = false)
-@EnableElasticsearchRepositories(basePackages = "com.fourthread.ozang.module.domain.feed.elasticsearch.repository")
+@EnableElasticsearchRepositories(basePackages = "com.ozang.web.feed.elasticsearch.repository")
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
   @Value("${elasticsearch.cloud.host}")

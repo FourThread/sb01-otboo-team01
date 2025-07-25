@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.dto.response;
+package com.ozang.common.domain.clothes.dto.response;
 
 public enum SortBy {
     NAME, ID;

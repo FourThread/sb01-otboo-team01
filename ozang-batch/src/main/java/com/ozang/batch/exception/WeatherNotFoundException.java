@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.exception;
+package com.ozang.batch.exception;
 
 public class WeatherNotFoundException extends RuntimeException {
 

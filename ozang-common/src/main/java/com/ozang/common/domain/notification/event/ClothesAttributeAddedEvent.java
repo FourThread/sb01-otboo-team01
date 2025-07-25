@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.common.domain.notification.event;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.ozang.common.domain.clothes.dto.response.ClothesAttributeDefDto;
 
 import java.util.UUID;
 

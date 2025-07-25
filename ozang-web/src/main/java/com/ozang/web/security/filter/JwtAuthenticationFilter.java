@@ -1,12 +1,12 @@
-package com.fourthread.ozang.module.domain.security.filter;
+package com.ozang.web.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.ErrorResponse;
-import com.fourthread.ozang.module.domain.security.jwt.dto.type.SecurityMatchers;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
-import com.fourthread.ozang.module.domain.security.jwt.JwtService;
+import com.ozang.web.security.jwt.dto.type.SecurityMatchers;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
+import com.ozang.web.security.jwt.dto.data.JwtPayloadDto;
+import com.ozang.web.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

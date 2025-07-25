@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.redis;
+package com.ozang.common.domain.security.redis;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;

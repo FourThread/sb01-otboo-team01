@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.recommend.config;
+package com.ozang.web.recommend.config;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;

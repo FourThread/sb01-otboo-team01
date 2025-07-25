@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.dm.dto;
+package com.ozang.common.domain.dm.dto;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.ozang.common.domain.user.dto.data.UserSummary;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

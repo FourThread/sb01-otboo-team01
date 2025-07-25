@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.feed.repository;
+package com.ozang.web.feed.repository;
 
-import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.dto.request.FeedPaginationRequest;
+import com.ozang.web.feed.dto.FeedDto;
+import com.ozang.web.feed.dto.request.FeedPaginationRequest;
 import java.util.List;
 import java.util.UUID;
 

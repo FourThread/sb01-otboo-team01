@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.ozang.common.domain.weather.entity;
 
-import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
-import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
+import com.ozang.common.domain.weather.dto.WindSpeedDto;
+import com.ozang.common.domain.weather.dto.type.WindStrength;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

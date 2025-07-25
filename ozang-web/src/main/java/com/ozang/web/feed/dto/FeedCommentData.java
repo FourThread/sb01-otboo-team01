@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.dto;
+package com.ozang.web.feed.dto;
 
 import java.util.List;
 import java.util.UUID;

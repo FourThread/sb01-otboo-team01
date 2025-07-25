@@ -1,10 +1,10 @@
-//package com.fourthread.ozang.module.domain.user.repository;
+//package com.ozang.web.user.repository;
 //
-//import com.fourthread.ozang.module.config.QuerydslConfig;
-//import com.fourthread.ozang.module.config.database.JpaConfig;
-//import com.fourthread.ozang.module.domain.user.dto.type.Role;
-//import com.fourthread.ozang.module.domain.user.entity.User;
-//import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
+//import com.ozang.web.config.QuerydslConfig;
+//import com.ozang.web.config.database.JpaConfig;
+//import com.ozang.web.user.dto.type.Role;
+//import com.ozang.web.user.entity.User;
+//import com.ozang.web.user.mapper.UserMapper;
 //import java.util.Optional;
 //import static org.assertj.core.api.Assertions.*;
 //import org.junit.jupiter.api.BeforeEach;

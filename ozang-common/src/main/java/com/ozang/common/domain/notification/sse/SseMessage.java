@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.sse;
+package com.ozang.common.domain.notification.sse;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

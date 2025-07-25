@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.entity;
+package com.ozang.web.notification.entity;
 
 import com.fourthread.ozang.module.domain.BaseEntity;
 import jakarta.persistence.*;

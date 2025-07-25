@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.follow.dto;
+package com.ozang.common.domain.follow.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

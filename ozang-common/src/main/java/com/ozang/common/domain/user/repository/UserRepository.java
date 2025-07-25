@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.user.repository;
+package com.ozang.common.domain.user.repository;
 
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.custom.UserCustomRepository;
+import com.ozang.common.domain.user.entity.User;
+import com.ozang.common.domain.user.repository.custom.UserCustomRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

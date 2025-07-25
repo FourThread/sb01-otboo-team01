@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.feed.repository;
+package com.ozang.web.feed.repository;
 
-import com.fourthread.ozang.module.domain.feed.entity.Feed;
-import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
+import com.ozang.web.feed.entity.Feed;
+import com.ozang.web.feed.entity.FeedClothes;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

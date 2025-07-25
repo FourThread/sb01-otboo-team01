@@ -1,20 +1,20 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.ozang.web.clothes.service;
 
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
-import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeRepository;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeUpdatedEvent;
+import com.ozang.web.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
+import com.ozang.web.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
+import com.ozang.web.clothes.dto.response.ClothesAttributeDefDto;
+import com.ozang.web.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
+import com.ozang.web.clothes.dto.response.SortBy;
+import com.ozang.web.clothes.dto.response.SortDirection;
+import com.ozang.web.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.web.clothes.exception.ClothesAttributeDefinitionException;
+import com.ozang.web.clothes.mapper.ClothesAttributeDefinitionMapper;
+import com.ozang.web.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.ozang.web.clothes.repository.ClothesAttributeRepository;
+import com.ozang.web.notification.event.ClothesAttributeAddedEvent;
+import com.ozang.web.notification.event.ClothesAttributeUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

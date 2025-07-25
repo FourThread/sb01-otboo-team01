@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.batch.dto;
 
-import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
+import com.ozang.batch.dto.type.WindStrength;
 
 public record WindSpeedDto(
      Double speed,

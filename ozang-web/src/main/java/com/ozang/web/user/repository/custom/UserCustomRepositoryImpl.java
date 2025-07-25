@@ -1,14 +1,14 @@
-package com.fourthread.ozang.module.domain.user.repository.custom;
+package com.ozang.web.user.repository.custom;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.dto.type.SortBy;
-import com.fourthread.ozang.module.domain.user.entity.QProfile;
-import com.fourthread.ozang.module.domain.user.entity.QUser;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
+import com.ozang.web.feed.entity.SortDirection;
+import com.ozang.web.user.dto.data.UserDto;
+import com.ozang.web.user.dto.response.UserCursorPageResponse;
+import com.ozang.web.user.dto.type.Role;
+import com.ozang.web.user.dto.type.SortBy;
+import com.ozang.web.user.entity.QProfile;
+import com.ozang.web.user.entity.QUser;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.mapper.UserMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;

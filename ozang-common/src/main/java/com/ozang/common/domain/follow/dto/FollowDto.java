@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.follow.dto;
+package com.ozang.common.domain.follow.dto;
 
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
+import com.ozang.common.domain.user.dto.data.UserSummary;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.ozang.batch.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

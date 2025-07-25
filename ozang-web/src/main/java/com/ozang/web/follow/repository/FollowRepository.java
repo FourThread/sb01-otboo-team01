@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.follow.repository;
+package com.ozang.web.follow.repository;
 
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
-import com.fourthread.ozang.module.domain.follow.repository.query.FollowRepositoryCustom;
+import com.ozang.web.follow.entity.Follow;
+import com.ozang.web.follow.repository.query.FollowRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

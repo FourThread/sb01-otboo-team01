@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.user.dto.data;
+package com.ozang.web.user.dto.data;
 
 import java.util.UUID;
 

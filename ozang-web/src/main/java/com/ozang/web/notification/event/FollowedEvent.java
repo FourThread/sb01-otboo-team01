@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.web.notification.event;
 
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
+import com.ozang.web.follow.dto.FollowDto;
 
 public record FollowedEvent(
         FollowDto dto

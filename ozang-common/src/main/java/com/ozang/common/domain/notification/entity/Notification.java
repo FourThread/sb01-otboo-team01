@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.entity;
+package com.ozang.common.domain.notification.entity;
 
-import com.fourthread.ozang.module.domain.BaseEntity;
+import com.ozang.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

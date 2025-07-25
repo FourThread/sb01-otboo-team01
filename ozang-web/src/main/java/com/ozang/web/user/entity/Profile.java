@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.user.entity;
+package com.ozang.web.user.entity;
 
 import com.fourthread.ozang.module.domain.BaseUpdatableEntity;
-import com.fourthread.ozang.module.domain.user.dto.type.Location;
-import com.fourthread.ozang.module.domain.user.dto.type.Gender;
+import com.ozang.web.user.dto.type.Location;
+import com.ozang.web.user.dto.type.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;

@@ -10,5 +10,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-web' // Admin API용
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    // 필요시 swagger 등 추가
+    // (배치 서비스에 필요한 추가 의존성만 여기에)
 }

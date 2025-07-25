@@ -1,16 +1,16 @@
-package com.fourthread.ozang.module.domain.notification.service;
+package com.ozang.common.domain.notification.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.execption.NotificationException;
-import com.fourthread.ozang.module.domain.notification.mapper.NotificationMapper;
-import com.fourthread.ozang.module.domain.notification.repository.NotificationRepository;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.notification.dto.response.NotificationCursorResponse;
+import com.ozang.common.domain.notification.dto.response.NotificationDto;
+import com.ozang.common.domain.notification.entity.Notification;
+import com.ozang.common.domain.notification.entity.NotificationLevel;
+import com.ozang.common.domain.notification.event.MultipleNotificationCreatedEvent;
+import com.ozang.common.domain.notification.event.NotificationCreatedEvent;
+import com.ozang.common.domain.notification.execption.NotificationException;
+import com.ozang.common.domain.notification.mapper.NotificationMapper;
+import com.ozang.common.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
+import static com.ozang.common.exception.ErrorCode.*;
 
 
 @Slf4j

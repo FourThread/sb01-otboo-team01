@@ -1,12 +1,12 @@
-package com.fourthread.ozang.module.domain.feed.mapper;
+package com.ozang.web.feed.mapper;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
-import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.entity.Feed;
-import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
-import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.entity.User;
+import com.ozang.web.clothes.dto.response.OotdDto;
+import com.ozang.web.feed.dto.FeedDto;
+import com.ozang.web.feed.entity.Feed;
+import com.ozang.web.feed.entity.FeedComment;
+import com.ozang.web.feed.repository.FeedLikeRepository;
+import com.ozang.web.user.dto.data.UserSummary;
+import com.ozang.web.user.entity.User;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.user.mapper;
-import com.fourthread.ozang.module.domain.user.dto.data.LocationDto;
-import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.module.domain.user.dto.type.Location;
-import com.fourthread.ozang.module.domain.user.entity.Profile;
+package com.ozang.web.user.mapper;
+import com.ozang.web.user.dto.data.LocationDto;
+import com.ozang.web.user.dto.data.ProfileDto;
+import com.ozang.web.user.dto.type.Location;
+import com.ozang.web.user.entity.Profile;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;

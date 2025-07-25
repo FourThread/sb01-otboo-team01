@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config;
+package com.ozang.web.config;
 
 import java.time.ZoneId;
 import org.springframework.beans.factory.annotation.Value;

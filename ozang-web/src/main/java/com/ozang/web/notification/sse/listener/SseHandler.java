@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.notification.sse.listener;
+package com.ozang.web.notification.sse.listener;
 
-import com.fourthread.ozang.module.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.module.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.event.NotificationCreatedEvent;
-import com.fourthread.ozang.module.domain.notification.sse.service.SseService;
+import com.ozang.web.notification.dto.response.NotificationDto;
+import com.ozang.web.notification.event.MultipleNotificationCreatedEvent;
+import com.ozang.web.notification.event.NotificationCreatedEvent;
+import com.ozang.web.notification.sse.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

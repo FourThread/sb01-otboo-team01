@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes;
+package com.ozang.common.domain.clothes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

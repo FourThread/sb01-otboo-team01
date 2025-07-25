@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security.oauth.handler;
+package com.ozang.common.domain.security.oauth.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

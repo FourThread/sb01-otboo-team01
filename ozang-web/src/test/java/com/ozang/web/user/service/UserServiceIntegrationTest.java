@@ -1,14 +1,14 @@
-package com.fourthread.ozang.module.domain.user.service;
+package com.ozang.web.user.service;
 
-import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
-import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
-import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.user.dto.data.ProfileDto;
+import com.ozang.web.user.dto.data.UserDto;
+import com.ozang.web.user.dto.request.ChangePasswordRequest;
+import com.ozang.web.user.dto.request.UserCreateRequest;
+import com.ozang.web.user.dto.request.UserRoleUpdateRequest;
+import com.ozang.web.user.dto.type.Role;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.repository.ProfileRepository;
+import com.ozang.web.user.repository.UserRepository;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

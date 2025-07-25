@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.common.domain.weather.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fourthread.ozang.module.domain.weather.dto.type.WeatherChangeType;
+import com.ozang.common.domain.weather.dto.type.WeatherChangeType;
 import java.time.LocalDateTime;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)

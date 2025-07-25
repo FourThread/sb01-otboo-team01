@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.dm.entity;
+package com.ozang.common.domain.dm.entity;
 
 public enum DirectMessageURI {
   SEND("/sub/direct-messages_");

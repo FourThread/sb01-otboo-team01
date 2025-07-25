@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.recommend.dto;
+package com.ozang.web.recommend.dto;
 
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.ozang.web.clothes.entity.ClothesType;
 import java.util.UUID;
 
 public record RecommendClothesDto (

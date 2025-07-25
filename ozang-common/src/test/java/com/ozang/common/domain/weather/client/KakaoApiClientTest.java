@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.weather.client;
+package com.ozang.common.domain.weather.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fourthread.ozang.module.domain.weather.exception.WeatherApiException;
+import com.ozang.common.domain.weather.exception.WeatherApiException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

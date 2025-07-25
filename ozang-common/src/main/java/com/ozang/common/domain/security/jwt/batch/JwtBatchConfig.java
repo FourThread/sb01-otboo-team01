@@ -1,4 +1,4 @@
-//package com.fourthread.ozang.module.domain.security.jwt.batch;
+//package com.ozang.common.domain.security.jwt.batch;
 //
 //import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 //import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.clothes.repository.query;
+package com.ozang.common.domain.clothes.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.common.domain.clothes.dto.response.SortBy;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.clothes.entity.ClothesAttributeDefinition;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

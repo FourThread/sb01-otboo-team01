@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.dto.response;
+package com.ozang.web.clothes.dto.response;
 
 public enum SortDirection {
     ASCENDING, DESCENDING;

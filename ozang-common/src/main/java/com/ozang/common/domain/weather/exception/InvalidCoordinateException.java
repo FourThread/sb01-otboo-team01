@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.exception;
+package com.ozang.common.domain.weather.exception;
 
 public class InvalidCoordinateException extends RuntimeException {
 

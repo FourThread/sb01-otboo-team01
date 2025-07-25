@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.notification.sse.repository;
+package com.ozang.common.domain.notification.sse.repository;
 
-import com.fourthread.ozang.module.domain.notification.sse.SseMessage;
+import com.ozang.common.domain.notification.sse.SseMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 

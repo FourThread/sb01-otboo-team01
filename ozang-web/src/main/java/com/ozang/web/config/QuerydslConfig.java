@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.config;
+package com.ozang.web.config;
 
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;

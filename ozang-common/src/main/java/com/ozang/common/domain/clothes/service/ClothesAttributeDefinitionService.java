@@ -1,20 +1,20 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.ozang.common.domain.clothes.service;
 
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
-import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeRepository;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
-import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeUpdatedEvent;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
+import com.ozang.common.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
+import com.ozang.common.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.ozang.common.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
+import com.ozang.common.domain.clothes.dto.response.SortBy;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.common.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.ozang.common.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
+import com.ozang.common.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.ozang.common.domain.clothes.repository.ClothesAttributeRepository;
+import com.ozang.common.domain.notification.event.ClothesAttributeAddedEvent;
+import com.ozang.common.domain.notification.event.ClothesAttributeUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -23,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.common.exception.ErrorCode.*;
-import static com.fourthread.ozang.module.common.exception.ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND;
+import static com.ozang.common.exception.ErrorCode.*;
+import static com.ozang.common.exception.ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

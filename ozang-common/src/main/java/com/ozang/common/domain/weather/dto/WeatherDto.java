@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.common.domain.weather.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
+import com.ozang.common.domain.weather.dto.type.SkyStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

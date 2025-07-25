@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.batch.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

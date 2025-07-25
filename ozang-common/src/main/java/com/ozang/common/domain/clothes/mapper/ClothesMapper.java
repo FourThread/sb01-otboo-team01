@@ -1,10 +1,10 @@
-package com.fourthread.ozang.module.domain.clothes.mapper;
+package com.ozang.common.domain.clothes.mapper;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttribute;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.common.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.ozang.common.domain.clothes.dto.response.ClothesDto;
+import com.ozang.common.domain.clothes.entity.Clothes;
+import com.ozang.common.domain.clothes.entity.ClothesAttribute;
+import com.ozang.common.domain.clothes.entity.ClothesAttributeDefinition;
 import org.springframework.stereotype.Component;
 
 @Component

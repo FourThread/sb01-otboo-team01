@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.security.oauth.parser;
+package com.ozang.common.domain.security.oauth.parser;
 
-import com.fourthread.ozang.module.domain.security.oauth.dto.OAuthAttributes;
+import com.ozang.common.domain.security.oauth.dto.OAuthAttributes;
 import java.util.Map;
 
 public interface OAuthAttributesParser {

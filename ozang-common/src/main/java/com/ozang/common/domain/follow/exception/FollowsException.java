@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.follow.exception;
+package com.ozang.common.domain.follow.exception;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.common.exception.ErrorDetails;
-import com.fourthread.ozang.module.common.exception.GlobalException;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.exception.ErrorDetails;
+import com.ozang.common.exception.GlobalException;
 
 public class FollowsException extends GlobalException {
     public FollowsException(ErrorCode errorCode, String exceptionClass, String exceptionMessage)  {

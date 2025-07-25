@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.entity;
+package com.ozang.common.domain.clothes.entity;
 
 public enum ClothesType {
     TOP,

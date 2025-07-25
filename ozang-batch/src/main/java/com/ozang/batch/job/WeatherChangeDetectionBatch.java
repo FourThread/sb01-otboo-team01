@@ -1,13 +1,13 @@
-package com.fourthread.ozang.module.domain.weather.batch;
+package com.ozang.batch.batch;
 
 import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
 import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.WeatherChangeDetectedEvent;
 import com.fourthread.ozang.module.domain.notification.service.NotificationService;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
-import com.fourthread.ozang.module.domain.weather.service.WeatherCacheService;
-import com.fourthread.ozang.module.domain.weather.service.WeatherService;
+import com.ozang.batch.dto.WeatherChangeDto;
+import com.ozang.batch.service.WeatherCacheService;
+import com.ozang.batch.service.WeatherService;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

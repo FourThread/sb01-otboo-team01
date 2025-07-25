@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.notification.repository.query;
+package com.ozang.common.domain.notification.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.notification.entity.Notification;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.notification.entity.Notification;
 
 import java.util.List;
 import java.util.UUID;

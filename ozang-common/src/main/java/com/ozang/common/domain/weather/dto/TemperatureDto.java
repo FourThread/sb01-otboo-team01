@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto;
+package com.ozang.common.domain.weather.dto;
 
 public record TemperatureDto(
     Double current,

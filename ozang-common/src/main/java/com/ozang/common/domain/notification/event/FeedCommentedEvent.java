@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.notification.event;
+package com.ozang.common.domain.notification.event;
 
 import java.util.UUID;
 

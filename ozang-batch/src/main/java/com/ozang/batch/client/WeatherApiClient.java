@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.weather.client;
+package com.ozang.batch.client;
 
-import com.fourthread.ozang.module.domain.weather.dto.external.WeatherApiResponse;
-import com.fourthread.ozang.module.domain.weather.entity.GridCoordinate;
-import com.fourthread.ozang.module.domain.weather.exception.WeatherApiException;
+import com.ozang.batch.dto.external.WeatherApiResponse;
+import com.ozang.batch.entity.GridCoordinate;
+import com.ozang.batch.exception.WeatherApiException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

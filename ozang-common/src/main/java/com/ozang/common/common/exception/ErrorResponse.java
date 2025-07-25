@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.common.exception;
+package com.ozang.common.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

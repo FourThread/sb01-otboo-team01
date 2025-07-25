@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.exception;
+package com.ozang.web.feed.exception;
 
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
 import com.fourthread.ozang.module.common.exception.GlobalException;

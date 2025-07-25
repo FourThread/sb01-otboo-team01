@@ -1,6 +1,6 @@
-//package com.fourthread.ozang.module.domain.security.jwt.batch;
+//package com.ozang.web.security.jwt.batch;
 //
-//import com.fourthread.ozang.module.config.batch.BatchJobExecutionListener;
+//import com.ozang.web.config.batch.BatchJobExecutionListener;
 //import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.batch.core.Job;

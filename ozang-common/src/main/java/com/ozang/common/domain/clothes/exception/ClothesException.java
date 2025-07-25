@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.clothes.exception;
+package com.ozang.common.domain.clothes.exception;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.common.exception.ErrorDetails;
-import com.fourthread.ozang.module.common.exception.GlobalException;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.exception.ErrorDetails;
+import com.ozang.common.exception.GlobalException;
 
 public class ClothesException extends GlobalException {
     public ClothesException(ErrorCode errorCode, String exceptionClass, String exceptionMessage)  {

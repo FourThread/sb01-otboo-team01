@@ -1,14 +1,14 @@
-package com.fourthread.ozang.module.domain.security.jwt;
+package com.ozang.web.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
-import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.security.redis.RedisDao;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.security.jwt.dto.data.JwtDto;
+import com.ozang.web.security.jwt.dto.data.JwtPayloadDto;
+import com.ozang.web.security.jwt.dto.response.JwtTokenResponse;
+import com.ozang.web.security.redis.RedisDao;
+import com.ozang.web.user.dto.type.Role;
+import com.ozang.web.user.exception.UserException;
+import com.ozang.web.user.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;

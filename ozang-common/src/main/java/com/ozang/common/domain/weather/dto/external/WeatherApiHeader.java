@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto.external;
+package com.ozang.common.domain.weather.dto.external;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

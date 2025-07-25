@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.dm.repository;
+package com.ozang.common.domain.dm.repository;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DmItems;
+import com.ozang.common.domain.dm.dto.DirectMessageDtoCursorRequest;
+import com.ozang.common.domain.dm.dto.DmItems;
 import java.util.List;
 
 public interface DirectMessageRepositoryCustom {

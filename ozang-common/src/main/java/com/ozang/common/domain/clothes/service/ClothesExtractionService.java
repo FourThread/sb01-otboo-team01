@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.clothes.service;
+package com.ozang.common.domain.clothes.service;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.domain.clothes.dto.response.ClothesDto;
+import com.ozang.common.domain.clothes.entity.Clothes;
+import com.ozang.common.domain.clothes.exception.ClothesException;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;

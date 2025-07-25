@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.user.service.impl;
+package com.ozang.common.domain.user.service.impl;
 
-import com.fourthread.ozang.module.domain.user.service.MailService;
+import com.ozang.common.domain.user.service.MailService;
 import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

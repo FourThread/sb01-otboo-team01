@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.follow.repository.query;
+package com.ozang.common.domain.follow.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryProjection;
-import com.fourthread.ozang.module.domain.follow.entity.Follow;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.follow.dto.FollowSummaryProjection;
+import com.ozang.common.domain.follow.entity.Follow;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.domain.follow.entity.QFollow.*;
-import static com.fourthread.ozang.module.domain.user.entity.QUser.*;
+import static com.ozang.common.domain.follow.entity.QFollow.*;
+import static com.ozang.common.domain.user.entity.QUser.*;
 
 @Repository
 @RequiredArgsConstructor

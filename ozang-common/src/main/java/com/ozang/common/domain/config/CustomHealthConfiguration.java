@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.config;
+package com.ozang.common.domain.config;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;

@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.security;
+package com.ozang.web.security;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

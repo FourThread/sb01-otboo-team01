@@ -1,14 +1,14 @@
-package com.fourthread.ozang.module.domain.feed.mapper;
+package com.ozang.common.domain.feed.mapper;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
-import com.fourthread.ozang.module.domain.feed.dto.FeedDto;
-import com.fourthread.ozang.module.domain.feed.entity.Feed;
-import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
-import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherSummaryDto;
-import com.fourthread.ozang.module.domain.weather.entity.Weather;
+import com.ozang.common.domain.clothes.dto.response.OotdDto;
+import com.ozang.common.domain.feed.dto.FeedDto;
+import com.ozang.common.domain.feed.entity.Feed;
+import com.ozang.common.domain.feed.entity.FeedComment;
+import com.ozang.common.domain.feed.repository.FeedLikeRepository;
+import com.ozang.common.domain.user.dto.data.UserSummary;
+import com.ozang.common.domain.user.entity.User;
+import com.ozang.common.domain.weather.dto.WeatherSummaryDto;
+import com.ozang.common.domain.weather.entity.Weather;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

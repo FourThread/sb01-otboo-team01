@@ -1,11 +1,11 @@
-package com.fourthread.ozang.module.domain.follow.controller;
+package com.ozang.web.follow.controller;
 
-import com.fourthread.ozang.module.domain.follow.dto.FollowCreateRequest;
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.module.domain.follow.dto.FollowListResponse;
-import com.fourthread.ozang.module.domain.follow.dto.FollowSummaryDto;
-import com.fourthread.ozang.module.domain.follow.service.FollowService;
-import com.fourthread.ozang.module.domain.security.userdetails.UserDetailsImpl;
+import com.ozang.web.follow.dto.FollowCreateRequest;
+import com.ozang.web.follow.dto.FollowDto;
+import com.ozang.web.follow.dto.FollowListResponse;
+import com.ozang.web.follow.dto.FollowSummaryDto;
+import com.ozang.web.follow.service.FollowService;
+import com.ozang.web.security.userdetails.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

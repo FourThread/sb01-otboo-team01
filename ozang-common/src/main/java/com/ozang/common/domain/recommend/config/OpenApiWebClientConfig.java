@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.recommend.config;
+package com.ozang.common.domain.recommend.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

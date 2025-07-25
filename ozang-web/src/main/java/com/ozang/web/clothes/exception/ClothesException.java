@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.clothes.exception;
+package com.ozang.web.clothes.exception;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;

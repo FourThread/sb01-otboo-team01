@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.feed.repository;
+package com.ozang.common.domain.feed.repository;
 
-import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
+import com.ozang.common.domain.feed.dto.FeedCommentDto;
+import com.ozang.common.domain.feed.dto.request.CommentPaginationRequest;
 import java.util.List;
 
 public interface FeedCommentRepositoryCustom {

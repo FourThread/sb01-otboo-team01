@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.dm.dto;
+package com.ozang.common.domain.dm.dto;
 
 import java.util.UUID;
 

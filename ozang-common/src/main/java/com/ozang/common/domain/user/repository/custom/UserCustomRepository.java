@@ -1,8 +1,8 @@
-package com.fourthread.ozang.module.domain.user.repository.custom;
+package com.ozang.common.domain.user.repository.custom;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.module.domain.user.dto.response.UserCursorPageResponse;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.ozang.common.domain.feed.entity.SortDirection;
+import com.ozang.common.domain.user.dto.response.UserCursorPageResponse;
+import com.ozang.common.domain.user.dto.type.Role;
 import java.util.UUID;
 
 public interface UserCustomRepository {

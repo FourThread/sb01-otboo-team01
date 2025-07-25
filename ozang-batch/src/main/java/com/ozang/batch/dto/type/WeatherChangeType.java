@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.dto.type;
+package com.ozang.batch.dto.type;
 
 public enum WeatherChangeType {
     TEMPERATURE_RISE("급격한 온도 상승"),

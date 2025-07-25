@@ -1,15 +1,15 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.ozang.common.domain.weather.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fourthread.ozang.module.domain.weather.dto.HumidityDto;
-import com.fourthread.ozang.module.domain.weather.dto.PrecipitationDto;
-import com.fourthread.ozang.module.domain.weather.dto.TemperatureDto;
-import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
-import com.fourthread.ozang.module.domain.weather.dto.WindSpeedDto;
-import com.fourthread.ozang.module.domain.weather.dto.type.PrecipitationType;
-import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
-import com.fourthread.ozang.module.domain.weather.dto.type.WindStrength;
+import com.ozang.common.domain.weather.dto.HumidityDto;
+import com.ozang.common.domain.weather.dto.PrecipitationDto;
+import com.ozang.common.domain.weather.dto.TemperatureDto;
+import com.ozang.common.domain.weather.dto.WeatherAPILocation;
+import com.ozang.common.domain.weather.dto.WindSpeedDto;
+import com.ozang.common.domain.weather.dto.type.PrecipitationType;
+import com.ozang.common.domain.weather.dto.type.SkyStatus;
+import com.ozang.common.domain.weather.dto.type.WindStrength;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

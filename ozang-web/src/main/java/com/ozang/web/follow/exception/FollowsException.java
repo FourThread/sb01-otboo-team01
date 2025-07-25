@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.follow.exception;
+package com.ozang.web.follow.exception;
 
 import com.fourthread.ozang.module.common.exception.ErrorCode;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;

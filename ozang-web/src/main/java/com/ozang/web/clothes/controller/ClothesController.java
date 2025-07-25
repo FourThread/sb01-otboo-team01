@@ -1,12 +1,12 @@
-package com.fourthread.ozang.module.domain.clothes.controller;
+package com.ozang.web.clothes.controller;
 
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDtoCursorResponse;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
-import com.fourthread.ozang.module.domain.clothes.service.ClothesExtractionService;
-import com.fourthread.ozang.module.domain.clothes.service.ClothesService;
+import com.ozang.web.clothes.dto.requeset.ClothesCreateRequest;
+import com.ozang.web.clothes.dto.requeset.ClothesUpdateRequest;
+import com.ozang.web.clothes.dto.response.ClothesDto;
+import com.ozang.web.clothes.dto.response.ClothesDtoCursorResponse;
+import com.ozang.web.clothes.entity.ClothesType;
+import com.ozang.web.clothes.service.ClothesExtractionService;
+import com.ozang.web.clothes.service.ClothesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

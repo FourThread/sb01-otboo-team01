@@ -1,22 +1,22 @@
-package com.fourthread.ozang.module.domain.feed.repository;
+package com.ozang.web.feed.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.feed.dto.FeedCommentDto;
-import com.fourthread.ozang.module.domain.feed.dto.request.CommentPaginationRequest;
-import com.fourthread.ozang.module.domain.feed.entity.Feed;
-import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
-import com.fourthread.ozang.module.domain.feed.entity.FeedComment;
-import com.fourthread.ozang.module.domain.user.dto.type.Gender;
-import com.fourthread.ozang.module.domain.user.dto.type.Location;
-import com.fourthread.ozang.module.domain.user.entity.Profile;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.ozang.web.clothes.entity.Clothes;
+import com.ozang.web.clothes.entity.ClothesAttributeDefinition;
+import com.ozang.web.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.ozang.web.clothes.repository.ClothesRepository;
+import com.ozang.web.feed.dto.FeedCommentDto;
+import com.ozang.web.feed.dto.request.CommentPaginationRequest;
+import com.ozang.web.feed.entity.Feed;
+import com.ozang.web.feed.entity.FeedClothes;
+import com.ozang.web.feed.entity.FeedComment;
+import com.ozang.web.user.dto.type.Gender;
+import com.ozang.web.user.dto.type.Location;
+import com.ozang.web.user.entity.Profile;
+import com.ozang.web.user.entity.User;
+import com.ozang.web.user.repository.ProfileRepository;
+import com.ozang.web.user.repository.UserRepository;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.module.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;

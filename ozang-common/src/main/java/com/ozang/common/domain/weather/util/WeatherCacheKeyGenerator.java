@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.util;
+package com.ozang.common.domain.weather.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

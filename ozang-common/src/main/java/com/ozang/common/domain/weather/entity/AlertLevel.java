@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.weather.entity;
+package com.ozang.common.domain.weather.entity;
 
 public enum AlertLevel {
     INFO("정보"),

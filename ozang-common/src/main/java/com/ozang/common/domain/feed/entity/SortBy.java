@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.feed.entity;
+package com.ozang.common.domain.feed.entity;
 
 public enum SortBy {
   likeCount, createdAt

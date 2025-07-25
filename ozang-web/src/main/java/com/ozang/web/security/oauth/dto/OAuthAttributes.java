@@ -1,6 +1,6 @@
-package com.fourthread.ozang.module.domain.security.oauth.dto;
+package com.ozang.web.security.oauth.dto;
 
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
+import com.ozang.web.user.dto.type.Role;
 import lombok.Builder;
 import lombok.Getter;
 

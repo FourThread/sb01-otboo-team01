@@ -1,4 +1,4 @@
-package com.fourthread.ozang.module.domain.recommend.service;
+package com.ozang.web.recommend.service;
 
 import static com.fourthread.ozang.module.common.exception.ErrorCode.OPEN_API_ERROR;
 import static com.fourthread.ozang.module.common.exception.ErrorCode.RECOMMENDATION_ERROR;
@@ -7,14 +7,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.module.common.exception.ErrorDetails;
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeWithDefDto;
-import com.fourthread.ozang.module.domain.clothes.dto.response.OotdDto;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.recommend.dto.RecommendRequest;
-import com.fourthread.ozang.module.domain.recommend.dto.RecommendationDto;
-import com.fourthread.ozang.module.domain.recommend.exception.OpenApiException;
-import com.fourthread.ozang.module.domain.recommend.exception.RecommendationException;
+import com.ozang.web.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.ozang.web.clothes.dto.response.OotdDto;
+import com.ozang.web.clothes.entity.Clothes;
+import com.ozang.web.clothes.repository.ClothesRepository;
+import com.ozang.web.recommend.dto.RecommendRequest;
+import com.ozang.web.recommend.dto.RecommendationDto;
+import com.ozang.web.recommend.exception.OpenApiException;
+import com.ozang.web.recommend.exception.RecommendationException;
 import com.fourthread.ozang.module.domain.weather.entity.Weather;
 import com.fourthread.ozang.module.domain.weather.exception.WeatherNotFoundException;
 import com.fourthread.ozang.module.domain.weather.repository.WeatherRepository;

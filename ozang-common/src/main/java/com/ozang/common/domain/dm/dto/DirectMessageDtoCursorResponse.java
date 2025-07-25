@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.dm.dto;
+package com.ozang.common.domain.dm.dto;
 
-import com.fourthread.ozang.module.domain.feed.entity.SortBy;
-import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
+import com.ozang.common.domain.feed.entity.SortBy;
+import com.ozang.common.domain.feed.entity.SortDirection;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;

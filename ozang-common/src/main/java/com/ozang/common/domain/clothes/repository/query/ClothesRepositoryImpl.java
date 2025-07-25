@@ -1,9 +1,9 @@
-package com.fourthread.ozang.module.domain.clothes.repository.query;
+package com.ozang.common.domain.clothes.repository.query;
 
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.ozang.common.domain.clothes.dto.response.SortDirection;
+import com.ozang.common.domain.clothes.entity.Clothes;
+import com.ozang.common.domain.clothes.entity.ClothesType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothes.*;
+import static com.ozang.common.domain.clothes.entity.QClothes.*;
 
 @Repository
 @RequiredArgsConstructor

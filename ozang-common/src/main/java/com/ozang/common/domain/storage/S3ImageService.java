@@ -1,7 +1,7 @@
-package com.fourthread.ozang.module.domain.storage;
+package com.ozang.common.domain.storage;
 
-import com.fourthread.ozang.module.common.exception.ErrorCode;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
+import com.ozang.common.exception.ErrorCode;
+import com.ozang.common.domain.clothes.exception.ClothesException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
