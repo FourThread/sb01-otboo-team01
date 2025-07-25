@@ -175,8 +175,10 @@ public class FeedService {
   public void delete(UUID feedId) {
     Feed feed = getFeed(feedId);
 
+    feedClothesRepository.deleteByFeed_Id(feedId);
     feedLikeRepository.deleteAllByFeed_Id(feedId);
     feedRepository.delete(feed);
+    feedElasticsearchRepository.deleteById(feedId.toString());
 
   }
 

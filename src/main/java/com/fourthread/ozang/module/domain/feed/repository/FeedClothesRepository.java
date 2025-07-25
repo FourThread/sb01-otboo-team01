@@ -13,4 +13,6 @@ public interface FeedClothesRepository extends JpaRepository<FeedClothes, UUID> 
   List<FeedClothes> findAllByFeed_Id(UUID feedId);
 
   List<FeedClothes> findAllByFeed(Feed feed);
+
+  void deleteByFeed_Id(UUID feedId);
 }
