@@ -9,8 +9,6 @@ import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.module.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.module.domain.weather.service.WeatherService;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
