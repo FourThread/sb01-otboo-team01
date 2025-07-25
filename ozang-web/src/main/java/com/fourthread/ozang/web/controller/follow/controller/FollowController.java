@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.follow.controller;
+package com.fourthread.ozang.web.controller.follow.controller;
 
 import com.fourthread.ozang.domain.follow.dto.FollowCreateRequest;
 import com.fourthread.ozang.domain.follow.dto.FollowDto;

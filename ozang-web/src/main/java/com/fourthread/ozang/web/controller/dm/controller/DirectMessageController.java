@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.dm.controller;
+package com.fourthread.ozang.web.controller.dm.controller;
 
 import com.fourthread.ozang.domain.dm.dto.DirectMessageCreateRequest;
 import com.fourthread.ozang.domain.dm.dto.DirectMessageDto;

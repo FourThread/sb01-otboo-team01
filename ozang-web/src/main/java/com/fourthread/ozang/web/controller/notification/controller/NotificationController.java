@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.notification.controller;
+package com.fourthread.ozang.web.controller.notification.controller;
 
 import com.fourthread.ozang.domain.notification.dto.response.NotificationCursorResponse;
 import com.fourthread.ozang.domain.notification.service.NotificationService;

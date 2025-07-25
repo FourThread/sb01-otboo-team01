@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.recommend.controller;
+package com.fourthread.ozang.web.controller.recommend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fourthread.ozang.domain.recommend.dto.RecommendationDto;

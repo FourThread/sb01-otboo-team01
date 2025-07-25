@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.security.controller;
+package com.fourthread.ozang.web.controller.security.controller;
 
 import com.fourthread.ozang.domain.security.jwt.JwtService;
 import com.fourthread.ozang.domain.security.jwt.dto.data.JwtPayloadDto;

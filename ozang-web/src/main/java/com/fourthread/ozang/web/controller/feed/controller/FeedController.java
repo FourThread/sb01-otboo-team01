@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.feed.controller;
+package com.fourthread.ozang.web.controller.feed.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;

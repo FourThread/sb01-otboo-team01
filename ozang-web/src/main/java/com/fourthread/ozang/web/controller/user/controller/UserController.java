@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.user.controller;
+package com.fourthread.ozang.web.controller.user.controller;
 
 import com.fourthread.ozang.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.domain.security.userdetails.UserDetailsImpl;

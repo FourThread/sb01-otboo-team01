@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.clothes.controller;
+package com.fourthread.ozang.web.controller.clothes.controller;
 
 import com.fourthread.ozang.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
 import com.fourthread.ozang.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;

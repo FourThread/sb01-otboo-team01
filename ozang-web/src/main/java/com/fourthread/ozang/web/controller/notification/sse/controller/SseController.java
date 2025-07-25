@@ -1,4 +1,4 @@
-package com.fourthread.ozang.domain.notification.sse.controller;
+package com.fourthread.ozang.web.controller.notification.sse.controller;
 
 
 import com.fourthread.ozang.domain.notification.sse.service.SseService;
