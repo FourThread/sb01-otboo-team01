@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -20,6 +21,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @SpringBootTest
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "ADMIN_USERNAME=test-admin",
+        "ADMIN_EMAIL=test-admin@mail.com",
+        "ADMIN_PASSWORD=test-pass",
+        "JWT_SECRET=d12d12d21d21d12d2",
+        "KAKAO_API_KEY=test",
+        "WEATHER_API_KEY=dwqqdd11",
+        "AWS_ACCESS_KEY=testAccessKey",
+        "AWS_SECRET_KEY=testSecretKey",
+        "cloud.aws.region.static=ap-northeast-2"
+})
 @ActiveProfiles("test")
 class FollowRepositoryImplTest {
 

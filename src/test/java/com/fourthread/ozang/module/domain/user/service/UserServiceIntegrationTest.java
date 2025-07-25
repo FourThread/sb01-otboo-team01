@@ -20,13 +20,33 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.UUID;
 
-@SpringBootTest
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "spring.jpa.hibernate.ddl-auto=create-drop",
+                "ADMIN_USERNAME=test-admin",
+                "ADMIN_EMAIL=test-admin@mail.com",
+                "ADMIN_PASSWORD=test-pass",
+                "JWT_SECRET=d12d12d21d21d12d2",
+                "KAKAO_API_KEY=test",
+                "WEATHER_API_KEY=dwqqdd11",
+                "cloud.aws.credentials.access-key=testAccessKey",
+                "cloud.aws.credentials.secret-key=testSecretKey",
+                "cloud.aws.region.static=ap-northeast-2"
+        }
+)
+@TestPropertySource(properties = {
+        "AWS_ACCESS_KEY=testAccessKey",
+        "AWS_SECRET_KEY=testSecretKey",
+        "cloud.aws.region.static=ap-northeast-2"
+})
 @ActiveProfiles("test")
 public class UserServiceIntegrationTest {
 
