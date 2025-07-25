@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.clothes.repository.query;
 
 import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
 
 import java.util.List;

@@ -2,7 +2,15 @@ package com.fourthread.ozang.app.domain.notification.listener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.notification.event.*;
+import com.fourthread.ozang.app.domain.notification.event.ClothesAttributeAddedEvent;
+import com.fourthread.ozang.app.domain.notification.event.ClothesAttributeUpdatedEvent;
+import com.fourthread.ozang.app.domain.notification.event.DmReceivedEvent;
+import com.fourthread.ozang.app.domain.notification.event.FeedCommentedEvent;
+import com.fourthread.ozang.app.domain.notification.event.FeedLikedEvent;
+import com.fourthread.ozang.app.domain.notification.event.FollowedEvent;
+import com.fourthread.ozang.app.domain.notification.event.FollowingFeedCreatedEvent;
+import com.fourthread.ozang.app.domain.notification.event.RoleChangedEvent;
+import com.fourthread.ozang.app.domain.notification.event.WeatherChangeDetectedEvent;
 import com.fourthread.ozang.app.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

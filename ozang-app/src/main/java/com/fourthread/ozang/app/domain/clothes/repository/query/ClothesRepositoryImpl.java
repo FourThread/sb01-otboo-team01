@@ -2,7 +2,7 @@ package com.fourthread.ozang.app.domain.clothes.repository.query;
 
 
 import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothes.*;
 
 @Repository
 @RequiredArgsConstructor
