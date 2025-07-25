@@ -12,6 +12,7 @@ import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinit
 import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.module.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeRepository;
 import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeAddedEvent;
 import com.fourthread.ozang.module.domain.notification.event.ClothesAttributeUpdatedEvent;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import static com.fourthread.ozang.module.common.exception.ErrorCode.CLOTHES_ATT
 public class ClothesAttributeDefinitionService {
 
     private final ClothesAttributeDefinitionRepository definitionRepository;
+    private final ClothesAttributeRepository clothesAttributeRepository;
     private final ClothesAttributeDefinitionMapper definitionMapper;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -77,6 +79,9 @@ public class ClothesAttributeDefinitionService {
                         this.getClass().getSimpleName(),
                         CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND.getMessage()));
         ClothesAttributeDefDto dto = definitionMapper.toDto(definition);
+
+        clothesAttributeRepository.deleteAllByDefinitionId(definitionId);
+
         definitionRepository.delete(definition);
         return dto;
     }

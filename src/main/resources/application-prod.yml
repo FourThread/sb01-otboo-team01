@@ -31,7 +31,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: 6379
-      database: 0
+      database: 0 # Security용 (JWT, 인증 등)
       ssl:
         enabled: true
       lettuce:
@@ -42,11 +42,16 @@ spring:
         cluster:
           refresh:
             adaptive: true
-
   autoconfigure:
     exclude:
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
       - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
+
+
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
 
   elasticsearch:
     uris: ${ELASTICSEARCH_HOST}
@@ -55,24 +60,49 @@ spring:
     connection-timeout: 10s
     socket-timeout: 60s
 
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+# 배치 스케줄링 비활성화
+batch:
+  weather:
+    retention-days: 14
+  scheduler:
+    weather-cleanup:
+      enabled: false
+    weather-cache-warmup:
+      enabled: false
+    weather-change-detection:
+      enabled: false
+
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
+
 elasticsearch:
   enabled: ${ELASTICSEARCH_ENABLED:true}
   cloud:
     host: ${ELASTICSEARCH_HOST}
     api-key: ${ELASTICSEARCH_API_KEY}
 
-batch:
-  weather:
-    retention-days: 14
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    token-cleanup:
-      enabled: true
-  job:
-    enabled: false
-  jdbc:
-    initialize-schema: embedded
+openai:
+  api:
+    key: ${OPEN_AI_API_KEY}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${PROMPT_ID}
+    version: ${PROMPT_VERSION}
 
 logging:
   level:

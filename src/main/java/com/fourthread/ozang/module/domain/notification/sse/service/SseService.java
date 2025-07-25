@@ -64,18 +64,6 @@ public class SseService {
         });
     }
 
-//    public void send(Collection<UUID> receiverIds, String eventName, Object data) {
-//        SseMessage message = messageRepository.save(SseMessage.create(receiverIds, eventName, data));
-//        Set<SseEmitter.SseEventBuilder> events = message.toEvent();
-//        emitterRepository.findAllByReceiverIdsIn(receiverIds)
-//                .forEach(emitter -> events.forEach(event -> {
-//                    try {
-//                        emitter.send(event);
-//                    } catch (IOException e) {
-//                        log.error("SSE 다중 전송 실패: {}", e.getMessage());
-//                    }
-//                }));
-//    }
 
     public void send(Collection<UUID> receiverIds, String eventName, Object data) {
         SseMessage message = messageRepository.save(SseMessage.create(receiverIds, eventName, data));

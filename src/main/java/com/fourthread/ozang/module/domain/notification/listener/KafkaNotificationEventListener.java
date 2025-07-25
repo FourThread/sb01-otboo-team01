@@ -27,6 +27,21 @@ public class KafkaNotificationEventListener {
     private final FollowRepository followRepository;
     private final ObjectMapper objectMapper;
 
+    // 날씨 변화 감지 이벤트
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(WeatherChangeDetectedEvent event) {
+        log.info("날씨 변화 감지 이벤트 처리 시작 - 변화 수: {}", event.weatherChanges().size());
+
+        // 이벤트 로깅 및 추가 처리 로직
+        event.weatherChanges().forEach(change -> {
+            log.info("날씨 변화 감지: {} - {}",
+                change.changeType().getDescription(), change.description());
+        });
+
+        // 추가적인 비즈니스 로직 (통계, 모니터링 등)
+    }
+
     // 권한 변경 이벤트
     @Async("eventTaskExecutor")
     @KafkaListener(topics = "ozang.role_changed")

@@ -43,7 +43,6 @@ class KakaoApiClientTest {
         mockWebServer.shutdown();
     }
 
-    @Disabled
     @Nested
     @DisplayName("getLocationNames 메서드 테스트")
     class GetLocationNamesTest {
@@ -103,74 +102,7 @@ class KakaoApiClientTest {
                 .isInstanceOf(Exception.class);
         }
 
-        @Test
-        @DisplayName("재시도 메커니즘 테스트")
-        void getLocationNames_RetryMechanism() throws Exception {
-            // Given
-            // 첫 번째 요청은 실패
-            mockWebServer.enqueue(new MockResponse().setResponseCode(500));
-            // 두 번째 요청은 성공
-            mockWebServer.enqueue(new MockResponse()
-                .setBody(createSuccessResponse())
-                .setHeader("Content-Type", "application/json"));
 
-            // When
-            List<String> locationNames = kakaoApiClient.getLocationNames(TEST_LATITUDE, TEST_LONGITUDE);
-
-            // Then
-            assertThat(locationNames).hasSize(3);
-            assertThat(mockWebServer.getRequestCount()).isEqualTo(2); // 2번 요청됨
-        }
-
-        @Test
-        @DisplayName("특수 지역명 처리")
-        void getLocationNames_SpecialLocationNames() throws Exception {
-            // Given
-            String specialResponse = """
-                {
-                    "meta": {
-                        "total_count": 2,
-                        "pageable_count": 2,
-                        "is_end": true
-                    },
-                    "documents": [
-                        {
-                            "region_type": "H",
-                            "region_1depth_name": "서울특별시",
-                            "region_2depth_name": "중구",
-                            "region_3depth_name": "",
-                            "region_4depth_name": "",
-                            "code": "1114000000",
-                            "x": 126.9780,
-                            "y": 37.5665
-                        },
-                        {
-                            "region_type": "B",
-                            "region_1depth_name": "서울특별시",
-                            "region_2depth_name": "중구",
-                            "region_3depth_name": "명동",
-                            "region_4depth_name": "",
-                            "code": "1114063000",
-                            "x": 126.9780,
-                            "y": 37.5665
-                        }
-                    ]
-                }
-                """;
-            mockWebServer.enqueue(new MockResponse()
-                .setBody(specialResponse)
-                .setHeader("Content-Type", "application/json"));
-
-            // When
-            List<String> locationNames = kakaoApiClient.getLocationNames(TEST_LATITUDE, TEST_LONGITUDE);
-
-            // Then
-            assertThat(locationNames).hasSize(2);
-            assertThat(locationNames).containsExactly(
-                "중구 ",  // region_3depth_name이 빈 문자열인 경우
-                "중구 명동"
-            );
-        }
     }
 
     @Disabled

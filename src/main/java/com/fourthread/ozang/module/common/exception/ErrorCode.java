@@ -26,6 +26,7 @@ public enum ErrorCode {
   DUPLICATE_CLOTHES("DUPLICATE_CLOTHES", "이미 존재하는 의상입니다.", HttpStatus.CONFLICT),
   CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND("CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND", "의상 속성 정의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION("DUPLICATE_CLOTHES_ATTRIBUTE_DEFINITION", "이미 존재하는 의상 속성 정의입니다.", HttpStatus.CONFLICT),
+  URL_NOT_SUPPORTED("URL NOT SUPPORTED", "지원하지 않는 주소입니다.", HttpStatus.BAD_REQUEST),
 
   // 팔로우 관련
   FOLLOWS_NOT_FOUND("FOLLOWS_NOT_FOUND", "팔로우 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -39,7 +40,13 @@ public enum ErrorCode {
   FILE_UPLOAD_ERROR("FILE_UPLOAD_ERROR", "파일 업로드 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_SIZE_EXCEEDED( "FILE_SIZE_EXCEEDED","파일 크기가 제한을 초과했습니다.",  HttpStatus.BAD_REQUEST),
   INVALID_FILE_TYPE( "INVALID_FILE_TYPE", "지원하지 않는 파일 형식입니다.", HttpStatus.BAD_REQUEST),
-  FILE_DELETE_ERROR( "FILE_DELETE_ERROR", "파일 삭제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+  FILE_DELETE_ERROR( "FILE_DELETE_ERROR", "파일 삭제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  // Open API
+  OPEN_API_ERROR("OPEN_API_ERROR", "Open API 호출 도중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  // 의상 추천
+  RECOMMENDATION_ERROR("RECOMMENDATION_ERROR", "의상을 추천하는 도중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String code;
   private final String message;

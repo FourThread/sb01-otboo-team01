@@ -11,7 +11,6 @@ import java.util.UUID;
  * 실제 파일 업로드 없이 더미 URL을 반환합니다.
  */
 @Slf4j
-@Profile("test")  // 테스트 환경에서만 활성화
 public class TestImageService implements ImageService {
 
     private static final String DUMMY_BASE_URL = "https://test-bucket.s3.amazonaws.com/clothes/";

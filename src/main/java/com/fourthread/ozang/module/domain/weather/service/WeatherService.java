@@ -1,13 +1,14 @@
 package com.fourthread.ozang.module.domain.weather.service;
 
 import com.fourthread.ozang.module.domain.weather.dto.WeatherAPILocation;
+import com.fourthread.ozang.module.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.module.domain.weather.dto.WeatherDto;
 import java.util.List;
 
 public interface WeatherService {
 
     /**
-     * 위경도 좌표로 날씨 정보 조회
+     * 위경도 좌표로 초단기예보 정보 조회 (6시간 이내, 1시간 단위)
      */
     WeatherDto getWeatherForecast(Double longitude, Double latitude);
 
@@ -20,6 +21,14 @@ public interface WeatherService {
      * 위경도 좌표로 위치 정보 조회
      */
     WeatherAPILocation getWeatherLocation(Double longitude, Double latitude);
+
+    /**
+     * 날씨 변화 감지 (배치용)
+     * @param latitude 위도
+     * @param longitude 경도
+     * @return 감지된 변화 목록
+     */
+    List<WeatherChangeDto> detectWeatherChanges(Double latitude, Double longitude);
 
     /**
      * 오래된 날씨 데이터 정리 (배치용)

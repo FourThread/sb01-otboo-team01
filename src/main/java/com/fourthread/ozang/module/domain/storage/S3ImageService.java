@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@RequiredArgsConstructor
-@Profile("!test")  // 테스트 환경이 아닐 때만 활성화
+@Profile({"!test", "!batch"})  // 테스트 환경과 배치 환경이 아닐 때만 활성화
 public class S3ImageService implements ImageService {
 
     private final S3Client s3Client;
@@ -33,6 +32,11 @@ public class S3ImageService implements ImageService {
     private long maxFileSize;
 
     private final String uploadPath;
+
+    public S3ImageService(S3Client s3Client, String uploadPath) {
+        this.s3Client = s3Client;
+        this.uploadPath = uploadPath;
+    }
     /**
      * 의상 이미지를 S3에 업로드
      */

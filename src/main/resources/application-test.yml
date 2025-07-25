@@ -40,6 +40,19 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  ai:
+    openai:
+      api-key: 4214212141241412421421
+      base-url: https://api.openai.com
+
+openai:
+  api:
+    key: 123231121412412
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: 12dd21d21d1d21d1212d
+    version: 1
 
 logging:
   level:
@@ -52,8 +65,8 @@ logging:
 
 weather:
   api:
-    key: test-weather-key
-    base-url: http://test-weather-api.com
+    key: ${WEATHER_API_KEY}
+    base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
     nowcast:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
@@ -61,7 +74,7 @@ weather:
 
 kakao:
   api:
-    key: test-kakao-key
+    key: ${KAKAO_API_KEY}
     url: https://dapi.kakao.com
 
 jwt:
@@ -79,8 +92,6 @@ batch:
     retention-days: 1
   scheduler:
     weather-cleanup:
-      enabled: false
-    token-cleanup:
       enabled: false
 
 cloud:

@@ -4,7 +4,9 @@ import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
 
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record ClothesDto(
         UUID id,
         UUID ownerId,

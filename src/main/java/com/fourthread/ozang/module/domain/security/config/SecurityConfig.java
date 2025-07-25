@@ -63,7 +63,6 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGIN).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.LOGOUT).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.REFRESH).permitAll()
-            .requestMatchers(HttpMethod.GET, SecurityMatchers.ME).permitAll()
             .requestMatchers(HttpMethod.POST, SecurityMatchers.RESET_PASSWORD).permitAll()
             .requestMatchers(HttpMethod.GET, SecurityMatchers.CSRF_TOKEN).permitAll()
             .requestMatchers(SecurityMatchers.H2_CONSOLE).permitAll()

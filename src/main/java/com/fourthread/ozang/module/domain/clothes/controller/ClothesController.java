@@ -5,6 +5,7 @@ import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequ
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDto;
 import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesDtoCursorResponse;
 import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.module.domain.clothes.service.ClothesExtractionService;
 import com.fourthread.ozang.module.domain.clothes.service.ClothesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class ClothesController {
 
     private final ClothesService clothesService;
+    private final ClothesExtractionService extractionService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClothesDto> create(
@@ -66,5 +68,16 @@ public class ClothesController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
+    }
+
+    /**
+     * 의류 정보를 외부 URL에서 추출하는 API
+     * @param url 쇼핑몰 상품 URL (필수)
+     * @return ClothesDto (이름, 이미지, 나머지는 null)
+     */
+    @GetMapping("/extractions")
+    public ResponseEntity<ClothesDto> extractClothes(@RequestParam String url) {
+        ClothesDto extracted = extractionService.extractFromUrl(url);
+        return ResponseEntity.ok(extracted);
     }
 }

@@ -38,8 +38,8 @@ public class WeatherApiClient {
             .uri(uriBuilder -> uriBuilder
                 .path("/getVilageFcst")
                 .queryParam("serviceKey", serviceKey)
-                .queryParam("pageNo", 1)
                 .queryParam("numOfRows", 1000)
+                .queryParam("pageNo", 1)
                 .queryParam("dataType", "JSON")
                 .queryParam("base_date", date)
                 .queryParam("base_time", time)
@@ -52,6 +52,37 @@ public class WeatherApiClient {
             .retryWhen(Retry.backoff(2, Duration.ofMillis(500)))
             .blockOptional()
             .orElseThrow(() -> new WeatherApiException("기상청 API 응답이 없습니다", "NO_CONTENT"));
+    }
+
+    /**
+     * 초단기예보 조회 (getUltraSrtFcst)
+     * 6시간 이내 예보, 1시간 단위
+     */
+    public WeatherApiResponse getUltraShortTermForecast(GridCoordinate coord) {
+        LocalDateTime baseDateTime = calculateUltraShortBaseDateTime();
+        String date = baseDateTime.format(DATE_FMT);
+        String time = baseDateTime.format(TIME_FMT);
+
+        log.info("초단기예보 호출 - date={}, time={}, x={}, y={}", date, time, coord.getX(), coord.getY());
+
+        return weatherWebClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/getUltraSrtFcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("numOfRows", 100)
+                .queryParam("pageNo", 1)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", date)
+                .queryParam("base_time", time)
+                .queryParam("nx", coord.getX())
+                .queryParam("ny", coord.getY())
+                .build())
+            .retrieve()
+            .bodyToMono(WeatherApiResponse.class)
+            .timeout(Duration.ofSeconds(5))
+            .retryWhen(Retry.backoff(2, Duration.ofMillis(500)))
+            .blockOptional()
+            .orElseThrow(() -> new WeatherApiException("초단기예보 API 응답이 없습니다", "NO_CONTENT"));
     }
 
     /**
@@ -80,7 +111,7 @@ public class WeatherApiClient {
             .block();
     }
 
-    // 초단기실황 조회 (필요시 사용)
+    // 초단기실황 조회 (getUltraSrtNcst) //TODO 삭제 후 테스트 코드 재작성
     public WeatherApiResponse getWeatherNowcast(GridCoordinate coord) {
         LocalDateTime now = LocalDateTime.now();
         String date = now.format(DATE_FMT);
@@ -109,7 +140,7 @@ public class WeatherApiClient {
     }
 
     /**
-     * 초단기예보 API 제공 시각 계산
+     * 단기예보 API 제공 시각 계산
      * 제공 시각: [0200,0500,0800,1100,1400,1700,2000,2300] 이후 10분
      */
     private LocalDateTime calculateBaseDateTime() {
@@ -121,5 +152,22 @@ public class WeatherApiClient {
             }
         }
         return now.minusDays(1).withHour(23).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    /**
+     * 초단기예보 API 제공 시각 계산
+     * 매시 30분에 생성, 45분 이후 제공
+     */
+    private LocalDateTime calculateUltraShortBaseDateTime() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 현재 시간이 45분 이후라면 현재 시간의 30분
+        if (now.getMinute() >= 45) {
+            return now.withMinute(30).withSecond(0).withNano(0);
+        }
+        // 45분 이전이라면 이전 시간의 30분
+        else {
+            return now.minusHours(1).withMinute(30).withSecond(0).withNano(0);
+        }
     }
 }

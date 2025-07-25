@@ -1,4 +1,4 @@
-FROM amazoncorretto:17-alpine AS builder
+FROM --platform=linux/amd64 amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
 # Gradle Wrapper와 설정 파일 복사
@@ -14,7 +14,7 @@ RUN ./gradlew dependencies --no-daemon --quiet
 COPY src/ src/
 RUN ./gradlew clean build -x test --no-daemon --quiet
 
-FROM amazoncorretto:17-alpine
+FROM --platform=linux/amd64 amazoncorretto:17-alpine
 WORKDIR /app
 
 # 환경 변수 설정
@@ -31,6 +31,7 @@ LABEL maintainer="fourthread" \
       build-date="${BUILD_DATE}" \
       vcs-ref="${VCS_REF}" \
       description="O-ZANG Application optimized for t3.small" \
+      platform="linux/amd64" \
       instance-type="t3.small" \
       cpu="2-vcpu" \
       memory="2gb"
@@ -95,7 +96,7 @@ RUN if [ ! -f app.jar ]; then \
         ls -la /app/build/libs/ && \
         exit 1; \
     fi && \
-    echo "✅ JAR file validated: $(ls -lh app.jar)"
+    echo "JAR file validated: $(ls -lh app.jar)"
 
 # 사용자 전환
 USER appuser
