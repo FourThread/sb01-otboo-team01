@@ -1,5 +1,7 @@
 package com.fourthread.ozang.module.domain.storage;
 
+import com.fourthread.ozang.app.domain.storage.ImageService;
+import com.fourthread.ozang.app.domain.storage.TestImageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,15 +1,15 @@
 package com.fourthread.ozang.module.domain.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.security.jwt.JwtBlacklist;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtDto;
-import com.fourthread.ozang.module.domain.security.jwt.dto.data.JwtPayloadDto;
-import com.fourthread.ozang.module.domain.security.jwt.JwtService;
-import com.fourthread.ozang.module.domain.security.jwt.dto.response.JwtTokenResponse;
-import com.fourthread.ozang.module.domain.security.redis.RedisDao;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.mapper.UserMapper;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.app.domain.security.jwt.JwtBlacklist;
+import com.fourthread.ozang.app.domain.security.jwt.dto.data.JwtDto;
+import com.fourthread.ozang.app.domain.security.jwt.dto.data.JwtPayloadDto;
+import com.fourthread.ozang.app.domain.security.jwt.JwtService;
+import com.fourthread.ozang.app.domain.security.jwt.dto.response.JwtTokenResponse;
+import com.fourthread.ozang.app.domain.security.redis.RedisDao;
+import com.fourthread.ozang.app.domain.user.dto.type.Role;
+import com.fourthread.ozang.app.domain.user.mapper.UserMapper;
+import com.fourthread.ozang.app.domain.user.repository.UserRepository;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;

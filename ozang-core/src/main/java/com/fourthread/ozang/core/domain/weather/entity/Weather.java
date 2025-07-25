@@ -1,6 +1,7 @@
 package com.fourthread.ozang.core.domain.weather.entity;
 
-import com.fourthread.ozang.module.domain.BaseEntity;
+
+import com.fourthread.ozang.core.domain.BaseEntity;
 import com.fourthread.ozang.core.domain.weather.dto.HumidityDto;
 import com.fourthread.ozang.core.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.core.domain.weather.dto.TemperatureDto;

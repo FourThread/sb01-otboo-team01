@@ -1,19 +1,24 @@
 package com.fourthread.ozang.module.domain.clothes.service;
 
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesCreateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.requeset.ClothesUpdateRequest;
-import com.fourthread.ozang.module.domain.clothes.dto.response.*;
-import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesAttributeDefinitionException;
-import com.fourthread.ozang.module.domain.clothes.exception.ClothesException;
-import com.fourthread.ozang.module.domain.clothes.mapper.ClothesMapper;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesAttributeDefinitionRepository;
-import com.fourthread.ozang.module.domain.clothes.repository.ClothesRepository;
-import com.fourthread.ozang.module.domain.user.exception.UserException;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import com.fourthread.ozang.module.domain.storage.ImageService;
+import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesCreateRequest;
+import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesUpdateRequest;
+import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDto;
+import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDtoCursorResponse;
+import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.app.domain.clothes.service.ClothesService;
+import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.app.domain.clothes.exception.ClothesAttributeDefinitionException;
+import com.fourthread.ozang.app.domain.clothes.exception.ClothesException;
+import com.fourthread.ozang.app.domain.clothes.mapper.ClothesMapper;
+import com.fourthread.ozang.app.domain.clothes.repository.ClothesAttributeDefinitionRepository;
+import com.fourthread.ozang.app.domain.clothes.repository.ClothesRepository;
+import com.fourthread.ozang.app.domain.user.exception.UserException;
+import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.app.domain.storage.ImageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -319,7 +324,8 @@ class ClothesServiceTest {
         ReflectionTestUtils.setField(clothes, "createdAt", LocalDateTime.parse("2025-07-01T09:00:00"));
 
         when(clothesRepository.findAllByCondition(
-                eq(ownerId), eq(cursor), eq(idAfter), eq(limit + 1), eq(ClothesType.TOP), eq(sortBy), eq(SortDirection.DESCENDING)
+                eq(ownerId), eq(cursor), eq(idAfter), eq(limit + 1), eq(ClothesType.TOP), eq(sortBy), eq(
+                SortDirection.DESCENDING)
         )).thenReturn(List.of(clothes));
 
         when(clothesRepository.countByOwnerAndType(ownerId, ClothesType.TOP)).thenReturn(1);

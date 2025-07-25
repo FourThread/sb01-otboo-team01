@@ -1,32 +1,9 @@
 package com.fourthread.ozang.module.domain.notification.listener;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.ClothesAttributeDefDto;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDto;
-import com.fourthread.ozang.module.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.module.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.module.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.module.domain.notification.event.*;
-import com.fourthread.ozang.module.domain.notification.service.NotificationService;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /*
 @ExtendWith(MockitoExtension.class)

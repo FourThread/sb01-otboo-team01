@@ -8,30 +8,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.module.domain.feed.controller.FeedController;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
-import com.fourthread.ozang.module.domain.feed.elasticsearch.service.FeedSearchService;
-import com.fourthread.ozang.module.domain.user.dto.request.UserLockUpdateRequest;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.app.domain.feed.controller.FeedController;
+import com.fourthread.ozang.app.domain.feed.elasticsearch.repository.FeedElasticsearchRepository;
+import com.fourthread.ozang.app.domain.feed.elasticsearch.service.FeedSearchService;
+import com.fourthread.ozang.app.domain.user.dto.request.UserLockUpdateRequest;
+import com.fourthread.ozang.app.domain.user.dto.type.Role;
+import com.fourthread.ozang.app.domain.user.entity.User;
+import com.fourthread.ozang.app.domain.user.repository.UserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")

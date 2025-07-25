@@ -4,12 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorRequest;
-import com.fourthread.ozang.module.domain.dm.dto.DirectMessageDtoCursorResponse;
-import com.fourthread.ozang.module.domain.dm.dto.DmItems;
-import com.fourthread.ozang.module.domain.dm.repository.DirectMessageRepository;
-import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorRequest;
+import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorResponse;
+import com.fourthread.ozang.app.domain.dm.dto.DmItems;
+import com.fourthread.ozang.app.domain.dm.repository.DirectMessageRepository;
+import com.fourthread.ozang.app.domain.dm.service.DirectMessageService;
+import com.fourthread.ozang.app.domain.user.dto.data.UserSummary;
+import com.fourthread.ozang.app.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
 @RequiredArgsConstructor

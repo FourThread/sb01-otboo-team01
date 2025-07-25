@@ -1,8 +1,9 @@
 package com.fourthread.ozang.module.domain.clothes.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.app.domain.clothes.dto.response.SortBy;
+import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.app.domain.clothes.repository.query.ClothesAttributeDefinitionRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,13 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import software.amazon.awssdk.services.s3.S3Client;
 
 
 @SpringBootTest(

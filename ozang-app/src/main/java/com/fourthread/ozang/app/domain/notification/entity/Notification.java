@@ -1,0 +1,32 @@
+package com.fourthread.ozang.app.domain.notification.entity;
+
+import com.fourthread.ozang.core.domain.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+@Getter
+@Table(name = "notifications")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@AllArgsConstructor
+public class Notification extends BaseEntity {
+
+    @Column(nullable = false)
+    private UUID receiverId;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationLevel level;
+
+}

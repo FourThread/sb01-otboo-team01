@@ -1,8 +1,9 @@
 package com.fourthread.ozang.module.domain.clothes.repository.query;
 
-import com.fourthread.ozang.module.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.app.domain.clothes.repository.query.ClothesRepositoryImpl;
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.module.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,14 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import software.amazon.awssdk.services.s3.S3Client;
 
 
 @Transactional

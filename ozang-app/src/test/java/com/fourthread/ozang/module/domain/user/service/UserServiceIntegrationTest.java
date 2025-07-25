@@ -1,29 +1,27 @@
 package com.fourthread.ozang.module.domain.user.service;
 
-import com.fourthread.ozang.module.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.module.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.module.domain.user.dto.request.ChangePasswordRequest;
-import com.fourthread.ozang.module.domain.user.dto.request.UserCreateRequest;
-import com.fourthread.ozang.module.domain.user.dto.request.UserRoleUpdateRequest;
-import com.fourthread.ozang.module.domain.user.dto.type.Role;
-import com.fourthread.ozang.module.domain.user.entity.User;
-import com.fourthread.ozang.module.domain.user.repository.ProfileRepository;
-import com.fourthread.ozang.module.domain.user.repository.UserRepository;
+import com.fourthread.ozang.app.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.app.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.app.domain.user.dto.request.ChangePasswordRequest;
+import com.fourthread.ozang.app.domain.user.dto.request.UserCreateRequest;
+import com.fourthread.ozang.app.domain.user.dto.request.UserRoleUpdateRequest;
+import com.fourthread.ozang.app.domain.user.dto.type.Role;
+import com.fourthread.ozang.app.domain.user.entity.User;
+import com.fourthread.ozang.app.domain.user.repository.ProfileRepository;
+import com.fourthread.ozang.app.domain.user.repository.UserRepository;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import com.fourthread.ozang.app.domain.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.UUID;
 
