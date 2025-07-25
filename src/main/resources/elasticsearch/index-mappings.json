@@ -15,6 +15,9 @@
     "likeCount": {
       "type": "long"
     },
+    "likedByMe": {
+      "type": "boolean"
+    },
     "commentCount": {
       "type": "integer"
     },

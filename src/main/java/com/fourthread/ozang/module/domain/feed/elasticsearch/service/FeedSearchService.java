@@ -47,6 +47,7 @@ import com.fourthread.ozang.module.domain.feed.entity.FeedClothes;
 import com.fourthread.ozang.module.domain.feed.entity.SortBy;
 import com.fourthread.ozang.module.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.module.domain.feed.repository.FeedClothesRepository;
+import com.fourthread.ozang.module.domain.feed.repository.FeedLikeRepository;
 import com.fourthread.ozang.module.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.module.domain.user.entity.User;
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
@@ -92,6 +93,7 @@ public class FeedSearchService {
   private final ClothesRepository clothesRepository;
   private final FeedClothesRepository feedClothesRepository;
   private final Executor feedSearchExecutor;
+  private final FeedLikeRepository feedLikeRepository;
 
   /**
    * @methodName : create
@@ -104,6 +106,15 @@ public class FeedSearchService {
 
     return CompletableFuture.supplyAsync(() -> {
       FeedDocument document = FeedDocument.from(feed, getClothesIds(feed));
+      document.setLikedByMe(getLikeByMe(document));
+      return elasticsearchRepository.save(document);
+    }, feedSearchExecutor);
+  }
+
+  @Async("feedSearchExecutor")
+  public CompletableFuture<FeedDocument> create(Feed feed, List<String> clothesIds) {
+    return CompletableFuture.supplyAsync(() -> {
+      FeedDocument document = FeedDocument.from(feed, clothesIds);
       return elasticsearchRepository.save(document);
     }, feedSearchExecutor);
   }
@@ -190,7 +201,7 @@ public class FeedSearchService {
               document.getContent(),
               document.getLikeCount(),
               document.getCommentCount(),
-              null
+              document.getLikedByMe()
           );
         })
         .filter(Objects::nonNull)
@@ -748,5 +759,11 @@ public class FeedSearchService {
     return feedClothes.stream()
         .map(feedCloth -> feedCloth.getClothes().getId().toString())
         .toList();
+  }
+
+  private Boolean getLikeByMe(FeedDocument document) {
+    return feedLikeRepository.existsByFeed_IdAndUser_Id(
+        UUID.fromString(document.getFeedId()),
+        UUID.fromString(document.getAuthorId()));
   }
 }

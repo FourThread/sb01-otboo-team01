@@ -1,5 +1,6 @@
 package com.fourthread.ozang.module.domain.feed.elasticsearch.entity;
 
+import static org.springframework.data.elasticsearch.annotations.FieldType.Boolean;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Integer;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -39,8 +41,13 @@ public class FeedDocument {
   @Field(type = Text)
   private String content;
 
+  @Setter
   @Field(type = Long)
   private Long likeCount;
+
+  @Setter
+  @Field(type = Boolean)
+  private Boolean likedByMe;
 
   @Field(type = Integer)
   private Integer commentCount;
@@ -76,4 +83,5 @@ public class FeedDocument {
         .precipitationType(feed.getWeather().getPrecipitation().type().name())
         .build();
   }
+
 }
