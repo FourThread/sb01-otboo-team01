@@ -20,6 +20,12 @@ public class KafkaHandler {
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(WeatherChangeDetectedEvent event) {
+        kafkaProducer.send("ozang.weather.alert.detected", event);
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(RoleChangedEvent event) {
         kafkaProducer.send("ozang.role_changed", event.userDto().id(), event);
     }
