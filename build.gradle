@@ -164,6 +164,8 @@ project(':ozang-core') {
         api 'com.fasterxml.jackson.core:jackson-databind'
         api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
         // MapStruct (객체 매핑) - Core에 포함
         api "org.mapstruct:mapstruct:${mapstructVersion}"
         annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
