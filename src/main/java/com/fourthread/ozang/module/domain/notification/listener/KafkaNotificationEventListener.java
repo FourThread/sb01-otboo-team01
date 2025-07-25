@@ -9,12 +9,9 @@ import com.fourthread.ozang.module.domain.notification.service.NotificationServi
 import com.fourthread.ozang.module.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Set;
 import java.util.UUID;
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class NotificationEventListener {
+public class KafkaNotificationEventListener {
 
     private final NotificationService notificationService;
     private final UserRepository userRepository;

@@ -37,7 +37,7 @@ class NotificationEventListenerTest {
 
     @Mock private FollowRepository followRepository;
 
-    @InjectMocks private NotificationEventListener listener;
+    @InjectMocks private KafkaNotificationEventListener listener;
 
     UUID userId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
