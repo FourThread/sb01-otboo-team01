@@ -1,0 +1,243 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5             # 유휴 연결 수 유지
+      connection-timeout: 30000   # 연결 획득 타임아웃(30초)
+      idle-timeout: 300000        # 유휴 연결 제거 시간(5분)
+      max-lifetime: 1200000       # 연결 최대 수명(20분)
+      leak-detection-threshold: 60000  # 연결 누수 감지(60초)
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      database: 0 # Security용 (JWT, 인증 등)
+      ssl:
+        enabled: true
+      lettuce:
+        pool:
+          max-active: 4
+          max-idle: 4
+          min-idle: 1
+        cluster:
+          refresh:
+            adaptive: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: >-
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="${KAFKA_USERNAME}"
+        password="${KAFKA_PASSWORD}";
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ozang-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      base-url: https://api.openai.com
+
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+    connection-timeout: 10s
+    socket-timeout: 60s
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+# 배치 스케줄링 비활성화
+batch:
+  weather:
+    retention-days: 14
+  scheduler:
+    weather-cleanup:
+      enabled: false
+    weather-cache-warmup:
+      enabled: false
+    weather-change-detection:
+      enabled: false
+
+weather:
+  redis:
+    database: 1  # Weather용 (캐시 데이터)
+  cache:
+    current:
+      ttl: PT1H      # 현재 날씨 1시간
+    forecast:
+      ttl: PT3H      # 5일 예보 3시간
+    location:
+      ttl: PT24H     # 위치 정보 24시간
+
+elasticsearch:
+  enabled: ${ELASTICSEARCH_ENABLED:true}
+  cloud:
+    host: ${ELASTICSEARCH_HOST}
+    api-key: ${ELASTICSEARCH_API_KEY}
+
+openai:
+  api:
+    key: ${OPEN_AI_API_KEY}
+  response:
+    url: https://api.openai.com/v1/responses
+  prompt:
+    id: ${PROMPT_ID}
+    version: ${PROMPT_VERSION}
+
+logging:
+  level:
+    root: WARN
+    org.springframework.batch: WARN
+    com.fourthread.ozang: INFO
+    org.springframework.web: INFO
+    org.springframework.boot: INFO
+    org.hibernate: WARN
+    com.zaxxer.hikari: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
+
+cloud:
+  aws:
+    s3:
+      bucket: ozang-prod-bucket
+
+file:
+  upload:
+    clothes:
+      path: prod/clothes/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+    profiles:
+      path: prod/profiles/images/
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-size: 5242880
+
+server:
+  port: 80
+  tomcat:
+    accept-count: 100
+    max-connections: 8192
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    keep-alive-timeout: 20000
+    max-keep-alive-requests: 100
+    mbeanregistry:
+      enabled: true
+    shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db,diskSpace,ping
+        liveness:
+          include: livenessState,ping
+        basic:
+          include: db,diskSpace,ping
+          show-details: always
+  health:
+    defaults:
+      enabled: true
+    # 안전한 health indicator만 활성화
+    diskspace:
+      enabled: true
+    db:
+      enabled: true
+    ping:
+      enabled: true
+    # 외부 의존성 health indicator 비활성화
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    # 기타 외부 의존성도 비활성화
+    rabbit:
+      enabled: false
+    mongo:
+      enabled: false
+    cassandra:
+      enabled: false
+    neo4j:
+      enabled: false
+    influxdb:
+      enabled: false
+    ldap:
+      enabled: false
+    jms:
+      enabled: false
+    mail:
+      enabled: false
+    solr:
+      enabled: false
+  server:
+    port: 80
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+    health:
+      db:
+        enabled: true
+      redis:
+        enabled: false
+      elasticsearch:
+        enabled: false
+      diskspace:
+        enabled: true
+      ping:
+        enabled: true

@@ -2,9 +2,9 @@ FROM --platform=linux/amd64 amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
 # Gradle Wrapper와 설정 파일 복사
-COPY gradlew .
-COPY gradle/ gradle/
-COPY build.gradle settings.gradle ./
+COPY ../gradlew .
+COPY ../gradle gradle/
+COPY ../build.gradle settings.gradle ./
 
 # 의존성 다운로드 (캐시 최적화)
 RUN mkdir -p src/main/java src/main/resources

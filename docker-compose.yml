@@ -25,7 +25,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ozang-app/Dockerfile
     container_name: o-zang-app
     restart: unless-stopped
     environment:
