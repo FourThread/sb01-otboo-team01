@@ -32,7 +32,7 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles("test")
 @Import(TestConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class OZangApplicationTests {
+class OzangApplicationTests {
 
     @Test
     void contextLoads() {
