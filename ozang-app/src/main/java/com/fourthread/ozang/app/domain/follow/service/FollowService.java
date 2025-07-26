@@ -1,17 +1,22 @@
 package com.fourthread.ozang.app.domain.follow.service;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.app.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.app.domain.follow.dto.FollowListResponse;
-import com.fourthread.ozang.app.domain.follow.dto.FollowSummaryDto;
-import com.fourthread.ozang.app.domain.follow.entity.Follow;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.ALREADY_FOLLOWING;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.FOLLOWS_NOT_FOUND;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.SELF_FOLLOW_NOT_ALLOWED;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.USER_NOT_FOUND;
+
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.follow.dto.FollowDto;
+import com.fourthread.ozang.core.domain.follow.dto.FollowListResponse;
+import com.fourthread.ozang.core.domain.follow.dto.FollowSummaryDto;
+import com.fourthread.ozang.core.domain.follow.entity.Follow;
 import com.fourthread.ozang.app.domain.follow.exception.FollowsException;
 import com.fourthread.ozang.app.domain.follow.mapper.FollowMapper;
-import com.fourthread.ozang.app.domain.follow.repository.FollowRepository;
-import com.fourthread.ozang.app.domain.notification.event.FollowedEvent;
-import com.fourthread.ozang.app.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.follow.repository.FollowRepository;
+import com.fourthread.ozang.core.domain.notification.event.FollowedEvent;
+import com.fourthread.ozang.core.domain.user.entity.User;
 import com.fourthread.ozang.app.domain.user.exception.UserException;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -20,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static com.fourthread.ozang.app.common.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor

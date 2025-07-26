@@ -1,12 +1,12 @@
 package com.fourthread.ozang.app.domain.security.service.impl;
 
 import com.fourthread.ozang.app.domain.security.service.AuthService;
-import com.fourthread.ozang.app.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
-import com.fourthread.ozang.app.domain.user.entity.Profile;
-import com.fourthread.ozang.app.domain.user.entity.User;
-import com.fourthread.ozang.app.domain.user.mapper.UserMapper;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.entity.Profile;
+import com.fourthread.ozang.core.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.user.mapper.UserMapper;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

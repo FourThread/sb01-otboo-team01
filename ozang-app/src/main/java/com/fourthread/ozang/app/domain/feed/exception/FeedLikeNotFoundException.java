@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.feed.exception;
 
-import com.fourthread.ozang.app.common.exception.ErrorDetails;
-import com.fourthread.ozang.app.common.exception.GlobalException;
+import com.fourthread.ozang.core.common.exception.ErrorDetails;
+import com.fourthread.ozang.core.common.exception.GlobalException;
 
 public class FeedLikeNotFoundException extends GlobalException {
 

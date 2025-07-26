@@ -1,6 +1,6 @@
 package com.fourthread.ozang.app.domain.feed.event;
 
-import com.fourthread.ozang.app.domain.feed.entity.Feed;
+import com.fourthread.ozang.core.domain.feed.entity.Feed;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

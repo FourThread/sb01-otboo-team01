@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.dm.controller;
 
 import com.fourthread.ozang.app.domain.dm.dto.DirectMessageCreateRequest;
-import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDto;
+import com.fourthread.ozang.core.domain.dm.dto.DirectMessageDto;
 import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorRequest;
 import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorResponse;
 import com.fourthread.ozang.app.domain.dm.service.DirectMessageService;

@@ -1,9 +1,9 @@
 package com.fourthread.ozang.module.domain.clothes.repository.query;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
 import com.fourthread.ozang.app.domain.clothes.repository.query.ClothesRepositoryImpl;
 import com.fourthread.ozang.module.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesType;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

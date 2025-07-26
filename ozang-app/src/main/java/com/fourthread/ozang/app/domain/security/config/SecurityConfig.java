@@ -13,7 +13,7 @@ import com.fourthread.ozang.app.domain.security.filter.JwtAuthenticationFilter;
 import com.fourthread.ozang.app.domain.security.handler.JwtLoginSuccessHandler;
 import com.fourthread.ozang.app.domain.security.handler.JwtLogoutHandler;
 import com.fourthread.ozang.app.domain.security.jwt.JwtService;
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

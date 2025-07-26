@@ -7,7 +7,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Keywo
 import static org.springframework.data.elasticsearch.annotations.FieldType.Long;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-import com.fourthread.ozang.app.domain.feed.entity.Feed;
+import com.fourthread.ozang.core.domain.feed.entity.Feed;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;

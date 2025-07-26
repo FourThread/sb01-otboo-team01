@@ -1,16 +1,16 @@
 package com.fourthread.ozang.module.domain.notification.service;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.app.domain.notification.dto.response.NotificationCursorResponse;
-import com.fourthread.ozang.app.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.app.domain.notification.entity.Notification;
-import com.fourthread.ozang.app.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.app.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.app.domain.notification.event.NotificationCreatedEvent;
-import com.fourthread.ozang.app.domain.notification.execption.NotificationException;
-import com.fourthread.ozang.app.domain.notification.mapper.NotificationMapper;
-import com.fourthread.ozang.app.domain.notification.repository.NotificationRepository;
-import com.fourthread.ozang.app.domain.notification.service.NotificationService;
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.notification.dto.response.NotificationCursorResponse;
+import com.fourthread.ozang.core.domain.notification.dto.response.NotificationDto;
+import com.fourthread.ozang.core.domain.notification.entity.Notification;
+import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
+import com.fourthread.ozang.core.domain.notification.event.MultipleNotificationCreatedEvent;
+import com.fourthread.ozang.core.domain.notification.event.NotificationCreatedEvent;
+import com.fourthread.ozang.core.domain.notification.execption.NotificationException;
+import com.fourthread.ozang.core.domain.notification.mapper.NotificationMapper;
+import com.fourthread.ozang.core.domain.notification.repository.NotificationRepository;
+import com.fourthread.ozang.core.domain.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

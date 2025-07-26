@@ -1,16 +1,16 @@
 package com.fourthread.ozang.app.domain.user.service;
 
-import com.fourthread.ozang.app.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.app.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.app.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.core.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.core.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.core.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.app.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.ProfileUpdateRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.UserLockUpdateRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.UserRoleUpdateRequest;
-import com.fourthread.ozang.app.domain.user.dto.response.UserCursorPageResponse;
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
-import com.fourthread.ozang.app.domain.user.dto.type.SortBy;
+import com.fourthread.ozang.core.domain.user.dto.response.UserCursorPageResponse;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.dto.type.SortBy;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;

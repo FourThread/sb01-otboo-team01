@@ -1,9 +1,9 @@
 package com.fourthread.ozang.app.domain.follow.controller;
 
-import com.fourthread.ozang.app.domain.follow.dto.FollowCreateRequest;
-import com.fourthread.ozang.app.domain.follow.dto.FollowDto;
-import com.fourthread.ozang.app.domain.follow.dto.FollowListResponse;
-import com.fourthread.ozang.app.domain.follow.dto.FollowSummaryDto;
+import com.fourthread.ozang.core.domain.follow.dto.FollowCreateRequest;
+import com.fourthread.ozang.core.domain.follow.dto.FollowDto;
+import com.fourthread.ozang.core.domain.follow.dto.FollowListResponse;
+import com.fourthread.ozang.core.domain.follow.dto.FollowSummaryDto;
 import com.fourthread.ozang.app.domain.follow.service.FollowService;
 import com.fourthread.ozang.app.domain.security.userdetails.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;

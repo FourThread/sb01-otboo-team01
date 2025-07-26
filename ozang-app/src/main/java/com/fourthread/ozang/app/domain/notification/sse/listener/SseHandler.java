@@ -1,8 +1,8 @@
 package com.fourthread.ozang.app.domain.notification.sse.listener;
 
-import com.fourthread.ozang.app.domain.notification.dto.response.NotificationDto;
-import com.fourthread.ozang.app.domain.notification.event.MultipleNotificationCreatedEvent;
-import com.fourthread.ozang.app.domain.notification.event.NotificationCreatedEvent;
+import com.fourthread.ozang.core.domain.notification.dto.response.NotificationDto;
+import com.fourthread.ozang.core.domain.notification.event.MultipleNotificationCreatedEvent;
+import com.fourthread.ozang.core.domain.notification.event.NotificationCreatedEvent;
 import com.fourthread.ozang.app.domain.notification.sse.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.feed.dto.request;
 
-import com.fourthread.ozang.app.domain.feed.entity.SortBy;
-import com.fourthread.ozang.app.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.core.domain.feed.entity.SortBy;
+import com.fourthread.ozang.core.domain.feed.entity.SortDirection;
 import com.fourthread.ozang.core.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.core.domain.weather.dto.type.SkyStatus;
 import jakarta.validation.constraints.NotNull;

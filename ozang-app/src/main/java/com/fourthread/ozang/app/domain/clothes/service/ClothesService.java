@@ -1,16 +1,20 @@
 package com.fourthread.ozang.app.domain.clothes.service;
 
+import static com.fourthread.ozang.core.common.exception.ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.CLOTHES_NOT_FOUND;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.USER_NOT_FOUND;
+
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesUpdateRequest;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDtoCursorResponse;
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttribute;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttributeDefinition;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesAttribute;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesType;
 import com.fourthread.ozang.app.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.app.domain.clothes.exception.ClothesException;
 import com.fourthread.ozang.app.domain.clothes.mapper.ClothesMapper;
@@ -19,7 +23,7 @@ import com.fourthread.ozang.app.domain.clothes.repository.ClothesRepository;
 import com.fourthread.ozang.app.domain.storage.ImageService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import com.fourthread.ozang.app.domain.user.exception.UserException;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
-
-import static com.fourthread.ozang.app.common.exception.ErrorCode.*;
 
 @Slf4j
 @Service

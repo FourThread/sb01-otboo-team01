@@ -6,11 +6,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Nested;
 import static org.mockito.BDDMockito.*;
 
-import com.fourthread.ozang.app.domain.user.dto.data.UserDto;
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
-import com.fourthread.ozang.app.domain.user.entity.User;
-import com.fourthread.ozang.app.domain.user.mapper.UserMapper;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.user.mapper.UserMapper;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;

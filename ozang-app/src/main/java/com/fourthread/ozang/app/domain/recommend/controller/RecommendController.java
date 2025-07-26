@@ -2,7 +2,7 @@ package com.fourthread.ozang.app.domain.recommend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fourthread.ozang.app.domain.recommend.dto.RecommendationDto;
-import com.fourthread.ozang.module.domain.recommend.service.RecommendClothesService;
+import com.fourthread.ozang.app.domain.recommend.service.RecommendClothesService;
 import com.fourthread.ozang.app.domain.security.userdetails.UserDetailsImpl;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.clothes.dto.requeset;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeDto;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeDto;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;

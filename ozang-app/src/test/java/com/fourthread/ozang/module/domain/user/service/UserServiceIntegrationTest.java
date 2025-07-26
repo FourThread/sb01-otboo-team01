@@ -1,14 +1,14 @@
 package com.fourthread.ozang.module.domain.user.service;
 
-import com.fourthread.ozang.app.domain.user.dto.data.ProfileDto;
-import com.fourthread.ozang.app.domain.user.dto.data.UserDto;
+import com.fourthread.ozang.core.domain.user.dto.data.ProfileDto;
+import com.fourthread.ozang.core.domain.user.dto.data.UserDto;
 import com.fourthread.ozang.app.domain.user.dto.request.ChangePasswordRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.UserCreateRequest;
 import com.fourthread.ozang.app.domain.user.dto.request.UserRoleUpdateRequest;
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
-import com.fourthread.ozang.app.domain.user.entity.User;
-import com.fourthread.ozang.app.domain.user.repository.ProfileRepository;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.user.repository.ProfileRepository;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.fourthread.ozang.app.domain.user.service.UserService;

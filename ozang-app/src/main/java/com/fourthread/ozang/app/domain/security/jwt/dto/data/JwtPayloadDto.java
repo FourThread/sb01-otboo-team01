@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.security.jwt.dto.data;
 
-import com.fourthread.ozang.app.domain.user.dto.type.Role;
-import com.fourthread.ozang.app.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.user.dto.type.Role;
+import com.fourthread.ozang.core.domain.user.entity.User;
 import java.util.UUID;
 
 public record JwtPayloadDto(

@@ -1,6 +1,10 @@
 package com.fourthread.ozang.batch.domain.weather.batch;
 
 import com.fourthread.ozang.batch.config.BatchJobExecutionListener;
+import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
+import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetectedEvent;
+import com.fourthread.ozang.core.domain.notification.service.NotificationService;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
@@ -140,29 +144,7 @@ public class WeatherChangeDetectionBatch {
         };
     }
 
-    /**
-     * 날씨 변화 알림 전송
-     */
-//    private void sendWeatherChangeNotifications(List<WeatherChangeDto> changes) {
-//        try {
-//            /// (임시)모든 사용자에게 알림 TODO: 해당 지역 사용자만 필터링해야 함
-//            Set<UUID> allUserIds = userRepository.findAllUserIds();
-//
-//            for (WeatherChangeDto change : changes) {
-//                String title = "날씨 급변 알림";
-//                String content = formatChangeMessage(change);
-//                NotificationLevel level = determineNotificationLevel(change);
-//
-//                notificationService.createAll(allUserIds, title, content, level);
-//
-//                log.debug("날씨 변화 알림 전송 완료 - 변화: {}, 대상 사용자: {}명",
-//                    change.changeType(), allUserIds.size());
-//            }
-//
-//        } catch (Exception e) {
-//            log.error("날씨 변화 알림 전송 실패", e);
-//        }
-//    }
+
 
     private void sendWeatherChangeEvents(List<WeatherChangeDto> changes) {
         for (WeatherChangeDto change : changes) {

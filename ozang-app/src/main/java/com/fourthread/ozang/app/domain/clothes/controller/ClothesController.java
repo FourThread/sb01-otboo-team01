@@ -4,7 +4,7 @@ import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesCreateRequest
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesUpdateRequest;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDtoCursorResponse;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesType;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesType;
 import com.fourthread.ozang.app.domain.clothes.service.ClothesExtractionService;
 import com.fourthread.ozang.app.domain.clothes.service.ClothesService;
 import lombok.RequiredArgsConstructor;

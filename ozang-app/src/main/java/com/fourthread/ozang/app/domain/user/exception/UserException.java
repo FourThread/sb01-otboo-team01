@@ -1,8 +1,8 @@
 package com.fourthread.ozang.app.domain.user.exception;
 
-import com.fourthread.ozang.app.common.exception.ErrorCode;
-import com.fourthread.ozang.app.common.exception.ErrorDetails;
-import com.fourthread.ozang.app.common.exception.GlobalException;
+import com.fourthread.ozang.core.common.exception.ErrorCode;
+import com.fourthread.ozang.core.common.exception.ErrorDetails;
+import com.fourthread.ozang.core.common.exception.GlobalException;
 
 public class UserException extends GlobalException {
   public UserException(ErrorCode errorCode, String debugMessage, String source) {

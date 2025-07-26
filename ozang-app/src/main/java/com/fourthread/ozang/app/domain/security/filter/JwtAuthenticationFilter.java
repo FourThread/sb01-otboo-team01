@@ -1,8 +1,8 @@
 package com.fourthread.ozang.app.domain.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.app.common.exception.ErrorDetails;
-import com.fourthread.ozang.app.common.exception.ErrorResponse;
+import com.fourthread.ozang.core.common.exception.ErrorDetails;
+import com.fourthread.ozang.core.common.exception.ErrorResponse;
 import com.fourthread.ozang.app.domain.security.jwt.dto.type.SecurityMatchers;
 import com.fourthread.ozang.app.domain.security.userdetails.UserDetailsImpl;
 import com.fourthread.ozang.app.domain.security.jwt.dto.data.JwtPayloadDto;

@@ -1,6 +1,6 @@
 package com.fourthread.ozang.app.domain.storage;
 
-import com.fourthread.ozang.app.common.exception.ErrorCode;
+import com.fourthread.ozang.core.common.exception.ErrorCode;
 import com.fourthread.ozang.app.domain.clothes.exception.ClothesException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

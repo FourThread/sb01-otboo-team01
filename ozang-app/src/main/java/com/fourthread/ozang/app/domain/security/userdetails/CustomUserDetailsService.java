@@ -1,9 +1,9 @@
 package com.fourthread.ozang.app.domain.security.userdetails;
 
-import com.fourthread.ozang.app.common.exception.ErrorCode;
+import com.fourthread.ozang.core.common.exception.ErrorCode;
 import com.fourthread.ozang.app.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.app.domain.user.exception.UserException;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

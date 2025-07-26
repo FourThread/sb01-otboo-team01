@@ -1,24 +1,24 @@
 package com.fourthread.ozang.app.domain.feed.repository;
 
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothes.clothes;
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttribute.clothesAttribute;
-import static com.fourthread.ozang.module.domain.clothes.entity.QClothesAttributeDefinition.clothesAttributeDefinition;
-import static com.fourthread.ozang.module.domain.feed.entity.QFeed.feed;
-import static com.fourthread.ozang.module.domain.feed.entity.QFeedClothes.feedClothes;
-import static com.fourthread.ozang.module.domain.feed.entity.QFeedLike.feedLike;
-import static com.fourthread.ozang.module.domain.user.entity.QUser.user;
-import static com.fourthread.ozang.module.domain.weather.entity.QWeather.weather;
+import static com.fourthread.ozang.core.domain.clothes.entity.QClothes.clothes;
+import static com.fourthread.ozang.core.domain.clothes.entity.QClothesAttribute.clothesAttribute;
+import static com.fourthread.ozang.core.domain.clothes.entity.QClothesAttributeDefinition.clothesAttributeDefinition;
+import static com.fourthread.ozang.core.domain.feed.entity.QFeed.feed;
+import static com.fourthread.ozang.core.domain.feed.entity.QFeedClothes.feedClothes;
+import static com.fourthread.ozang.core.domain.feed.entity.QFeedLike.feedLike;
+import static com.fourthread.ozang.core.domain.user.entity.QUser.user;
+import static com.fourthread.ozang.core.domain.weather.entity.QWeather.weather;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeWithDefDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.OotdDto;
 import com.fourthread.ozang.app.domain.feed.dto.FeedDto;
 import com.fourthread.ozang.app.domain.feed.dto.request.FeedPaginationRequest;
-import com.fourthread.ozang.app.domain.feed.entity.SortBy;
-import com.fourthread.ozang.app.domain.feed.entity.SortDirection;
-import com.fourthread.ozang.app.domain.user.dto.data.UserSummary;
+import com.fourthread.ozang.core.domain.feed.entity.SortBy;
+import com.fourthread.ozang.core.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.core.domain.user.dto.data.UserSummary;
 import com.fourthread.ozang.core.domain.weather.dto.PrecipitationDto;
 import com.fourthread.ozang.core.domain.weather.dto.TemperatureDto;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherSummaryDto;

@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.feed.dto;
 
-import com.fourthread.ozang.app.domain.feed.entity.SortBy;
-import com.fourthread.ozang.app.domain.feed.entity.SortDirection;
+import com.fourthread.ozang.core.domain.feed.entity.SortBy;
+import com.fourthread.ozang.core.domain.feed.entity.SortDirection;
 import java.util.List;
 import java.util.UUID;
 

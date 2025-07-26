@@ -2,11 +2,11 @@ package com.fourthread.ozang.module.domain.clothes.service;
 
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeDefDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesAttributeDefinition;
 import com.fourthread.ozang.app.domain.clothes.exception.ClothesAttributeDefinitionException;
 import com.fourthread.ozang.app.domain.clothes.mapper.ClothesAttributeDefinitionMapper;
 import com.fourthread.ozang.app.domain.clothes.repository.ClothesAttributeDefinitionRepository;

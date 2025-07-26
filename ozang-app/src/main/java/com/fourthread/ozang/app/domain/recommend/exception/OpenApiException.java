@@ -1,7 +1,7 @@
 package com.fourthread.ozang.app.domain.recommend.exception;
 
-import com.fourthread.ozang.app.common.exception.ErrorDetails;
-import com.fourthread.ozang.app.common.exception.GlobalException;
+import com.fourthread.ozang.core.common.exception.ErrorDetails;
+import com.fourthread.ozang.core.common.exception.GlobalException;
 
 public class OpenApiException extends GlobalException {
 

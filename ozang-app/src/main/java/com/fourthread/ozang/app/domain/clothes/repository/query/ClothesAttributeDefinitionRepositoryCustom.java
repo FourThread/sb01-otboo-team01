@@ -1,8 +1,8 @@
 package com.fourthread.ozang.app.domain.clothes.repository.query;
 
 import com.fourthread.ozang.app.domain.clothes.dto.response.SortBy;
-import com.fourthread.ozang.app.domain.clothes.dto.response.SortDirection;
-import com.fourthread.ozang.app.domain.clothes.entity.ClothesAttributeDefinition;
+import com.fourthread.ozang.core.domain.clothes.dto.response.SortDirection;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesAttributeDefinition;
 
 import java.util.List;
 import java.util.UUID;

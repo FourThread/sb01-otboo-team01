@@ -2,7 +2,7 @@ package com.fourthread.ozang.app.domain.clothes.controller;
 
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesAttributeDefCreateRequest;
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesAttributeDefUpdateRequest;
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeDefDto;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeDefDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.CursorPageResponseClothesAttributeDefDto;
 import com.fourthread.ozang.app.domain.clothes.service.ClothesAttributeDefinitionService;
 import com.fourthread.ozang.app.domain.security.userdetails.UserDetailsImpl;

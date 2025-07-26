@@ -1,6 +1,6 @@
 package com.fourthread.ozang.app.domain.clothes.repository;
 
-import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.core.domain.clothes.entity.Clothes;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.Collection;
 import java.util.List;

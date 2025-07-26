@@ -1,5 +1,7 @@
 package com.fourthread.ozang.app.domain.recommend.dto;
 
+import com.fourthread.ozang.core.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.core.domain.clothes.entity.ClothesAttribute;
 import com.fourthread.ozang.core.domain.weather.dto.type.PrecipitationType;
 import com.fourthread.ozang.core.domain.weather.dto.type.SkyStatus;
 import com.fourthread.ozang.core.domain.weather.entity.Weather;
@@ -28,7 +30,7 @@ public record RecommendRequest(
 
 ) {
 
-  public static RecommendRequest of(Weather weather, List<com.fourthread.ozang.module.domain.clothes.entity.Clothes> clothes) {
+  public static RecommendRequest of(Weather weather, List<Clothes> clothes) {
     return new RecommendRequest(
         weather.getForecastedAt(),
         weather.getForecastAt(),

@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorRequest;
 import com.fourthread.ozang.app.domain.dm.dto.DirectMessageDtoCursorResponse;
-import com.fourthread.ozang.app.domain.dm.entity.DirectMessage;
+import com.fourthread.ozang.core.domain.dm.entity.DirectMessage;
 import com.fourthread.ozang.app.domain.dm.repository.DirectMessageRepository;
 import com.fourthread.ozang.app.domain.dm.service.DirectMessageService;
-import com.fourthread.ozang.app.domain.user.entity.User;
-import com.fourthread.ozang.app.domain.user.repository.UserRepository;
+import com.fourthread.ozang.core.domain.user.entity.User;
+import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

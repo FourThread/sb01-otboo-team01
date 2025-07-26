@@ -1,15 +1,15 @@
 package com.fourthread.ozang.app.domain.recommend.service;
 
-import static com.fourthread.ozang.app.common.exception.ErrorCode.OPEN_API_ERROR;
-import static com.fourthread.ozang.app.common.exception.ErrorCode.RECOMMENDATION_ERROR;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.OPEN_API_ERROR;
+import static com.fourthread.ozang.core.common.exception.ErrorCode.RECOMMENDATION_ERROR;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fourthread.ozang.app.domain.clothes.entity.Clothes;
+import com.fourthread.ozang.core.domain.clothes.entity.Clothes;
 import com.fourthread.ozang.app.domain.recommend.dto.RecommendRequest;
-import com.fourthread.ozang.app.common.exception.ErrorDetails;
-import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesAttributeWithDefDto;
+import com.fourthread.ozang.core.common.exception.ErrorDetails;
+import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeWithDefDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.OotdDto;
 
 import com.fourthread.ozang.app.domain.clothes.repository.ClothesRepository;

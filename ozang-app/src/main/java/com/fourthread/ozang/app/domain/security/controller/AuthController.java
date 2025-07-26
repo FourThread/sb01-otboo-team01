@@ -4,7 +4,7 @@ import com.fourthread.ozang.app.domain.security.jwt.JwtService;
 import com.fourthread.ozang.app.domain.security.jwt.dto.data.JwtPayloadDto;
 import com.fourthread.ozang.app.domain.security.jwt.dto.response.JwtTokenResponse;
 import com.fourthread.ozang.app.domain.security.userdetails.UserDetailsImpl;
-import com.fourthread.ozang.app.domain.user.dto.response.MeResponse;
+import com.fourthread.ozang.core.domain.user.dto.response.MeResponse;
 import com.nimbusds.oauth2.sdk.auth.JWTAuthentication;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
