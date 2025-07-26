@@ -74,6 +74,6 @@ gradle.rootProject {
         projectUrl = 'https://github.com/fourthread/ozang'
         projectDescription = 'AI-powered fashion outfit recommendation platform with weather integration'
         projectGroup = 'com.fourthread'
-        projectVersion = 'v2.2.0'
+        projectVersion = 'v3.0.0'
     }
 }
