@@ -28,7 +28,7 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: public.ecr.aws/o8x2e2q0
   ECR_REPOSITORY: ozang-app
-  ECS_SERVICE: ozang-app-service
+  ECS_SERVICE: ozang-service
   ECS_CLUSTER: ozang-cluster2
   ECS_TASK_DEFINITION: .aws/app-task-definition.json
   CONTAINER_NAME: ozang-app
