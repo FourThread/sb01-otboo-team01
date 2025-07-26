@@ -136,7 +136,7 @@ jobs:
           fi
           
           docker build \
-            --file ozang-batch/Dockerfile \
+            -f ozang-batch/Dockerfile \
             --build-arg VERSION=${{ env.VERSION }} \
             --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --build-arg VCS_REF=${{ github.sha }} \
