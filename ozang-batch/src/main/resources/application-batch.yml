@@ -34,6 +34,17 @@ spring:
           max-idle: 2
           min-idle: 1
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ozang-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   # 배치 전용 설정
   batch:
     job:
@@ -50,10 +61,6 @@ spring:
           - org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration
           - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
           - org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
-  ai:
-    openai:
-      api-key: ${OPEN_AI_API_KEY}
-      base-url: https://api.openai.com
 weather:
   redis:
     database: 1  # Weather용 (캐시 데이터)
@@ -64,38 +71,6 @@ weather:
       ttl: PT3H      # 5일 예보 3시간
     location:
       ttl: PT24H     # 위치 정보 24시간
-
-cloud:
-  aws:
-    s3:
-      bucket: ${AWS_S3_BUCKET:ozang-prod-bucket}
-
-file:
-  upload:
-    clothes:
-      path: ${FILE_UPLOAD_CLOTHES_PATH:batch/clothes/images/}
-      allowed-extensions: jpg,jpeg,png,gif,webp
-      max-size: 5242880
-    profiles:
-      path: ${FILE_UPLOAD_PROFILES_PATH:batch/profiles/images/}
-      allowed-extensions: jpg,jpeg,png,gif,webp
-      max-size: 5242880
-
-openai:
-  api:
-    key: ${OPEN_AI_API_KEY}
-  response:
-    url: https://api.openai.com/v1/responses
-  prompt:
-    id: ${PROMPT_ID}
-    version: ${PROMPT_VERSION}
-
-elasticsearch:
-  enabled: false
-  cloud:
-    host: ${ELASTICSEARCH_HOST}
-    api-key: ${ELASTICSEARCH_API_KEY}
-
 
 # 배치 스케줄링 활성화
 batch:

@@ -1,45 +1,9 @@
 spring:
   application:
-    name: O-ZANG
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${GOOGLE_EMAIL}
-    password: ${GOOGLE_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: ${KAKAO_RESTAPI_KEY}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            client-authentication-method: none
-            client-name: Kakao
-            scope:
-              - profile_nickname
-              - account_email
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_SECRET}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            scope:
-              - profile
-              - email
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
+    name: ozang-batch
+  profiles:
+    include: core
+    active: batch
 
   cache:
     type: redis
@@ -48,12 +12,6 @@ spring:
       key-prefix: "ozang:"
       use-key-prefix: true
       enable-statistics: true
-
-  elasticsearch:
-    uris: http://localhost:9200
-
-  profiles:
-    active: dev
 
   # Spring Batch 기본 설정
   batch:
@@ -97,32 +55,8 @@ kakao:
     key: ${KAKAO_API_KEY}
     url: https://dapi.kakao.com
 
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-expiration-seconds: 600 #10분
-  refresh-token-expiration-seconds: 10800 # 3시간
-
-admin:
-  username: ${ADMIN_USERNAME}
-  password: ${ADMIN_PASSWORD}
-  email: ${ADMIN_EMAIL}
-
-security:
-  temp-password:
-    expiration-hours: 1
-
 app:
   timezone: Asia/Seoul
-
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
 
 management:
   info:
@@ -144,5 +78,6 @@ management:
 
 server:
   tomcat:
+    port: 8081
     mbeanregistry:
       enabled: true
