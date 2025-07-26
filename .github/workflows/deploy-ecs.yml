@@ -2,7 +2,7 @@ name: CD - Deploy To ECS
 
 on:
   push:
-    branches: [ 'release*', 'release-*' ]
+    branches: # [ 'release*', 'release-*' ]
   workflow_dispatch:
     inputs:
       force_deploy:

@@ -2,7 +2,7 @@ name: CD - Deploy Batch Application To ECS
 
 on:
   push:
-    branches: [ 'batch*', 'batch-*', 'release*', 'release-*' ]
+    branches: # [ 'batch*', 'batch-*', 'release*', 'release-*' ]
     paths:
       - 'src/main/java/com/fourthread/ozang/module/domain/weather/batch/**'
       - 'src/main/java/com/fourthread/ozang/module/config/batch/**'
@@ -120,7 +120,7 @@ jobs:
           echo "Build environment: GitHub Actions (sufficient resources)"
           echo "Target platform: linux/amd64"
           echo "Instance type: t2.micro (1 vCPU, 1GB RAM)"
-          
+
           CACHE_FLAG=""
           if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
             CACHE_FLAG="--no-cache"
@@ -128,7 +128,7 @@ jobs:
           else
             echo "Using build cache for faster build"
           fi
-          
+
           #  배치 전용 Dockerfile 사용 
           docker build \
             --file Dockerfile.batch \
@@ -147,14 +147,14 @@ jobs:
             --label "version=${{ env.VERSION }}" \
             --label "build-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             .
-          
+
           echo "Pushing batch images to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}
-          
+
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          
+
           # 이미지 크기 및 정보 확인
           IMAGE_SIZE=$(docker images $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --format "{{.Size}}")
           echo "Built batch image size: ${IMAGE_SIZE}"
@@ -203,12 +203,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      #  배치 서비스 존재 확인 및 생성 
+      #  배치 서비스 존재 확인 및 생성
       - name: Check and create batch service if not exists
         id: check-service
         run: |
           echo "Checking if batch service exists..."
-          
+
           if aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
@@ -226,7 +226,7 @@ jobs:
         if: steps.check-service.outputs.service_exists == 'true'
         run: |
           echo "Checking current ECS batch service state..."
-          
+
           # 현재 태스크 정의 ARN 저장 (롤백용)
           CURRENT_TASK_DEF=$(aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
@@ -235,7 +235,7 @@ jobs:
             --output text)
           echo "current_task_def=${CURRENT_TASK_DEF}" >> $GITHUB_OUTPUT
           echo "Current batch task definition: ${CURRENT_TASK_DEF}"
-          
+
           # 현재 실행 중인 태스크 수 저장
           CURRENT_DESIRED_COUNT=$(aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
@@ -248,7 +248,7 @@ jobs:
       - name: Update Task Definition with Environment Variables
         run: |
           echo "Updating batch task definition with environment variables..."
-          
+
           cat ${{ env.ECS_TASK_DEFINITION }} | jq --arg java_opts "${{ env.JAVA_OPTS }}" \
             --arg profile "${{ env.SPRING_PROFILES_ACTIVE }}" \
             --arg version "${{ env.VERSION }}" \
@@ -270,7 +270,7 @@ jobs:
             end
           ' > updated-batch-task-def.json
           mv updated-batch-task-def.json ${{ env.ECS_TASK_DEFINITION }}
-          
+
           echo "Batch task definition updated with t2.micro optimized settings"
 
       - name: Fill in the new image ID in the batch task definition
@@ -289,12 +289,12 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --desired-count 0
-          
+
           echo "Waiting for batch service to stop..."
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
-          
+
           echo "Batch service stopped successfully"
 
       - name: Deploy batch task definition
@@ -306,37 +306,37 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: false
 
-      #  배치 서비스 재시작 
+      #  배치 서비스 재시작
       - name: Start batch service
         run: |
           echo "Starting batch service..."
-          
+
           # 새 서비스인 경우 desired count 1로 설정
           DESIRED_COUNT=${{ steps.current-state.outputs.current_desired_count || 1 }}
-          
+
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --desired-count $DESIRED_COUNT
-          
+
           echo "Waiting for batch service stability..."
           timeout 900 aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
-          
+
           echo "Batch service started successfully"
 
-      # 배치 헬스체크 (ALB 대신 직접 컨테이너 체크) 
+      # 배치 헬스체크 (ALB 대신 직접 컨테이너 체크)
       - name: Wait for batch application health check
         run: |
           echo "Waiting for batch application health check..."
-          
+
           MAX_ATTEMPTS=20
           ATTEMPT=1
-          
+
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
             echo "Batch health check attempt $ATTEMPT/$MAX_ATTEMPTS"
-          
+
             # ECS 태스크 상태 확인
             RUNNING_TASKS=$(aws ecs list-tasks \
               --cluster ${{ env.ECS_CLUSTER }} \
@@ -344,9 +344,9 @@ jobs:
               --desired-status RUNNING \
               --query 'length(taskArns)' \
               --output text)
-          
+
             echo "Running batch tasks: $RUNNING_TASKS"
-          
+
             if [ "$RUNNING_TASKS" -gt 0 ]; then
               # 태스크 ARN 가져오기
               TASK_ARN=$(aws ecs list-tasks \
@@ -355,27 +355,27 @@ jobs:
                 --desired-status RUNNING \
                 --query 'taskArns[0]' \
                 --output text)
-          
+
               # 태스크 상세 정보 확인
               TASK_STATUS=$(aws ecs describe-tasks \
                 --cluster ${{ env.ECS_CLUSTER }} \
                 --tasks $TASK_ARN \
                 --query 'tasks[0].lastStatus' \
                 --output text)
-          
+
               echo "Task status: $TASK_STATUS"
-          
+
               if [ "$TASK_STATUS" = "RUNNING" ]; then
                 echo "Batch application is running successfully!"
                 break
               fi
             fi
-          
+
             if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
               echo "Batch application health check timeout"
               exit 1
             fi
-          
+
             echo "Waiting 30 seconds before retry..."
             sleep 30
             ATTEMPT=$((ATTEMPT + 1))
@@ -398,17 +398,17 @@ jobs:
           if [ "$RUNNING_TASKS" -gt 0 ]; then
             echo "Batch ECS tasks are running successfully"
             echo "deployment_status=success" >> $GITHUB_OUTPUT
-          
+
             #  배치 스케줄러 작동 확인 (로그 체크) 
             echo "Checking batch scheduler logs..."
-          
+
             TASK_ARN=$(aws ecs list-tasks \
               --cluster ${{ env.ECS_CLUSTER }} \
               --service-name ${{ env.ECS_SERVICE }} \
               --desired-status RUNNING \
               --query 'taskArns[0]' \
               --output text)
-          
+
             # 로그 그룹에서 배치 스케줄러 관련 로그 확인
             aws logs describe-log-streams \
               --log-group-name "/ecs/ozang-batch-app" \
@@ -417,11 +417,11 @@ jobs:
               --max-items 1 \
               --query 'logStreams[0].logStreamName' \
               --output text > latest_log_stream.txt
-          
+
             if [ -s latest_log_stream.txt ]; then
               LATEST_STREAM=$(cat latest_log_stream.txt)
               echo "Latest log stream: $LATEST_STREAM"
-          
+
               # 최근 로그에서 배치 관련 메시지 확인
               aws logs get-log-events \
                 --log-group-name "/ecs/ozang-batch-app" \
@@ -430,7 +430,7 @@ jobs:
                 --query 'events[].message' \
                 --output text | grep -i "batch\|scheduler" || echo "No batch logs found yet"
             fi
-          
+
           else
             echo "No running batch ECS tasks found"
             echo "deployment_status=failed" >> $GITHUB_OUTPUT
@@ -442,7 +442,7 @@ jobs:
         run: |
           echo "Batch deployment failed. Rolling back to previous version..."
           echo "Previous batch task definition: ${{ steps.current-state.outputs.current_task_def }}"
-          
+
           # 이전 태스크 정의로 롤백
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
@@ -450,12 +450,12 @@ jobs:
             --task-definition ${{ steps.current-state.outputs.current_task_def }} \
             --desired-count ${{ steps.current-state.outputs.current_desired_count }} \
             --force-new-deployment
-          
+
           echo "Waiting for batch rollback to complete..."
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
-          
+
           echo "Batch rollback completed successfully"
 
       - name: Batch deployment notification
@@ -473,14 +473,14 @@ jobs:
           echo "Application Type: Batch Processor"
           echo "Profile: batch"
           echo "==="
-          
+
           if [ "${{ job.status }}" == "success" ]; then
             echo "배치 애플리케이션 배포가 성공적으로 완료되었습니다!"
             echo "이미지: ${{ needs.build-and-push.outputs.image_uri }}"
             echo "상태: ${{ steps.verify-deployment.outputs.deployment_status }}"
             echo "서비스: ${{ env.ECS_SERVICE }}"
             echo "클러스터: ${{ env.ECS_CLUSTER }}"
-          
+
             #  배치용 이미지 정리 (최대 3개 유지) 
             echo "Cleaning up old batch images in Public ECR..."
             aws ecr-public describe-images \
@@ -499,7 +499,7 @@ jobs:
           else
             echo "배치 애플리케이션 배포가 실패했습니다!"
             echo "실패 이유를 확인하고 다시 시도해주세요."
-          
+
             if [ "${{ steps.current-state.outputs.current_task_def }}" != "" ]; then
               echo "이전 버전으로 롤백되었습니다."
             fi
@@ -511,7 +511,7 @@ jobs:
           echo "==="
           echo "배치 애플리케이션 배포 메트릭"
           echo "==="
-          
+
           # ECS 배치 서비스 상태
           aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
@@ -524,7 +524,7 @@ jobs:
               TaskDefinition: taskDefinition
             }' \
             --output table
-          
+
           # 실행 중인 배치 태스크 상세 정보
           echo "Running Batch Tasks:"
           aws ecs list-tasks \
@@ -533,7 +533,7 @@ jobs:
             --desired-status RUNNING \
             --query 'taskArns' \
             --output table
-          
+
           echo "==="
           echo "최적화 정보: t2.micro (1vCPU, 1GB RAM)"
           echo "배치 애플리케이션 전용 인스턴스"
