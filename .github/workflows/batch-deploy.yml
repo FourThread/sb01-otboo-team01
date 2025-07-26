@@ -30,9 +30,9 @@ env:
   ECR_REPOSITORY: ozang-batch
   ECS_SERVICE: ozang-batch-service
   ECS_CLUSTER: ozang-cluster2
-  ECS_TASK_DEFINITION: .aws/batch-app-task-definition.json
-  CONTAINER_NAME: ozang-batch
-  JAVA_OPTS: "-Xmx1200m -Xms600m -XX:MaxMetaspaceSize=300m -XX:MetaspaceSize=150m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/batch-heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:InitialRAMPercentage=25.0 -XX:MaxRAMPercentage=75.0 -XX:MinRAMPercentage=50.0"
+  ECS_TASK_DEFINITION: .aws/batch-task-definition.json
+  CONTAINER_NAME: ozang-batch-app
+  JAVA_OPTS: "-Xmx1024m -Xms512m -XX:MaxMetaspaceSize=256m -XX:MetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
   SPRING_PROFILES_ACTIVE: "batch,prod"
 
 permissions:
@@ -210,8 +210,71 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+      - name: Check if service exists
+        id: check-service
+        run: |
+          if aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} > /dev/null 2>&1; then
+            echo "service_exists=true" >> $GITHUB_OUTPUT
+            echo "Batch service exists. Will update."
+          else
+            echo "service_exists=false" >> $GITHUB_OUTPUT
+            echo "Batch service does not exist. Will create new service."
+          fi
+
+      - name: Get current deployment state
+        id: current-state
+        if: steps.check-service.outputs.service_exists == 'true'
+        run: |
+          echo "Checking current ECS batch service state..."
+          
+          # 현재 태스크 정의 ARN 저장 (롤백용)
+          CURRENT_TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          echo "current_task_def=${CURRENT_TASK_DEF}" >> $GITHUB_OUTPUT
+          echo "Current batch task definition: ${CURRENT_TASK_DEF}"
+          
+          # 현재 실행 중인 태스크 수 저장
+          CURRENT_DESIRED_COUNT=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].desiredCount' \
+            --output text)
+          echo "current_desired_count=${CURRENT_DESIRED_COUNT}" >> $GITHUB_OUTPUT
+          echo "Current desired count: ${CURRENT_DESIRED_COUNT}"
+
+      - name: Update Task Definition with Environment Variables
+        run: |
+          echo "Updating batch task definition with environment variables..."
+          
+          cat ${{ env.ECS_TASK_DEFINITION }} | jq --arg java_opts "${{ env.JAVA_OPTS }}" \
+            --arg profile "${{ env.SPRING_PROFILES_ACTIVE }}" \
+            --arg version "${{ env.VERSION }}" \
+            --arg instance_type "t3.small" '
+            if .containerDefinitions[0].environment then
+              .containerDefinitions[0].environment = (.containerDefinitions[0].environment | map(select(.name != "JAVA_OPTS" and .name != "SPRING_PROFILES_ACTIVE" and .name != "PROJECT_VERSION" and .name != "INSTANCE_TYPE"))) + [
+                {"name": "JAVA_OPTS", "value": $java_opts},
+                {"name": "SPRING_PROFILES_ACTIVE", "value": $profile},
+                {"name": "PROJECT_VERSION", "value": $version},
+                {"name": "INSTANCE_TYPE", "value": $instance_type}
+              ]
+            else 
+              .containerDefinitions[0].environment = [
+                {"name": "JAVA_OPTS", "value": $java_opts},
+                {"name": "SPRING_PROFILES_ACTIVE", "value": $profile},
+                {"name": "PROJECT_VERSION", "value": $version},
+                {"name": "INSTANCE_TYPE", "value": $instance_type}
+              ]
+            end
+          ' > updated-batch-task-def.json
+          mv updated-batch-task-def.json ${{ env.ECS_TASK_DEFINITION }}
+          
+          echo "Batch task definition updated with t3.small optimized settings"
+
+      - name: Fill in the new image ID in the batch task definition
+        id: render-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
@@ -222,10 +285,27 @@ jobs:
             SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
             PROJECT_VERSION=${{ env.VERSION }}
 
-      - name: Deploy Amazon ECS task definition
+      - name: Stop batch service (if exists)
+        if: steps.check-service.outputs.service_exists == 'true'
+        run: |
+          echo "Stopping batch service for safe deployment..."
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0
+          
+          echo "Waiting for batch service to stop..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "Batch service stopped successfully"
+
+      - name: Deploy batch task definition
+        id: deploy-task-def
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
