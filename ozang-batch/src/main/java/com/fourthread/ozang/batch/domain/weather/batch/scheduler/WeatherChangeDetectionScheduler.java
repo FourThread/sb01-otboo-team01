@@ -42,6 +42,7 @@ public class WeatherChangeDetectionScheduler {
      * 매시 50분에 실행 (초단기예보 제공 후 5분 뒤)
      */
     @Scheduled(cron = "0 50 * * * ?", zone = "#{@timezoneId}")
+//    @Scheduled(cron = "0 * * * * ?", zone = "#{@timezoneId}")
     public void runWeatherChangeDetection() {
         if (!weatherChangeDetectionEnabled) {
             log.debug("날씨 변화 감지 작업이 비활성화되어 있습니다");
