@@ -1,0 +1,138 @@
+// ozang-batch 모듈 전용 설정
+// Spring Boot 플러그인은 루트에서 apply됨
+
+description = 'Batch processing module for scheduled tasks and data processing'
+
+// 배치 실행 가능한 JAR 설정
+jar {
+    enabled = false
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = "ozang-batch-${version}.jar"
+    mainClass = 'com.fourthread.ozang.batch.OzangBatchApplication'
+}
+
+// 배치 전용 테스트 설정
+test {
+    systemProperty 'spring.profiles.active', 'test,batch'
+
+    // 배치 테스트 시 메모리 설정
+    jvmArgs = [
+            '-Xmx512m',
+            '-XX:MaxMetaspaceSize=128m'
+    ]
+}
+
+// 배치 테스트 태스크
+tasks.register('batchTest', Test) {
+    description = 'Run batch-specific tests'
+    useJUnitPlatform {
+        includeTags 'batch'
+    }
+
+    systemProperty 'spring.profiles.active', 'test,batch'
+}
+
+// 배치 통합 테스트
+tasks.register('batchIntegrationTest', Test) {
+    description = 'Run batch integration tests'
+    useJUnitPlatform {
+        includeTags 'batch-integration'
+    }
+
+    systemProperty 'spring.profiles.active', 'test,batch'
+
+    // 통합 테스트용 메모리 설정
+    jvmArgs = [
+            '-Xmx768m',
+            '-XX:MaxMetaspaceSize=192m'
+    ]
+}
+
+// 배치 애플리케이션 실행 태스크
+tasks.register('runBatch', JavaExec) {
+    description = 'Run batch application locally'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.fourthread.ozang.batch.OzangBatchApplication'
+
+    systemProperty 'spring.profiles.active', 'dev,batch'
+
+    // 로컬 실행용 JVM 옵션
+    jvmArgs = [
+            '-Xmx768m',
+            '-Xms384m',
+            '-XX:MaxMetaspaceSize=192m',
+            '-XX:MetaspaceSize=96m',
+            '-Dspring.output.ansi.enabled=true'
+    ]
+}
+
+// 배치 Job 실행 태스크 (특정 Job만 실행)
+tasks.register('runSpecificJob', JavaExec) {
+    description = 'Run specific batch job (use -Pjob.name=jobName)'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.fourthread.ozang.batch.OzangBatchApplication'
+
+    systemProperty 'spring.profiles.active', 'dev,batch'
+
+    if (project.hasProperty('job.name')) {
+        args = ["--job.name=${project.property('job.name')}"]
+    }
+
+    doFirst {
+        if (!project.hasProperty('job.name')) {
+            throw new GradleException('Please specify job name with -Pjob.name=<jobName>')
+        }
+    }
+}
+
+// 배치 설정 검증 태스크
+tasks.register('validateBatchConfig') {
+    description = 'Validate batch configuration'
+    doLast {
+        def configFile = file('src/main/resources/application-batch.yml')
+        if (!configFile.exists()) {
+            throw new GradleException('Batch configuration file not found: application-batch.yml')
+        }
+        println "✅ Batch configuration validated"
+    }
+}
+
+// Docker 이미지 태그 생성 태스크
+tasks.register('generateDockerTags') {
+    description = 'Generate Docker tags for batch application'
+    doLast {
+        def gitCommit = 'git rev-parse --short HEAD'.execute().text.trim()
+        def timestamp = new Date().format('yyyyMMdd-HHmmss')
+
+        println "Docker tags for batch application:"
+        println "  - ozang-batch:${version}"
+        println "  - ozang-batch:${gitCommit}"
+        println "  - ozang-batch:${timestamp}"
+        println "  - ozang-batch:latest"
+    }
+}
+
+// 빌드 전 검증
+build.dependsOn 'validateBatchConfig'
+
+// 배치 성능 테스트 (선택사항)
+tasks.register('batchPerformanceTest', Test) {
+    description = 'Run performance tests for batch jobs'
+    useJUnitPlatform {
+        includeTags 'performance'
+    }
+
+    systemProperty 'spring.profiles.active', 'test,batch'
+
+    // 성능 테스트용 메모리 설정
+    jvmArgs = [
+            '-Xmx1g',
+            '-XX:MaxMetaspaceSize=256m'
+    ]
+
+    // 성능 테스트는 기본 테스트에서 제외
+    shouldRunAfter test
+}
