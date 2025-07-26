@@ -293,6 +293,30 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+      - name: Start ECS service (Resume after deployment)
+        run: |
+          echo "Starting ECS service after deployment..."
+          
+          # 이전 desired count 복원 (기본값 1 사용)
+          DESIRED_COUNT="${{ steps.current-state.outputs.current_desired_count }}"
+          if [ "$DESIRED_COUNT" = "0" ] || [ -z "$DESIRED_COUNT" ]; then
+            DESIRED_COUNT=1
+          fi
+          
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count $DESIRED_COUNT
+          
+          echo "Service desired count set to: $DESIRED_COUNT"
+          
+          echo "Waiting for service to become stable..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "Service started successfully"
+
       - name: Verify deployment
         run: |
           echo "🚀 Web Application deployment completed!"

@@ -18,10 +18,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = {
     "com.fourthread.ozang.core.domain"  // Entity들도 스캔하도록 추가
 })
-public class OZangApplication {
+public class OzangApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OZangApplication.class, args);
+        SpringApplication.run(OzangApplication.class, args);
     }
 
 }
