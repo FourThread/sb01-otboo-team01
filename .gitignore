@@ -38,7 +38,7 @@ out/
 .vscode/
 
 ### 설정 파일 ###
-.env
+ozang-core/.env
 
 # 프로메테우스 data 폴더 무시
 /infra/monitoring-example/data/
@@ -47,3 +47,4 @@ out/
 # 정적리소스
 /src/main/resources/static/
 /ozang-app/src/main/resources/static/*
+/ozang-core/src/main/generated/*
