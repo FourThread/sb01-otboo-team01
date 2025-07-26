@@ -310,6 +310,31 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+      - name: Start batch service (Resume after deployment)
+        if: steps.check-service.outputs.service_exists == 'true'
+        run: |
+          echo "Starting batch service after deployment..."
+          
+          # 이전 desired count 복원 (배치는 기본적으로 0 또는 1)
+          DESIRED_COUNT="${{ steps.current-state.outputs.current_desired_count }}"
+          if [ -z "$DESIRED_COUNT" ]; then
+            DESIRED_COUNT=1
+          fi
+          
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count $DESIRED_COUNT
+          
+          echo "Batch service desired count set to: $DESIRED_COUNT"
+          
+          echo "Waiting for batch service to become stable..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "Batch service started successfully"
+
       - name: Verify deployment
         run: |
           echo "🚀 Batch Application deployment completed!"
