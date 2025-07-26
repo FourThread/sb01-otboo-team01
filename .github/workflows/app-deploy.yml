@@ -210,22 +210,85 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Get current deployment state
+        id: current-state
+        run: |
+          echo "Checking current ECS state..."
+          
+          # 현재 태스크 정의 ARN 저장 (롤백용)
+          CURRENT_TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          echo "current_task_def=${CURRENT_TASK_DEF}" >> $GITHUB_OUTPUT
+          echo "Current task definition: ${CURRENT_TASK_DEF}"
+          
+          # 현재 실행 중인 태스크 수 저장
+          CURRENT_DESIRED_COUNT=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].desiredCount' \
+            --output text)
+          echo "current_desired_count=${CURRENT_DESIRED_COUNT}" >> $GITHUB_OUTPUT
+          echo "Current desired count: ${CURRENT_DESIRED_COUNT}"
+
+      - name: Update Task Definition with Environment Variables
+        run: |
+          echo "Updating task definition with environment variables..."
+          
+          cat ${{ env.ECS_TASK_DEFINITION }} | jq --arg java_opts "${{ env.JAVA_OPTS }}" \
+            --arg profile "${{ env.SPRING_PROFILES_ACTIVE }}" \
+            --arg version "${{ env.VERSION }}" \
+            --arg instance_type "t3.small" '
+            if .containerDefinitions[0].environment then
+              .containerDefinitions[0].environment = (.containerDefinitions[0].environment | map(select(.name != "JAVA_OPTS" and .name != "SPRING_PROFILES_ACTIVE" and .name != "PROJECT_VERSION" and .name != "INSTANCE_TYPE"))) + [
+                {"name": "JAVA_OPTS", "value": $java_opts},
+                {"name": "SPRING_PROFILES_ACTIVE", "value": $profile},
+                {"name": "PROJECT_VERSION", "value": $version},
+                {"name": "INSTANCE_TYPE", "value": $instance_type}
+              ]
+            else 
+              .containerDefinitions[0].environment = [
+                {"name": "JAVA_OPTS", "value": $java_opts},
+                {"name": "SPRING_PROFILES_ACTIVE", "value": $profile},
+                {"name": "PROJECT_VERSION", "value": $version},
+                {"name": "INSTANCE_TYPE", "value": $instance_type}
+              ]
+            end
+          ' > updated-task-def.json
+          mv updated-task-def.json ${{ env.ECS_TASK_DEFINITION }}
+          
+          echo "Task definition updated with t3.small optimized settings"
+
       - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+        id: render-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ needs.build-and-push.outputs.image_uri }}
-          environment-variables: |
-            JAVA_OPTS=${{ env.JAVA_OPTS }}
-            SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
-            PROJECT_VERSION=${{ env.VERSION }}
+
+      - name: Stop ECS service (Safe deployment)
+        run: |
+          echo "Stopping ECS service for safe deployment..."
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0
+          
+          echo "Waiting for service to stop..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "Service stopped successfully"
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        id: deploy-task-def
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
