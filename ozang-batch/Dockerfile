@@ -6,7 +6,7 @@ COPY gradlew .
 COPY gradle/ gradle/
 COPY settings.gradle build.gradle ./
 
-# 모듈 구조 복사
+# 모든 모듈 구조 복사 (종속성)
 COPY ozang-core/ ozang-core/
 COPY ozang-batch/ ozang-batch/
 
@@ -14,7 +14,7 @@ COPY ozang-batch/ ozang-batch/
 RUN ./gradlew :ozang-core:dependencies --no-daemon --quiet
 RUN ./gradlew :ozang-batch:dependencies --no-daemon --quiet
 
-# 배치 모듈 빌드
+# 배치 애플리케이션 빌드
 RUN ./gradlew :ozang-batch:build -x test --no-daemon --quiet
 
 FROM --platform=linux/amd64 amazoncorretto:17-alpine
@@ -80,8 +80,11 @@ RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup -s /bin/sh -D
 
 # 로그 및 데이터 디렉토리 생성
-RUN mkdir -p /app/logs /app/data /app/batch-temp && \
+RUN mkdir -p /app/logs /app/data /app/batch-temp /app/batch-reports && \
     chown -R appuser:appgroup /app
+
+# 환경 변수 파일 복사
+COPY --from=builder --chown=appuser:appgroup /app/.env /app/.env
 
 # 배치 애플리케이션 JAR 복사
 COPY --from=builder --chown=appuser:appgroup /app/ozang-batch/build/libs/*.jar app.jar
@@ -99,16 +102,36 @@ RUN echo "Application: ${PROJECT_NAME}" > /app/batch-app-info.txt && \
 
 # 빌드 검증
 RUN if [ ! -f app.jar ]; then \
-        echo "ERROR: app.jar not found!" && exit 1; \
-    fi
+        echo "ERROR: app.jar not found!" && \
+        ls -la /app/ozang-batch/build/libs/ && \
+        exit 1; \
+    fi && \
+    echo "JAR file validated: $(ls -lh app.jar)"
 
-# 포트 노출 (배치 관리 API용)
-EXPOSE 8081 8082
-
-# 배치 애플리케이션용 헬스체크
-HEALTHCHECK --interval=60s --timeout=15s --start-period=120s --retries=3 \
-    CMD curl -f http://localhost:8081/batch/actuator/health || exit 1
-
-# 애플리케이션 실행
+# 사용자 전환
 USER appuser
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+
+# 포트 노출 (관리 API용)
+EXPOSE 8081
+
+# 헬스체크 설정
+HEALTHCHECK --interval=60s --timeout=15s --start-period=180s --retries=3 \
+    CMD curl -f --max-time 10 --connect-timeout 5 http://localhost:8081/actuator/health || \
+        ps aux | grep java || \
+        exit 1
+
+# 배치 애플리케이션 실행
+ENTRYPOINT ["sh", "-c", "\
+    echo 'Starting O-ZANG Batch Processor...'; \
+    echo 'Version: '${PROJECT_VERSION:-unknown}; \
+    echo 'Instance: t3.small (2vCPU, 2GB RAM)'; \
+    echo 'Java Options: '${JAVA_OPTS}; \
+    echo 'Profile: batch,prod'; \
+    echo ''; \
+    exec java ${JAVA_OPTS} -jar app.jar \
+    --server.port=8081 \
+    --spring.profiles.active=batch,prod \
+    --spring.application.name=${PROJECT_NAME} \
+    --spring.application.version=${PROJECT_VERSION:-unknown} \
+    --spring.batch.job.enabled=true \
+"]
