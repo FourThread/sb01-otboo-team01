@@ -48,15 +48,6 @@ dependencyResolutionManagement {
     }
 }
 
-// Gradle Enterprise 설정 (선택사항 - 빌드 성능 향상)
-if (System.getenv('CI') == 'true') {
-    gradle.projectsEvaluated {
-        tasks.withType(Test) {
-            outputs.upToDateWhen { false }
-        }
-    }
-}
-
 // 빌드 캐시 설정
 buildCache {
     local {
