@@ -5,7 +5,6 @@ import com.fourthread.ozang.core.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -19,10 +18,8 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -32,8 +29,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@Profile("batch")
-@ConditionalOnProperty(name = "batch.enabled", havingValue = "true", matchIfMissing = true)
 public class WeatherCacheWarmupBatch {
 
     private final WeatherService weatherService;
