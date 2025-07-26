@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-class HumidityInfo {
+public class HumidityInfo {
     @Column(name = "humidity_current")
     private Double current = 50.0;
 

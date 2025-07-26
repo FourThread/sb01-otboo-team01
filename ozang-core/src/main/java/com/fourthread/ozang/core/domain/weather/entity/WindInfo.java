@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-class WindInfo {
+public class WindInfo {
     private Double speed = 0.0;
     private Double direction = 0.0;
     private Double uComponent = 0.0;  // 동서 성분

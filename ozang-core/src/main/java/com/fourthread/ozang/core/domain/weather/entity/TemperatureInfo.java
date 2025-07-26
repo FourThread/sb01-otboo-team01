@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-class TemperatureInfo {
+public class TemperatureInfo {
     @Column(name = "temperature_current")
     private Double current = 0.0;
 

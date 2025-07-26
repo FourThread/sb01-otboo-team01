@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-class PrecipitationInfo {
+public class PrecipitationInfo {
     @Enumerated(EnumType.STRING)
     private PrecipitationType type = PrecipitationType.NONE;
     private Double amount = 0.0;

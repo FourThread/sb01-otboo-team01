@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-class WeatherLocation {
+public class WeatherLocation {
     private Double latitude;
     private Double longitude;
     private Integer x;
