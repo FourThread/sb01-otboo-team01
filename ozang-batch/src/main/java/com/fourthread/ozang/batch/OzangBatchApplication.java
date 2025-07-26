@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
@@ -14,6 +16,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan(basePackages = {
     "com.fourthread.ozang.core",
     "com.fourthread.ozang.batch"
+})
+@EnableJpaRepositories(basePackages = {
+    "com.fourthread.ozang.core.domain"  // 모든 domain 하위의 repository 포함
+})
+@EntityScan(basePackages = {
+    "com.fourthread.ozang.core.domain"  // Entity들도 스캔하도록 추가
 })
 public class OzangBatchApplication {
 

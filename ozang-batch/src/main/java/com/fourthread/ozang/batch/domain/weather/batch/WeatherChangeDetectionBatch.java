@@ -3,8 +3,6 @@ package com.fourthread.ozang.batch.domain.weather.batch;
 import com.fourthread.ozang.batch.config.BatchJobExecutionListener;
 import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetectedEvent;
-import com.fourthread.ozang.core.domain.notification.service.NotificationService;
-import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
@@ -41,8 +39,6 @@ public class WeatherChangeDetectionBatch {
 
     private final WeatherService weatherService;
     private final WeatherCacheService cacheService;
-    private final NotificationService notificationService;
-    private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Executor apiCallExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
@@ -103,9 +99,6 @@ public class WeatherChangeDetectionBatch {
 
                         if (!changes.isEmpty()) {
                             totalChanges += changes.size();
-
-                            // 해당 지역 사용자들에게 알림 전송
-                            //sendWeatherChangeNotifications(changes);
 
                             sendWeatherChangeEvents(changes);
 
