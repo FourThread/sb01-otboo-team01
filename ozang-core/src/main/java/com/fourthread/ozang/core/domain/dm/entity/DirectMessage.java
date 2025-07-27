@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "direct_messages")
+@Table(name = "direct_messages", schema = "public")
 public class DirectMessage extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)

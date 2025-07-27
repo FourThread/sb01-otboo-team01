@@ -30,14 +30,6 @@ project(':ozang-app').name = 'ozang-app'
 
 // Gradle 기능 활성화
 enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
-//
-//// 플러그인 관리
-//pluginManagement {
-//    repositories {
-//        gradlePluginPortal()
-//        mavenCentral()
-//    }
-//}
 
 // 의존성 관리
 dependencyResolutionManagement {

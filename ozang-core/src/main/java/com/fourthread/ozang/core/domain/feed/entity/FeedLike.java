@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "feed_likes")
+@Table(name = "feed_likes", schema = "public")
 public class FeedLike extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
