@@ -24,7 +24,7 @@ import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUpdatableEntity {
@@ -49,7 +49,7 @@ public class User extends BaseUpdatableEntity {
   @ElementCollection(fetch = FetchType.LAZY)
   @BatchSize(size = 50)
   @Enumerated(EnumType.STRING)
-  @CollectionTable(name = "user_oauth_providers", joinColumns = @JoinColumn(name = "user_id"))
+  @CollectionTable(name = "user_oauth_providers", joinColumns = @JoinColumn(name = "user_id"), schema = "public")
   @Column(name = "provider", length = 20)
   private List<Items> linkedOAuthProviders = new ArrayList<>();
 

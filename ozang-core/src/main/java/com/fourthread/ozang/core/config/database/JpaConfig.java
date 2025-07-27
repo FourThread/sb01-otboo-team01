@@ -1,10 +1,7 @@
-package com.fourthread.ozang.core.config.database;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
-@Configuration
-@EnableJpaAuditing
-public class JpaConfig {
-
-}
+//package com.fourthread.ozang.core.config.database;
+//
+//import org.springframework.context.annotation.Configuration;
+//
+//@Configuration
+//public class JpaConfig {
+//}

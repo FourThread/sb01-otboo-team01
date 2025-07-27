@@ -19,7 +19,7 @@ import org.hibernate.annotations.OnDelete;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Table(name = "feed_comments")
+@Table(name = "feed_comments", schema = "public")
 public class FeedComment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)

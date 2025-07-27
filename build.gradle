@@ -27,6 +27,10 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    configurations.all {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
 }
 
 // 서브프로젝트만 적용되는 공통 설정

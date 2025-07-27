@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "follows",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"follower_id", "followee_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"follower_id", "followee_id"}), schema = "public")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow extends BaseEntity {

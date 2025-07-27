@@ -11,8 +11,9 @@ COPY ozang-core/ ozang-core/
 COPY ozang-batch/ ozang-batch/
 
 # 의존성 다운로드 (캐시 최적화)
-RUN ./gradlew :ozang-core:dependencies --no-daemon --quiet
-RUN ./gradlew :ozang-batch:dependencies --no-daemon --quiet
+RUN ./gradlew clean --no-daemon --quiet
+RUN ./gradlew :ozang-core:dependencies --refresh-dependencies --no-daemon --quiet
+RUN ./gradlew :ozang-batch:dependencies --refresh-dependencies --no-daemon --quiet
 
 # 배치 애플리케이션 빌드
 RUN ./gradlew :ozang-batch:build -x test --no-daemon --quiet
