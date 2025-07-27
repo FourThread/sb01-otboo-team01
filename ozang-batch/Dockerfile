@@ -41,10 +41,10 @@ LABEL maintainer="fourthread" \
       application-type="batch-processor"
 
 # 배치 프로세서 최적화된 JAVA_OPTS
-ENV JAVA_OPTS="-Xmx768m \
-    -Xms256m \
-    -XX:MaxMetaspaceSize=192m \
-    -XX:MetaspaceSize=96m \
+ENV JAVA_OPTS="-Xmx1024m \
+    -Xms512m \
+    -XX:MaxMetaspaceSize=256m \
+    -XX:MetaspaceSize=128m \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UseCompressedOops \
@@ -53,14 +53,14 @@ ENV JAVA_OPTS="-Xmx768m \
     -XX:HeapDumpPath=/app/logs/batch-heapdump.hprof \
     -XX:+ExitOnOutOfMemoryError \
     -XX:+UseContainerSupport \
-    -XX:InitialRAMPercentage=15.0 \
-    -XX:MaxRAMPercentage=60.0 \
-    -XX:MinRAMPercentage=30.0 \
+    -XX:InitialRAMPercentage=25.0 \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:MinRAMPercentage=50.0 \
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF-8 \
     -Duser.timezone=Asia/Seoul \
     -Dspring.output.ansi.enabled=never \
-    -Dspring.profiles.active=batch,prod"
+    -Dspring.profiles.active=batch"
 
 # 시간대 설정 및 필수 패키지 설치
 RUN apk update && apk upgrade && \

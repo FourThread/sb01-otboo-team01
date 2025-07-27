@@ -41,10 +41,10 @@ LABEL maintainer="fourthread" \
       application-type="web-application"
 
 # 웹 애플리케이션 최적화된 JAVA_OPTS
-ENV JAVA_OPTS="-Xmx1200m \
-    -Xms600m \
-    -XX:MaxMetaspaceSize=300m \
-    -XX:MetaspaceSize=150m \
+ENV JAVA_OPTS="-Xmx1024m \
+    -Xms512m \
+    -XX:MaxMetaspaceSize=256m \
+    -XX:MetaspaceSize=128m \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UseCompressedOops \
