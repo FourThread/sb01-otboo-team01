@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "profiles")
+@Table(name = "profiles", schema = "public")
 public class Profile extends BaseUpdatableEntity {
 
   @Column(length = 50)

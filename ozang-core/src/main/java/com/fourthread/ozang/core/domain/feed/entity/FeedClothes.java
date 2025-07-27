@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "feed_clothes")
+@Table(name = "feed_clothes", schema = "public")
 public class FeedClothes extends BaseUpdatableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)

@@ -11,8 +11,9 @@ COPY ozang-core/ ozang-core/
 COPY ozang-batch/ ozang-batch/
 
 # 의존성 다운로드 (캐시 최적화)
-RUN ./gradlew :ozang-core:dependencies --no-daemon --quiet
-RUN ./gradlew :ozang-batch:dependencies --no-daemon --quiet
+RUN ./gradlew clean --no-daemon --quiet
+RUN ./gradlew :ozang-core:dependencies --refresh-dependencies --no-daemon --quiet
+RUN ./gradlew :ozang-batch:dependencies --refresh-dependencies --no-daemon --quiet
 
 # 배치 애플리케이션 빌드
 RUN ./gradlew :ozang-batch:build -x test --no-daemon --quiet
@@ -41,10 +42,10 @@ LABEL maintainer="fourthread" \
       application-type="batch-processor"
 
 # 배치 프로세서 최적화된 JAVA_OPTS
-ENV JAVA_OPTS="-Xmx768m \
-    -Xms256m \
-    -XX:MaxMetaspaceSize=192m \
-    -XX:MetaspaceSize=96m \
+ENV JAVA_OPTS="-Xmx1024m \
+    -Xms512m \
+    -XX:MaxMetaspaceSize=256m \
+    -XX:MetaspaceSize=128m \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UseCompressedOops \
@@ -53,14 +54,14 @@ ENV JAVA_OPTS="-Xmx768m \
     -XX:HeapDumpPath=/app/logs/batch-heapdump.hprof \
     -XX:+ExitOnOutOfMemoryError \
     -XX:+UseContainerSupport \
-    -XX:InitialRAMPercentage=15.0 \
-    -XX:MaxRAMPercentage=60.0 \
-    -XX:MinRAMPercentage=30.0 \
+    -XX:InitialRAMPercentage=25.0 \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:MinRAMPercentage=50.0 \
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF-8 \
     -Duser.timezone=Asia/Seoul \
     -Dspring.output.ansi.enabled=never \
-    -Dspring.profiles.active=batch,prod"
+    -Dspring.profiles.active=batch"
 
 # 시간대 설정 및 필수 패키지 설치
 RUN apk update && apk upgrade && \
@@ -82,9 +83,6 @@ RUN addgroup -g 1001 -S appgroup && \
 # 로그 및 데이터 디렉토리 생성
 RUN mkdir -p /app/logs /app/data /app/batch-temp /app/batch-reports && \
     chown -R appuser:appgroup /app
-
-# 환경 변수 파일 복사
-COPY --from=builder --chown=appuser:appgroup /app/.env /app/.env
 
 # 배치 애플리케이션 JAR 복사
 COPY --from=builder --chown=appuser:appgroup /app/ozang-batch/build/libs/*.jar app.jar

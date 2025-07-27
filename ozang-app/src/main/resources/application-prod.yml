@@ -13,16 +13,17 @@ spring:
       leak-detection-threshold: 60000  # 연결 누수 감지(60초)
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    ####database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+##        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+##        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     show-sql: false
     properties:
       hibernate:
-        format_sql: false
+        format_sql: true
     open-in-view: false
 
   servlet:

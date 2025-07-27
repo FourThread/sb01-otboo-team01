@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "clothes_attribute_definitions")
+@Table(name = "clothes_attribute_definitions", schema = "public")
 public class ClothesAttributeDefinition extends BaseUpdatableEntity {
 
     @Column(nullable = false, unique = true)
@@ -31,8 +31,4 @@ public class ClothesAttributeDefinition extends BaseUpdatableEntity {
         this.selectableValues = selectableValues;
     }
 
-
-/*    //의상속성정의에서 의상속성으로 갈 일이 있나? 아직은 필요없어 보임
-    @OneToMany(mappedBy = "definition", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ClothesAttribute> attributes = new ArrayList<>();*/
 }
