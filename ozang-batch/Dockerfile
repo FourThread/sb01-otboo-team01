@@ -84,9 +84,6 @@ RUN addgroup -g 1001 -S appgroup && \
 RUN mkdir -p /app/logs /app/data /app/batch-temp /app/batch-reports && \
     chown -R appuser:appgroup /app
 
-# 환경 변수 파일 복사
-COPY --from=builder --chown=appuser:appgroup /app/.env /app/.env
-
 # 배치 애플리케이션 JAR 복사
 COPY --from=builder --chown=appuser:appgroup /app/ozang-batch/build/libs/*.jar app.jar
 
