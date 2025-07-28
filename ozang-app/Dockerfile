@@ -1,33 +1,36 @@
-FROM --platform=linux/amd64 amazoncorretto:17-alpine AS builder
+FROM --platform=linux/amd64 amazoncorretto:17-alpine AS base
 WORKDIR /app
 
-# Gradle Wrapper와 설정 파일 복사
+# Gradle Wrapper와 설정 파일만 먼저 복사 (캐시 최적화)
 COPY gradlew .
 COPY gradle/ gradle/
 COPY settings.gradle build.gradle ./
 
-# 모든 모듈 구조 복사 (종속성)
-COPY ozang-core/ ozang-core/
-COPY ozang-app/ ozang-app/
+FROM base AS dependencies
 
-# 의존성 다운로드 (캐시 최적화)
-RUN ./gradlew clean --no-daemon --quiet
-RUN ./gradlew :ozang-core:dependencies --refresh-dependencies --no-daemon --quiet
-RUN ./gradlew :ozang-app:dependencies --refresh-dependencies --no-daemon --quiet
+COPY ozang-core/build.gradle ozang-core/
+COPY ozang-app/build.gradle ozang-app/
 
-# 웹 애플리케이션 빌드
+RUN ./gradlew :ozang-core:dependencies --no-daemon --quiet || true
+RUN ./gradlew :ozang-app:dependencies --no-daemon --quiet || true
+
+FROM dependencies AS builder
+
+COPY ozang-core/src/ ozang-core/src/
+COPY ozang-app/src/ ozang-app/src/
+
 RUN ./gradlew :ozang-app:build -x test --no-daemon --quiet
 
 FROM --platform=linux/amd64 amazoncorretto:17-alpine
 WORKDIR /app
 
 # 환경 변수 설정
-ENV PROJECT_NAME=OZANG-APP
+ENV PROJECT_NAME=OZANG-APP \
+    TZ=Asia/Seoul
 ARG VERSION
 ARG BUILD_DATE
 ARG VCS_REF
 ENV PROJECT_VERSION=${VERSION}
-ENV TZ=Asia/Seoul
 
 # 빌드 정보를 레이블로 추가
 LABEL maintainer="fourthread" \
@@ -41,7 +44,6 @@ LABEL maintainer="fourthread" \
       memory="2gb" \
       application-type="web-application"
 
-# 웹 애플리케이션 최적화된 JAVA_OPTS
 ENV JAVA_OPTS="-Xmx1024m \
     -Xms512m \
     -XX:MaxMetaspaceSize=256m \
@@ -50,9 +52,6 @@ ENV JAVA_OPTS="-Xmx1024m \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UseCompressedOops \
     -XX:+UseCompressedClassPointers \
-    -XX:+HeapDumpOnOutOfMemoryError \
-    -XX:HeapDumpPath=/app/logs/app-heapdump.hprof \
-    -XX:+ExitOnOutOfMemoryError \
     -XX:+UseContainerSupport \
     -XX:InitialRAMPercentage=25.0 \
     -XX:MaxRAMPercentage=75.0 \
@@ -60,18 +59,12 @@ ENV JAVA_OPTS="-Xmx1024m \
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF-8 \
     -Duser.timezone=Asia/Seoul \
-    -Dspring.output.ansi.enabled=never \
-    -Dspring.profiles.active=prod"
+    -Dspring.output.ansi.enabled=never"
 
-# 시간대 설정 및 필수 패키지 설치
 RUN apk update && apk upgrade && \
     apk add --no-cache \
         tzdata \
-        curl \
-        wget \
-        jq \
-        procps \
-        htop && \
+        curl && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo "${TZ}" > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
@@ -80,55 +73,24 @@ RUN apk update && apk upgrade && \
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup -s /bin/sh -D
 
-# 로그 및 데이터 디렉토리 생성
-RUN mkdir -p /app/logs /app/data /app/tmp /app/uploads && \
+# 로그 디렉토리 생성 (최소화)
+RUN mkdir -p /app/logs && \
     chown -R appuser:appgroup /app
 
-# 웹 애플리케이션 JAR 복사
-COPY --from=builder --chown=appuser:appgroup /app/ozang-app/build/libs/*.jar app.jar
-
-# 애플리케이션 정보 파일 생성
-RUN echo "Application: ${PROJECT_NAME}" > /app/app-info.txt && \
-    echo "Version: ${PROJECT_VERSION:-unknown}" >> /app/app-info.txt && \
-    echo "Build Date: ${BUILD_DATE:-unknown}" >> /app/app-info.txt && \
-    echo "Git Commit: ${VCS_REF:-unknown}" >> /app/app-info.txt && \
-    echo "Java Version: $(java -version 2>&1 | head -n 1)" >> /app/app-info.txt && \
-    echo "Optimized for: t3.small (2 vCPU, 2GB RAM)" >> /app/app-info.txt && \
-    echo "Application Type: Web Application" >> /app/app-info.txt && \
-    echo "Build Time: $(date)" >> /app/app-info.txt && \
-    chown appuser:appgroup /app/app-info.txt
-
-# 빌드 검증
-RUN if [ ! -f app.jar ]; then \
-        echo "ERROR: app.jar not found!" && \
-        ls -la /app/ozang-app/build/libs/ && \
-        exit 1; \
-    fi && \
-    echo "JAR file validated: $(ls -lh app.jar)"
+COPY --from=builder --chown=appuser:appgroup /app/ozang-app/build/libs/ozang-app.jar app.jar
 
 # 사용자 전환
 USER appuser
 
 # 포트 노출
-EXPOSE 80
+EXPOSE 8080
 
-# 헬스체크 설정
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f --max-time 8 --connect-timeout 5 http://localhost:80/actuator/health/readiness || \
-        curl -f --max-time 5 --connect-timeout 3 http://localhost:80/actuator/health || \
-        exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# 애플리케이션 실행
 ENTRYPOINT ["sh", "-c", "\
-    echo 'Starting O-ZANG Web Application...'; \
-    echo 'Version: '${PROJECT_VERSION:-unknown}; \
-    echo 'Instance: t3.small (2vCPU, 2GB RAM)'; \
-    echo 'Java Options: '${JAVA_OPTS}; \
-    echo 'Profile: '${SPRING_PROFILES_ACTIVE:-prod}; \
-    echo ''; \
     exec java ${JAVA_OPTS} -jar app.jar \
-    --server.port=80 \
-    --spring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} \
+    --server.port=8080 \
+    --spring.profiles.active=prod \
     --spring.application.name=${PROJECT_NAME} \
-    --spring.application.version=${PROJECT_VERSION:-unknown} \
 "]
