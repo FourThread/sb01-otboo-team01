@@ -105,10 +105,12 @@ public class JwtService {
       Payload payload = jwsObject.getPayload();
       Map<String, Object> jsonObject = payload.toJSONObject();
 
-      UUID userId = UUID.fromString((String) jsonObject.get("userId"));
-      String email = (String) jsonObject.get("email");
-      String name = (String) jsonObject.get("name");
-      Role role = Role.valueOf((String) jsonObject.get("role"));
+      Map<String, Object> userDto = (Map<String, Object>) jsonObject.get("userDto");
+
+      UUID userId = UUID.fromString((String) userDto.get("id"));
+      String email = (String) userDto.get("email");
+      String name = (String) userDto.get("name");
+      Role role = Role.valueOf((String) userDto.get("role"));
 
       Instant issueTime = objectMapper.convertValue(jsonObject.get("iat"), Instant.class);
       Instant expirationTime = objectMapper.convertValue(jsonObject.get("exp"), Instant.class);
