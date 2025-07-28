@@ -1,1 +1,62 @@
-rootProject.name = 'O-ZANG'
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+rootProject.name = 'ozang'
+
+// 멀티 모듈 프로젝트 구성
+include 'ozang-core'
+include 'ozang-batch'
+include 'ozang-app'
+
+// 프로젝트 디렉토리 설정
+project(':ozang-core').projectDir = file('ozang-core')
+project(':ozang-batch').projectDir = file('ozang-batch')
+project(':ozang-app').projectDir = file('ozang-app')
+
+// 프로젝트 이름 설정
+project(':ozang-core').name = 'ozang-core'
+project(':ozang-batch').name = 'ozang-batch'
+project(':ozang-app').name = 'ozang-app'
+
+// Gradle 기능 활성화
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
+
+// 의존성 관리
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// 빌드 캐시 설정
+buildCache {
+    local {
+        enabled = true
+        directory = file("${rootDir}/.gradle/build-cache")
+        removeUnusedEntriesAfterDays = 30
+    }
+}
+
+// 프로젝트 설명
+gradle.rootProject {
+    description = 'O-ZANG Multi-Module Project - Fashion Outfit Recommendation Platform'
+
+    ext {
+        projectUrl = 'https://github.com/fourthread/ozang'
+        projectDescription = 'AI-powered fashion outfit recommendation platform with weather integration'
+        projectGroup = 'com.fourthread'
+        projectVersion = 'v3.0.0'
+    }
+}

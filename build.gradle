@@ -1,224 +1,400 @@
-
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.3'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.5.3' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'jacoco'
-    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0" apply false
 }
 
 group = 'com.fourthread'
-version = 'v2.2.0'
+version = 'v3.0.0'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-springBoot {
-    buildInfo()
-}
-
+// 공통 변수 정의
 ext {
     querydslVersion = '5.1.0'
     springAiVersion = "1.0.0"
+    mapstructVersion = '1.5.5.Final'
+    awsSdkVersion = '2.31.14'
+    springdocVersion = '2.7.0'
+    jjwtVersion = '0.11.5'
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0"
+// 모든 서브프로젝트 공통 설정
+allprojects {
+    group = 'com.fourthread'
+    version = rootProject.version
+
+    repositories {
+        mavenCentral()
+    }
+
+    configurations.all {
+        exclude group: 'commons-logging', module: 'commons-logging'
     }
 }
 
-dependencies {
-    // Spring Boot Starters
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-    implementation("com.openai:openai-java:2.14.0")
+// 서브프로젝트만 적용되는 공통 설정
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'jacoco'
 
-    // Development Tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // Database
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // QueryDSL
-    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // AWS S3
-    implementation 'software.amazon.awssdk:s3:2.31.14'
-    implementation 'software.amazon.awssdk:protocol-core:2.31.14'
-    implementation 'software.amazon.awssdk:s3-transfer-manager:2.31.14'
-    implementation 'software.amazon.awssdk.crt:aws-crt:0.34.1'
-
-    // MapStruct (객체 매핑)
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-
-    // OpenAPI/Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
-
-    // Configuration Processor
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-
-    // Environment Variables
-    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'com.h2database:h2'
-    testImplementation 'org.instancio:instancio-junit:5.4.0'
-    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.3"
-
-    //S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
-
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    // java mail
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
-    //Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    //Kafka
-    implementation 'org.springframework.kafka:spring-kafka'
-
-    // monitoring
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-
-    // elasticsearch
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'co.elastic.clients:elasticsearch-java'
-
-    implementation 'org.jsoup:jsoup:1.17.2'
-
-    // TestContainers (필요시 주석 해제)
-    testImplementation "org.testcontainers:elasticsearch"
-    testImplementation "org.testcontainers:testcontainers"
-    // testImplementation 'org.testcontainers:junit-jupiter'
-    // testImplementation 'org.testcontainers:postgresql'
-
-    // 유틸리티 라이브러리 (필요시 주석 해제)
-    // implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3'
-    // implementation 'org.apache.commons:commons-text:1.10.0'
-}
-
-clean {
-    delete file('src/main/generated')
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-// OpenAPI 자동 문서 생성 (필요시 설정)
-openApi {
-    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
-    outputDir.set(layout.buildDirectory.dir("openapi/docs"))
-    outputFileName.set("swagger-${project.version}.json")
-    waitTimeInSeconds.set(100)
-}
-
-// Jacoco 설정
-jacoco {
-    toolVersion = '0.8.11'
-}
-
-jacocoTestReport {
-    reports {
-        xml.required = true
-        csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
 
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    'com/fourthread/**/config/**',
-                    'com/fourthread/**/exception/**',
-                    'com/fourthread/**/dto/**',
-                    'com/fourthread/**/entity/**',
-                    'com/fourthread/**/Q*.class',
-                    'com/fourthread/**/*Application.class'
-            ])
-        }))
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
     }
 
-    dependsOn test
-}
+    dependencyManagement {
+        imports {
+            mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+            mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+        }
+    }
 
-// 테스트 태스크 분리 (향후 통합/단위 테스트 분리시 사용)
-tasks.register('unitTest', Test) {
-    useJUnitPlatform {
-        excludeTags 'integration'
+    dependencies {
+        // 모든 모듈 공통 의존성
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // Configuration Processor
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+        // 공통 테스트 의존성
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation 'com.h2database:h2'
+    }
+
+    test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+        options.compilerArgs += ['-parameters']
+    }
+
+    // Jacoco 설정
+    jacoco {
+        toolVersion = '0.8.11'
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.required = true
+            csv.required = false
+            html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+        }
+
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        'com/fourthread/**/config/**',
+                        'com/fourthread/**/exception/**',
+                        'com/fourthread/**/dto/**',
+                        'com/fourthread/**/entity/**',
+                        'com/fourthread/**/Q*.class',
+                        'com/fourthread/**/*Application.class'
+                ])
+            }))
+        }
+
+        dependsOn test
+    }
+
+    // 테스트 태스크 분리
+    tasks.register('unitTest', Test) {
+        useJUnitPlatform {
+            excludeTags 'integration'
+        }
+    }
+
+    tasks.register('integrationTest', Test) {
+        useJUnitPlatform {
+            includeTags 'integration'
+        }
+    }
+
+    clean {
+        delete file('src/main/generated')
     }
 }
 
-tasks.register('integrationTest', Test) {
-    useJUnitPlatform {
-        includeTags 'integration'
+// ozang-core 모듈 설정
+project(':ozang-core') {
+    apply plugin: 'java-library'
+
+    description = 'Core shared components between app and batch'
+
+    dependencies {
+        // Spring Boot Core
+        api 'org.springframework.boot:spring-boot-starter'
+        api 'org.springframework.boot:spring-boot-starter-data-jpa'
+        api 'org.springframework.boot:spring-boot-starter-data-redis'
+        api 'org.springframework.boot:spring-boot-starter-validation'
+        api 'org.springframework.retry:spring-retry'
+        api 'org.springframework.boot:spring-boot-starter-aop'
+
+        // Database
+        runtimeOnly 'com.h2database:h2'
+        runtimeOnly 'org.postgresql:postgresql'
+
+        // QueryDSL (Core에서만 설정)
+        api "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+        annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+        annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+        annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+        // Spring Boot Web Stack
+        api 'org.springframework.boot:spring-boot-starter-security'
+        api 'org.springframework.boot:spring-boot-starter-actuator'
+        api 'org.springframework.boot:spring-boot-starter-web'
+        api 'org.springframework.boot:spring-boot-starter-webflux'
+
+        // Jackson (JSON 처리)
+        api 'com.fasterxml.jackson.core:jackson-core'
+        api 'com.fasterxml.jackson.core:jackson-databind'
+        api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+        api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+        api 'org.springframework.kafka:spring-kafka'
+
+        // MapStruct (객체 매핑) - Core에 포함
+        api "org.mapstruct:mapstruct:${mapstructVersion}"
+        annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+        // Environment Variables
+        api 'me.paulschwarz:spring-dotenv:4.0.0'
+    }
+
+    // QueryDSL 생성 디렉토리 설정
+    def querydslDir = "src/main/generated"
+
+    sourceSets {
+        main.java.srcDirs += querydslDir
+    }
+
+    compileJava.dependsOn('clean')
+
+    tasks.withType(JavaCompile) {
+        options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
     }
 }
 
-// 테스트 커버리지 검증 (필요시 활성화)
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            enabled = false  // 초기에는 비활성화, 필요시 true로 변경
-            limit {
-                minimum = 0.80
+// ozang-batch 모듈 설정
+project(':ozang-batch') {
+    apply plugin: 'org.springframework.boot'
+
+    description = 'Batch processing module'
+
+    springBoot {
+        buildInfo()
+    }
+
+    dependencies {
+        // Core 모듈 의존성
+        implementation project(':ozang-core')
+
+        // Spring Batch
+        implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+        // 웹 기능 (최소한 - 배치 관리 API용)
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+
+        // 모니터링
+        implementation 'io.micrometer:micrometer-registry-prometheus'
+
+        // Kafka (배치에서 사용하는 경우)
+        implementation 'org.springframework.kafka:spring-kafka'
+
+        // JWT (배치 API 보안용)
+        implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+        implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+        implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+        // 테스트
+        testImplementation 'org.springframework.batch:spring-batch-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation 'org.instancio:instancio-junit:5.4.0'
+    }
+
+    // 배치 모듈용 JAR 빌드 설정
+    jar {
+        enabled = false
+    }
+
+    bootJar {
+        archiveFileName = 'ozang-batch.jar'
+        mainClass = 'com.fourthread.ozang.batch.OzangBatchApplication'
+    }
+
+    // 배치 전용 테스트 커버리지 검증
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                enabled = false
+                limit {
+                    minimum = 0.70  // 배치는 웹앱보다 낮은 기준
+                }
             }
         }
     }
 }
 
-test {
-    finalizedBy jacocoTestReport
+// ozang-app 모듈 설정
+project(':ozang-app') {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'org.springdoc.openapi-gradle-plugin'
+
+    description = 'Main web application module'
+
+    springBoot {
+        buildInfo()
+    }
+
+    dependencies {
+        // Core 모듈 의존성
+        implementation project(':ozang-core')
+
+
+
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+        implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+        // Development Tools
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+        // AI/ML
+        implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+        implementation("com.openai:openai-java:2.14.0")
+
+        // AWS Services
+        implementation "software.amazon.awssdk:s3:${awsSdkVersion}"
+        implementation "software.amazon.awssdk:protocol-core:${awsSdkVersion}"
+        implementation "software.amazon.awssdk:s3-transfer-manager:${awsSdkVersion}"
+        implementation 'software.amazon.awssdk.crt:aws-crt:0.34.1'
+        implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+
+        // API Documentation
+        implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+        // Email
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+        // Message Queue
+        implementation 'org.springframework.kafka:spring-kafka'
+
+        // Search Engine
+        implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+        implementation 'co.elastic.clients:elasticsearch-java'
+
+        // Security & JWT
+        implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+        implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+        implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+        implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
+        // Monitoring
+        implementation 'io.micrometer:micrometer-registry-prometheus'
+
+        // HTML Parsing
+        implementation 'org.jsoup:jsoup:1.17.2'
+
+        // Testing
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation 'org.instancio:instancio-junit:5.4.0'
+        testImplementation "com.squareup.okhttp3:mockwebserver:4.9.3"
+
+        // TestContainers
+        testImplementation "org.testcontainers:elasticsearch"
+        testImplementation "org.testcontainers:testcontainers"
+
+        // Batch (웹앱에서 배치 모니터링용)
+        implementation 'org.springframework.boot:spring-boot-starter-batch'
+        testImplementation 'org.springframework.batch:spring-batch-test'
+    }
+
+    // 웹 애플리케이션용 JAR 빌드 설정
+    jar {
+        enabled = false
+    }
+
+    bootJar {
+        archiveFileName = 'ozang-app.jar'
+        mainClass = 'com.fourthread.ozang.app.OzangApplication'
+    }
+
+    // OpenAPI 문서 생성
+    openApi {
+        apiDocsUrl.set("http://localhost:8080/v3/api-docs")
+        outputDir.set(layout.buildDirectory.dir("openapi/docs"))
+        outputFileName.set("swagger-${project.version}.json")
+        waitTimeInSeconds.set(100)
+    }
+
+    // 웹앱 테스트 커버리지 검증
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                enabled = false  // 초기에는 비활성화, 필요시 true로 변경
+                limit {
+                    minimum = 0.80
+                }
+            }
+        }
+    }
 }
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
+
+// 루트 프로젝트 태스크
+tasks.register('buildAll') {
+    dependsOn ':ozang-core:build', ':ozang-batch:build', ':ozang-app:build'
+    description = 'Build all modules'
+}
+
+tasks.register('testAll') {
+    dependsOn ':ozang-core:test', ':ozang-batch:test', ':ozang-app:test'
+    description = 'Run tests for all modules'
+}
+
+tasks.register('cleanAll') {
+    dependsOn ':ozang-core:clean', ':ozang-batch:clean', ':ozang-app:clean'
+    description = 'Clean all modules'
+}
+
+// 통합 Jacoco 리포트
+tasks.register('jacocoRootReport', JacocoReport) {
+    description = 'Generate aggregate jacoco coverage report'
+    dependsOn = subprojects.test
+
+    additionalSourceDirs.setFrom(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.setFrom(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom(subprojects.sourceSets.main.output)
+    executionData.setFrom(subprojects.jacocoTestReport.executionData)
+
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = false
+    }
+
+    onlyIf = { true }
+
+    doFirst {
+        executionData.setFrom(executionData.files.findAll { it.exists() })
     }
 }

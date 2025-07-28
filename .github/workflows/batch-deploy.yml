@@ -4,13 +4,13 @@ on:
   push:
     branches: [ 'batch*', 'batch-*', 'release*', 'release-*' ]
     paths:
-      - 'src/main/java/com/fourthread/ozang/module/domain/weather/batch/**'
-      - 'src/main/java/com/fourthread/ozang/module/config/batch/**'
-      - 'src/main/resources/application-batch.yml'
-      - 'Dockerfile.batch'
-      - '.aws/batch-task-definition.json'
+      - 'ozang-batch/**'
+      - 'ozang-core/**'
       - '.github/workflows/batch-deploy.yml'
-        
+      - '.aws/batch-task-definition.json'
+      - 'settings.gradle'
+      - 'build.gradle'
+
   workflow_dispatch:
     inputs:
       force_deploy:
@@ -32,8 +32,8 @@ env:
   ECS_CLUSTER: ozang-cluster2
   ECS_TASK_DEFINITION: .aws/batch-task-definition.json
   CONTAINER_NAME: ozang-batch-app
-  JAVA_OPTS: "-Xmx512m -Xms256m -XX:MaxMetaspaceSize=128m -XX:MetaspaceSize=64m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
-  SPRING_PROFILES_ACTIVE: "batch"
+  JAVA_OPTS: "-Xmx1024m -Xms512m -XX:MaxMetaspaceSize=256m -XX:MetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof -XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0"
+  SPRING_PROFILES_ACTIVE: "batch,prod"
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
   build-and-push:
     name: Build and Push Batch App to ECR
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     outputs:
       version: ${{ steps.extract_version.outputs.VERSION }}
       image_uri: ${{ steps.final-image.outputs.image }}
@@ -73,8 +73,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build JAR (Skip Test)
-        run: ./gradlew clean build -x test --no-daemon --quiet
+      - name: Build Batch Application JAR (Skip Test)
+        run: |
+          echo "Building Batch Application with multi-module structure..."
+          ./gradlew clean :ozang-batch:build -x test --no-daemon --quiet
+          
+          # 빌드 결과 확인
+          ls -la ozang-batch/build/libs/
+          echo "Batch Application JAR built successfully"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -106,20 +112,20 @@ jobs:
             echo "IMAGE EXISTS: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}"
           else
             echo "image_exists=false" >> $GITHUB_OUTPUT
-            echo "🔨 IMAGE NOT FOUND: Building new batch image"
+            echo "🔨 IMAGE NOT FOUND: Building new batch application image"
           fi
 
-      - name: Build, tag, and push batch image to Amazon ECR
+      - name: Build, tag, and push batch app image to Amazon ECR
         id: build-image
         if: steps.check-image.outputs.image_exists != 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo "Building Docker image for t2.micro deployment"
-          echo "Build environment: GitHub Actions (sufficient resources)"
+          echo "Building Docker image for t3.small deployment (Batch Application)"
+          echo "Build environment: GitHub Actions"
           echo "Target platform: linux/amd64"
-          echo "Instance type: t2.micro (1 vCPU, 1GB RAM)"
+          echo "Instance specs: t3.small (2 vCPU, 2GB RAM)"
           
           CACHE_FLAG=""
           if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
@@ -129,9 +135,8 @@ jobs:
             echo "Using build cache for faster build"
           fi
           
-          #  배치 전용 Dockerfile 사용 
           docker build \
-            --file Dockerfile.batch \
+            -f ozang-batch/Dockerfile \
             --build-arg VERSION=${{ env.VERSION }} \
             --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --build-arg VCS_REF=${{ github.sha }} \
@@ -141,14 +146,16 @@ jobs:
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }} \
-            --label "instance-type=t2.micro" \
-            --label "application-type=batch" \
+            --label "instance-type=t3.small" \
+            --label "application-type=batch-app" \
+            --label "cpu=2-vcpu" \
+            --label "memory=2gb" \
             --label "git-commit=${{ github.sha }}" \
             --label "version=${{ env.VERSION }}" \
             --label "build-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             .
-          
-          echo "Pushing batch images to ECR..."
+
+          echo "Pushing images to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}
@@ -157,8 +164,8 @@ jobs:
           
           # 이미지 크기 및 정보 확인
           IMAGE_SIZE=$(docker images $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --format "{{.Size}}")
-          echo "Built batch image size: ${IMAGE_SIZE}"
-          echo "Batch image tags:"
+          echo "Built batch app image size: ${IMAGE_SIZE}"
+          echo "Image tags:"
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:latest" 
           echo "  - $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}"
@@ -171,14 +178,14 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "image=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "Using existing batch image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
+          echo "Using existing batch app image: ${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
 
       - name: Set final image URI
         id: final-image
         run: |
           IMAGE_URI="${{ steps.build-image.outputs.image || steps.use-existing-image.outputs.image }}"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-          echo "Final batch image URI: $IMAGE_URI"
+          echo "Final batch app image URI: $IMAGE_URI"
 
   deploy:
     name: Deploy Batch App to ECS
@@ -194,7 +201,7 @@ jobs:
       - name: Set version from build job
         run: |
           echo "VERSION=${{ needs.build-and-push.outputs.version }}" >> $GITHUB_ENV
-          echo "Batch Version: ${{ needs.build-and-push.outputs.version }}"
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -203,19 +210,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      #  배치 서비스 존재 확인 및 생성 
-      - name: Check and create batch service if not exists
+      - name: Check if service exists
         id: check-service
         run: |
-          echo "Checking if batch service exists..."
-          
-          if aws ecs describe-services \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
-            --query 'services[0].serviceName' \
-            --output text 2>/dev/null | grep -q "${{ env.ECS_SERVICE }}"; then
+          if aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} > /dev/null 2>&1; then
             echo "service_exists=true" >> $GITHUB_OUTPUT
-            echo "Batch service exists: ${{ env.ECS_SERVICE }}"
+            echo "Batch service exists. Will update."
           else
             echo "service_exists=false" >> $GITHUB_OUTPUT
             echo "Batch service does not exist. Will create new service."
@@ -252,7 +252,7 @@ jobs:
           cat ${{ env.ECS_TASK_DEFINITION }} | jq --arg java_opts "${{ env.JAVA_OPTS }}" \
             --arg profile "${{ env.SPRING_PROFILES_ACTIVE }}" \
             --arg version "${{ env.VERSION }}" \
-            --arg instance_type "t2.micro" '
+            --arg instance_type "t3.small" '
             if .containerDefinitions[0].environment then
               .containerDefinitions[0].environment = (.containerDefinitions[0].environment | map(select(.name != "JAVA_OPTS" and .name != "SPRING_PROFILES_ACTIVE" and .name != "PROJECT_VERSION" and .name != "INSTANCE_TYPE"))) + [
                 {"name": "JAVA_OPTS", "value": $java_opts},
@@ -271,7 +271,7 @@ jobs:
           ' > updated-batch-task-def.json
           mv updated-batch-task-def.json ${{ env.ECS_TASK_DEFINITION }}
           
-          echo "Batch task definition updated with t2.micro optimized settings"
+          echo "Batch task definition updated with t3.small optimized settings"
 
       - name: Fill in the new image ID in the batch task definition
         id: render-task-definition
@@ -280,6 +280,10 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ needs.build-and-push.outputs.image_uri }}
+          environment-variables: |
+            JAVA_OPTS=${{ env.JAVA_OPTS }}
+            SPRING_PROFILES_ACTIVE=${{ env.SPRING_PROFILES_ACTIVE }}
+            PROJECT_VERSION=${{ env.VERSION }}
 
       - name: Stop batch service (if exists)
         if: steps.check-service.outputs.service_exists == 'true'
@@ -304,240 +308,50 @@ jobs:
           task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: false
+          wait-for-service-stability: true
 
-      #  배치 서비스 재시작 
-      - name: Start batch service
+      - name: Start batch service (Resume after deployment)
+        if: steps.check-service.outputs.service_exists == 'true'
         run: |
-          echo "Starting batch service..."
+          echo "Starting batch service after deployment..."
           
-          # 새 서비스인 경우 desired count 1로 설정
-          DESIRED_COUNT=${{ steps.current-state.outputs.current_desired_count || 1 }}
+          # 이전 desired count 복원 (배치는 기본적으로 0 또는 1)
+          DESIRED_COUNT="${{ steps.current-state.outputs.current_desired_count }}"
+          if [ -z "$DESIRED_COUNT" ]; then
+            DESIRED_COUNT=1
+          fi
           
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --desired-count $DESIRED_COUNT
           
-          echo "Waiting for batch service stability..."
-          timeout 900 aws ecs wait services-stable \
+          echo "Batch service desired count set to: $DESIRED_COUNT"
+          
+          echo "Waiting for batch service to become stable..."
+          aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
           
           echo "Batch service started successfully"
 
-      # 배치 헬스체크 (ALB 대신 직접 컨테이너 체크) 
-      - name: Wait for batch application health check
+      - name: Verify deployment
         run: |
-          echo "Waiting for batch application health check..."
+          echo "🚀 Batch Application deployment completed!"
+          echo "✅ Service: ${{ env.ECS_SERVICE }}"
+          echo "✅ Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "✅ Image: ${{ needs.build-and-push.outputs.image_uri }}"
+          echo "✅ Version: ${{ env.VERSION }}"
+          echo "✅ Instance: t3.small (2 vCPU, 2GB RAM)"
+          echo "✅ Application Type: Batch Application"
           
-          MAX_ATTEMPTS=20
-          ATTEMPT=1
-          
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "Batch health check attempt $ATTEMPT/$MAX_ATTEMPTS"
-          
-            # ECS 태스크 상태 확인
-            RUNNING_TASKS=$(aws ecs list-tasks \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --service-name ${{ env.ECS_SERVICE }} \
-              --desired-status RUNNING \
-              --query 'length(taskArns)' \
-              --output text)
-          
-            echo "Running batch tasks: $RUNNING_TASKS"
-          
-            if [ "$RUNNING_TASKS" -gt 0 ]; then
-              # 태스크 ARN 가져오기
-              TASK_ARN=$(aws ecs list-tasks \
-                --cluster ${{ env.ECS_CLUSTER }} \
-                --service-name ${{ env.ECS_SERVICE }} \
-                --desired-status RUNNING \
-                --query 'taskArns[0]' \
-                --output text)
-          
-              # 태스크 상세 정보 확인
-              TASK_STATUS=$(aws ecs describe-tasks \
-                --cluster ${{ env.ECS_CLUSTER }} \
-                --tasks $TASK_ARN \
-                --query 'tasks[0].lastStatus' \
-                --output text)
-          
-              echo "Task status: $TASK_STATUS"
-          
-              if [ "$TASK_STATUS" = "RUNNING" ]; then
-                echo "Batch application is running successfully!"
-                break
-              fi
-            fi
-          
-            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-              echo "Batch application health check timeout"
-              exit 1
-            fi
-          
-            echo "Waiting 30 seconds before retry..."
-            sleep 30
-            ATTEMPT=$((ATTEMPT + 1))
-          done
-
-      - name: Verify batch deployment
-        id: verify-deployment
-        run: |
-          echo "Verifying batch deployment..."
-
-          # ECS 태스크 상태 확인
-          RUNNING_TASKS=$(aws ecs list-tasks \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service-name ${{ env.ECS_SERVICE }} \
-            --desired-status RUNNING \
-            --query 'length(taskArns)')
-
-          echo "Running batch tasks: $RUNNING_TASKS"
-
-          if [ "$RUNNING_TASKS" -gt 0 ]; then
-            echo "Batch ECS tasks are running successfully"
-            echo "deployment_status=success" >> $GITHUB_OUTPUT
-          
-            #  배치 스케줄러 작동 확인 (로그 체크) 
-            echo "Checking batch scheduler logs..."
-          
-            TASK_ARN=$(aws ecs list-tasks \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --service-name ${{ env.ECS_SERVICE }} \
-              --desired-status RUNNING \
-              --query 'taskArns[0]' \
-              --output text)
-          
-            # 로그 그룹에서 배치 스케줄러 관련 로그 확인
-            aws logs describe-log-streams \
-              --log-group-name "/ecs/ozang-batch-app" \
-              --order-by LastEventTime \
-              --descending \
-              --max-items 1 \
-              --query 'logStreams[0].logStreamName' \
-              --output text > latest_log_stream.txt
-          
-            if [ -s latest_log_stream.txt ]; then
-              LATEST_STREAM=$(cat latest_log_stream.txt)
-              echo "Latest log stream: $LATEST_STREAM"
-          
-              # 최근 로그에서 배치 관련 메시지 확인
-              aws logs get-log-events \
-                --log-group-name "/ecs/ozang-batch-app" \
-                --log-stream-name "$LATEST_STREAM" \
-                --start-time $(date -d '5 minutes ago' +%s)000 \
-                --query 'events[].message' \
-                --output text | grep -i "batch\|scheduler" || echo "No batch logs found yet"
-            fi
-          
-          else
-            echo "No running batch ECS tasks found"
-            echo "deployment_status=failed" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
-      - name: Rollback on failure
-        if: failure() && steps.current-state.outputs.current_task_def != ''
-        run: |
-          echo "Batch deployment failed. Rolling back to previous version..."
-          echo "Previous batch task definition: ${{ steps.current-state.outputs.current_task_def }}"
-          
-          # 이전 태스크 정의로 롤백
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ steps.current-state.outputs.current_task_def }} \
-            --desired-count ${{ steps.current-state.outputs.current_desired_count }} \
-            --force-new-deployment
-          
-          echo "Waiting for batch rollback to complete..."
-          aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }}
-          
-          echo "Batch rollback completed successfully"
-
-      - name: Batch deployment notification
-        if: always()
-        run: |
-          echo "==="
-          echo "배치 애플리케이션 ECS 배포 결과"
-          echo "==="
-          echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          echo "Version: ${{ env.VERSION }}"
-          echo "Git Commit: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Instance Type: t2.micro (1 vCPU, 1GB RAM)"
-          echo "Application Type: Batch Processor"
-          echo "Profile: batch"
-          echo "==="
-          
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "배치 애플리케이션 배포가 성공적으로 완료되었습니다!"
-            echo "이미지: ${{ needs.build-and-push.outputs.image_uri }}"
-            echo "상태: ${{ steps.verify-deployment.outputs.deployment_status }}"
-            echo "서비스: ${{ env.ECS_SERVICE }}"
-            echo "클러스터: ${{ env.ECS_CLUSTER }}"
-          
-            #  배치용 이미지 정리 (최대 3개 유지) 
-            echo "Cleaning up old batch images in Public ECR..."
-            aws ecr-public describe-images \
-              --repository-name ${{ env.ECR_REPOSITORY }} \
-              --region us-east-1 \
-              --query 'sort_by(imageDetails,&imagePushedAt)[:-3].[imageDigest]' \
-              --output text | \
-            while read digest; do
-              if [ -n "$digest" ] && [ "$digest" != "None" ]; then
-                aws ecr-public batch-delete-image \
-                  --repository-name ${{ env.ECR_REPOSITORY }} \
-                  --region us-east-1 \
-                  --image-ids imageDigest=$digest || true
-              fi
-            done
-          else
-            echo "배치 애플리케이션 배포가 실패했습니다!"
-            echo "실패 이유를 확인하고 다시 시도해주세요."
-          
-            if [ "${{ steps.current-state.outputs.current_task_def }}" != "" ]; then
-              echo "이전 버전으로 롤백되었습니다."
-            fi
-          fi
-
-      - name: Collect batch deployment metrics
-        if: always()
-        run: |
-          echo "==="
-          echo "배치 애플리케이션 배포 메트릭"
-          echo "==="
-          
-          # ECS 배치 서비스 상태
+          # 서비스 상태 확인
           aws ecs describe-services \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
-            --query 'services[0].{
-              Status: status,
-              RunningCount: runningCount,
-              PendingCount: pendingCount,
-              DesiredCount: desiredCount,
-              TaskDefinition: taskDefinition
-            }' \
+            --query 'services[0].deployments[0].{Status:status,TaskDefinition:taskDefinition,RunningCount:runningCount,DesiredCount:desiredCount}' \
             --output table
           
-          # 실행 중인 배치 태스크 상세 정보
-          echo "Running Batch Tasks:"
-          aws ecs list-tasks \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service-name ${{ env.ECS_SERVICE }} \
-            --desired-status RUNNING \
-            --query 'taskArns' \
-            --output table
-          
-          echo "==="
-          echo "최적화 정보: t2.micro (1vCPU, 1GB RAM)"
-          echo "배치 애플리케이션 전용 인스턴스"
-          echo "Version: ${{ env.VERSION }}"
-          echo "Profile: batch (스케줄러 활성화)"
-          echo "==="
-
+          echo ""
+          echo "📊 Monitor deployment: AWS Console → ECS → ${{ env.ECS_CLUSTER }} → ${{ env.ECS_SERVICE }}"
+          echo "📝 Batch jobs will run according to the configured schedule"
