@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:latest
     container_name: postgres
-    restart: unless-stopped
+    restart: always #always
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./ozang-app/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   redis:
     image: redis:7
@@ -25,7 +26,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ozang-app/Dockerfile
     container_name: o-zang-app
     restart: unless-stopped
     environment:
@@ -33,10 +34,12 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - ELASTICSEARCH_HOST=elastic
       - ELASTICSEARCH_PORT=9200
+
+
     ports:
       - "8080:80"
     depends_on:

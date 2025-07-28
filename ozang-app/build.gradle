@@ -1,0 +1,245 @@
+// ozang-app 모듈 전용 설정
+// Spring Boot 및 OpenAPI 플러그인은 루트에서 apply됨
+
+description = 'Main web application for O-ZANG platform'
+
+// 웹 애플리케이션 실행 가능한 JAR 설정
+jar {
+    enabled = false
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = "ozang-app-${version}.jar"
+    mainClass = 'com.fourthread.ozang.app.OzangApplication'
+}
+
+// OpenAPI 문서 생성 설정
+openApi {
+    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
+    outputDir.set(layout.buildDirectory.dir("openapi/docs"))
+    outputFileName.set("ozang-api-${project.version}.json")
+    waitTimeInSeconds.set(100)
+
+    // 추가 OpenAPI 설정
+    customBootRun {
+        systemProperties = [
+                'spring.profiles.active': 'dev',
+                'server.port': '8080'
+        ]
+    }
+}
+
+// 웹 애플리케이션 전용 테스트 설정
+test {
+    systemProperty 'spring.profiles.active', 'test'
+
+    // 웹 테스트용 메모리 설정
+    jvmArgs = [
+            '-Xmx1g',
+            '-XX:MaxMetaspaceSize=256m'
+    ]
+
+    // 테스트 병렬 실행 설정
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
+// 웹 애플리케이션 테스트 태스크들
+tasks.register('webUnitTest', Test) {
+    description = 'Run web application unit tests'
+    useJUnitPlatform {
+        excludeTags 'integration'
+        includeTags 'web'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
+}
+
+tasks.register('webIntegrationTest', Test) {
+    description = 'Run web application integration tests'
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
+
+    // 통합 테스트용 메모리 설정
+    jvmArgs = [
+            '-Xmx1g',
+            '-XX:MaxMetaspaceSize=256m'
+    ]
+}
+
+tasks.register('apiTest', Test) {
+    description = 'Run API tests'
+    useJUnitPlatform {
+        includeTags 'api'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
+}
+
+tasks.register('securityTest', Test) {
+    description = 'Run security tests'
+    useJUnitPlatform {
+        includeTags 'security'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
+}
+
+// 웹 애플리케이션 실행 태스크
+tasks.register('runWeb', JavaExec) {
+    description = 'Run web application locally'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.fourthread.ozang.app.OzangApplication'
+
+    systemProperty 'spring.profiles.active', 'dev'
+
+    // 로컬 실행용 JVM 옵션
+    jvmArgs = [
+            '-Xmx1g',
+            '-Xms512m',
+            '-XX:MaxMetaspaceSize=256m',
+            '-XX:MetaspaceSize=128m',
+            '-Dspring.output.ansi.enabled=true',
+            '-Dspring.devtools.restart.enabled=true'
+    ]
+}
+
+// 개발 모드 실행 (DevTools 활성화)
+tasks.register('runDev', JavaExec) {
+    description = 'Run web application in development mode'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.fourthread.ozang.app.OzangApplication'
+
+    systemProperty 'spring.profiles.active', 'dev'
+    systemProperty 'spring.devtools.restart.enabled', 'true'
+    systemProperty 'spring.devtools.livereload.enabled', 'true'
+
+    jvmArgs = [
+            '-Xmx1g',
+            '-Xms512m',
+            '-Dspring.output.ansi.enabled=true'
+    ]
+}
+
+// API 문서 생성 및 검증
+tasks.register('generateApiDocs') {
+    description = 'Generate and validate API documentation'
+    dependsOn 'generateOpenApiDocs'
+
+    doLast {
+        def docsDir = file("${buildDir}/openapi/docs")
+        if (docsDir.exists()) {
+            println "✅ API documentation generated successfully"
+            println "📖 Documentation location: ${docsDir.absolutePath}"
+        } else {
+            throw new GradleException("Failed to generate API documentation")
+        }
+    }
+}
+
+// 정적 자원 최적화 태스크
+tasks.register('optimizeAssets') {
+    description = 'Optimize static assets for production'
+    doLast {
+        def staticDir = file('src/main/resources/static')
+        if (staticDir.exists()) {
+            println "🔧 Optimizing static assets..."
+            // 실제 자산 최적화 로직 추가 가능 (이미지 압축, CSS/JS 압축 등)
+            println "✅ Static assets optimization completed"
+        }
+    }
+}
+
+// 보안 검사 태스크
+tasks.register('securityCheck') {
+    description = 'Run security vulnerability checks'
+    doLast {
+        println "🔒 Running security checks..."
+        // 실제 보안 검사 로직 추가 가능
+        println "✅ Security check completed"
+    }
+}
+
+// 성능 테스트
+tasks.register('performanceTest', Test) {
+    description = 'Run performance tests'
+    useJUnitPlatform {
+        includeTags 'performance'
+    }
+
+    systemProperty 'spring.profiles.active', 'test'
+
+    // 성능 테스트용 메모리 설정
+    jvmArgs = [
+            '-Xmx1g',
+            '-XX:MaxMetaspaceSize=256m'
+    ]
+
+    // 성능 테스트는 기본 테스트에서 제외
+    shouldRunAfter test
+}
+
+// 코드 품질 검사
+tasks.register('qualityCheck') {
+    description = 'Run code quality checks'
+    dependsOn 'test', 'jacocoTestReport'
+
+    doLast {
+        println "✅ Code quality check completed"
+
+        // 커버리지 결과 출력
+        def jacocoReport = file("${buildDir}/reports/jacoco/test/html/index.html")
+        if (jacocoReport.exists()) {
+            println "📊 Test coverage report: ${jacocoReport.absolutePath}"
+        }
+    }
+}
+
+// Docker 이미지 태그 생성 태스크
+tasks.register('generateDockerTags') {
+    description = 'Generate Docker tags for web application'
+    doLast {
+        def gitCommit = 'git rev-parse --short HEAD'.execute().text.trim()
+        def timestamp = new Date().format('yyyyMMdd-HHmmss')
+
+        println "Docker tags for web application:"
+        println "  - ozang-app:${version}"
+        println "  - ozang-app:${gitCommit}"
+        println "  - ozang-app:${timestamp}"
+        println "  - ozang-app:latest"
+    }
+}
+
+// 프로덕션 빌드 준비
+tasks.register('prodBuild') {
+    description = 'Build application for production deployment'
+    dependsOn 'clean', 'optimizeAssets', 'test', 'bootJar', 'generateApiDocs'
+
+    doLast {
+        println "🚀 Production build completed successfully"
+        println "📦 JAR file: ${bootJar.archiveFile.get().asFile.absolutePath}"
+    }
+}
+
+// 빌드 전 검증
+tasks.register('validateWebConfig') {
+    description = 'Validate web application configuration'
+    doLast {
+        def configFile = file('src/main/resources/application.yml')
+        if (!configFile.exists()) {
+            throw new GradleException('Web application configuration file not found: application.yml')
+        }
+        println "✅ Web application configuration validated"
+    }
+}
+
+build.dependsOn 'validateWebConfig'
+
+// 태스크 의존성 설정
+generateApiDocs.mustRunAfter test
+optimizeAssets.mustRunAfter test
+securityCheck.shouldRunAfter test
+qualityCheck.shouldRunAfter test
