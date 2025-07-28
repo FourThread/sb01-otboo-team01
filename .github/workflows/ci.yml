@@ -67,8 +67,8 @@ jobs:
           echo "Current date/time: $(date)"
           echo "Java timezone: $JAVA_OPTS"
           echo "=========================="
-          echo "Starting tests with JaCoCo coverage..."
-          ./gradlew clean test jacocoTestReport
+          echo "Starting multi-module tests with JaCoCo coverage..."
+          ./gradlew clean :ozang-core:test :ozang-app:test :ozang-batch:test jacocoTestReport
         env:
           TZ: Asia/Seoul
           JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Seoul
@@ -79,17 +79,28 @@ jobs:
         with:
           name: test-reports
           path: |
-            ./build/reports/tests/
+            ./ozang-core/build/reports/tests/
+            ./ozang-app/build/reports/tests/
+            ./ozang-batch/build/reports/tests/
+            ./ozang-core/build/reports/jacoco/
+            ./ozang-app/build/reports/jacoco/
+            ./ozang-batch/build/reports/jacoco/
             ./build/reports/jacoco/
-            ./build/reports/problems/
+            ./ozang-core/build/reports/problems/
+            ./ozang-app/build/reports/problems/
+            ./ozang-batch/build/reports/problems/
           retention-days: 7
           include-hidden-files: true
 
-      - name: Upload coverage to Codecov
+      - name: Upload coverage to Codecov (Multi-module)
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: FourThread/sb01-otboo-team01
-          files: ./build/reports/jacoco/test/jacocoTestReport.xml
+          files: |
+            ./ozang-core/build/reports/jacoco/test/jacocoTestReport.xml
+            ./ozang-app/build/reports/jacoco/test/jacocoTestReport.xml
+            ./ozang-batch/build/reports/jacoco/test/jacocoTestReport.xml
+            ./build/reports/jacoco/test/jacocoTestReport.xml
           fail_ci_if_error: false
           verbose: true
