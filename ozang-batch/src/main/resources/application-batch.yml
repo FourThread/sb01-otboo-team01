@@ -8,8 +8,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5    # 배치용으로 줄임
-      minimum-idle: 2
+      maximum-pool-size: 10
+      minimum-idle: 3
       connection-timeout: 30000
       idle-timeout: 300000
       max-lifetime: 1200000
@@ -30,9 +30,9 @@ spring:
         enabled: true
       lettuce:
         pool:
-          max-active: 2  # 배치용으로 줄임
-          max-idle: 2
-          min-idle: 1
+          max-active: 8  # 배치용으로 줄임
+          max-idle: 4
+          min-idle: 2
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
@@ -70,6 +70,10 @@ spring:
       enabled: true
     jdbc:
       initialize-schema: never
+    # 병렬 처리 최적화
+#    step:
+#      skip-policy: limit-based
+#      retry-policy: fixed-delay
 
   autoconfigure:
     exclude:
@@ -107,10 +111,11 @@ batch:
 logging:
   level:
     root: INFO
-    com.fourthread.ozang: INFO
+    com.fourthread.ozang.batch: INFO
     org.springframework.batch: INFO
-    org.springframework.web: WARN    # 웹 관련 로그 최소화
-    org.hibernate: WARN              # Hibernate 로그 최소화
+    # Chunk 처리 상세 로깅
+    org.springframework.batch.core.step.item: DEBUG
+    org.springframework.batch.core.step.tasklet: DEBUG
   pattern:
     console: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
     file: "[BATCH] %d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"
