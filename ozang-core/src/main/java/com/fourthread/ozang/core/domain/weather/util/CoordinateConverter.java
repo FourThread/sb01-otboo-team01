@@ -13,8 +13,8 @@ public class CoordinateConverter {
     private static final double SLAT2 = 60.0; // 투영 위도2 (degree)
     private static final double OLON = 126.0; // 기준점 경도 (degree)
     private static final double OLAT = 38.0; // 기준점 위도 (degree)
-    private static final double XO = 210 / GRID; // 기준점 X좌표 (GRID)
-    private static final double YO = 675 / GRID; // 기준점 Y좌표 (GRID)
+    private static final double XO = 43.0;         // 기준점 X (GRID)
+    private static final double YO = 136.0;        // 기준점 Y (GRID)
 
     public GridCoordinate convertToGrid(double lat, double lon) {
         double DEGRAD = Math.PI / 180.0;
