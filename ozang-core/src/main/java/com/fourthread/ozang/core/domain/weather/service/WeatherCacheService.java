@@ -3,6 +3,8 @@ package com.fourthread.ozang.core.domain.weather.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherAPILocation;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherDto;
+import com.fourthread.ozang.core.domain.weather.entity.GridCoordinate;
+import com.fourthread.ozang.core.domain.weather.util.CoordinateConverter;
 import com.fourthread.ozang.core.domain.weather.util.WeatherCacheKeyGenerator;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -10,12 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,47 +31,24 @@ public class WeatherCacheService {
 
     private final WeatherCacheKeyGenerator cacheKeyGenerator;
 
+    private final CoordinateConverter coordinateConverter;
+
+
     public WeatherCacheService(
         @Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate,
-        ObjectMapper objectMapper, WeatherCacheKeyGenerator cacheKeyGenerator) {
+        ObjectMapper objectMapper, WeatherCacheKeyGenerator cacheKeyGenerator,
+        CoordinateConverter coordinateConverter) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.cacheKeyGenerator = cacheKeyGenerator;
+        this.coordinateConverter = coordinateConverter;
         log.info("WeatherCacheService 초기화 완료 - Redis DB: 1번 (Weather 전용)");
     }
 
     private static final Duration CURRENT_WEATHER_TTL = Duration.ofHours(1);
-    private static final Duration FORECAST_WEATHER_TTL = Duration.ofHours(3);
     private static final Duration LOCATION_TTL = Duration.ofHours(24);
     private static final String ACTIVE_REGIONS_KEY = "weather:active:regions";
 
-    /**
-     * 현재 날씨 캐시 관리
-     */
-//    public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
-//        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
-//        try {
-//            WeatherDto cached = (WeatherDto) redisTemplate.opsForValue().get(key);
-//            if (cached != null) {
-//                WeatherDto result = convertToWeatherDto(cached);
-//                if(result != null) {
-//                    log.debug("Redis 캐시 히트 - 현재 날씨: {}", key);
-//                    recordActiveRegion(latitude, longitude);
-//                    return result;
-//                }
-//            }
-//            return cached;
-//        } catch (Exception e) {
-//            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
-//            try {
-//                redisTemplate.delete(key);
-//                log.info("손상된 캐시 삭제 완료: {}", key);
-//            } catch (Exception deleteEx) {
-//                log.error("캐시 삭제 실패: {}", key, deleteEx);
-//            }
-//            return null;
-//        }
-//    }
     public void cacheCurrentWeather(double latitude, double longitude, WeatherDto weather) {
         String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
 
@@ -115,12 +92,13 @@ public class WeatherCacheService {
         }
     }
 
+    // 배치 기반 캐시 업데이트: TTL 없이 배치에서 직접 관리
     public void cacheForecast(double latitude, double longitude, String baseTime,
         List<WeatherDto> forecast) {
         String key = cacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
-            redisTemplate.opsForValue().set(key, forecast, FORECAST_WEATHER_TTL);
+            redisTemplate.opsForValue().set(key, forecast);
             log.debug("Redis 캐시 저장 - 5일 예보: {}", key);
             recordActiveRegion(latitude, longitude);
         } catch (Exception e) {
@@ -166,25 +144,6 @@ public class WeatherCacheService {
             log.error("Redis 캐시 저장 실패: {}", key, e);
         }
     }
-
-    /**
-     * 타입 안전한 변환 메서드
-     * @return WeatherDto
-     */
-//    private WeatherDto convertToWeatherDto(Object cached) {
-//        try {
-//            if (cached instanceof WeatherDto) {
-//                return (WeatherDto) cached;
-//            }
-//
-//            if (cached instanceof Map) {
-//                return objectMapper.convertValue(cached, WeatherDto.class);
-//            }
-//        } catch (Exception e) {
-//            log.warn("WeatherDto 변환 실패", e);
-//        }
-//        return null;
-//    }
 
     /**
      * 타입 안전한 변환 메서드
@@ -235,56 +194,110 @@ public class WeatherCacheService {
      * 활성 지역 관리 (배치 작업용)
      */
     private void recordActiveRegion(double latitude, double longitude) {
-        String regionKey = String.format("%.2f:%.2f", latitude, longitude);
-        double score = System.currentTimeMillis();
-
         try {
-            redisTemplate.opsForZSet().add(ACTIVE_REGIONS_KEY, regionKey, score);
-            // 최근 7일간의 데이터만 유지
-            long sevenDaysAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7);
-            redisTemplate.opsForZSet().removeRangeByScore(ACTIVE_REGIONS_KEY, 0, sevenDaysAgo);
+            GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
+            String regionKey = String.format("%d:%d", grid.getX(), grid.getY());
+
+            redisTemplate.opsForSet().add(ACTIVE_REGIONS_KEY, regionKey);
+            // 24시간 TTL 설정
+            redisTemplate.expire(ACTIVE_REGIONS_KEY, Duration.ofHours(24));
+
+            log.debug("활성 지역 기록: 격자({}, {}) <- 위경도({}, {})",
+                grid.getX(), grid.getY(), latitude, longitude);
         } catch (Exception e) {
-            log.error("활성 지역 기록 실패: {}", regionKey, e);
+            log.error("활성 지역 기록 실패: 위경도({}, {})", latitude, longitude, e);
         }
     }
 
     /**
-     * 최근 활성 지역 조회 (배치 작업에서 사용)
+     * Profile 기반 활성 지역 일괄 등록 (격자 좌표 기반)
+     */
+    public void registerActiveRegionsFromProfiles(List<double[]> profileLocations) {
+        if (profileLocations == null || profileLocations.isEmpty()) {
+            log.info("등록할 프로필 위치가 없습니다");
+            return;
+        }
+
+        try {
+            Set<String> gridKeys = profileLocations.stream()
+                .map(location -> {
+                    try {
+                        GridCoordinate grid = coordinateConverter.convertToGrid(location[0], location[1]);
+                        return String.format("%d:%d", grid.getX(), grid.getY());
+                    } catch (Exception e) {
+                        log.warn("격자 변환 실패: 위경도({}, {})", location[0], location[1]);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()); // 중복 격자 제거
+
+            if (!gridKeys.isEmpty()) {
+                redisTemplate.opsForSet().add(ACTIVE_REGIONS_KEY, gridKeys.toArray(new String[0]));
+                // 24시간 TTL 설정
+                redisTemplate.expire(ACTIVE_REGIONS_KEY, Duration.ofHours(24));
+
+                log.info("Profile 기반 활성 지역 등록 완료 - {}개 위치 -> {}개 격자",
+                    profileLocations.size(), gridKeys.size());
+            }
+        } catch (Exception e) {
+            log.error("Profile 기반 활성 지역 등록 실패", e);
+        }
+    }
+
+    /**
+     * 활성 지역 조회 (격자 좌표 기반)
      */
     public List<double[]> getAllActiveRegions() {
         try {
-            // 모든 활성 지역을 최근 조회 순으로 정렬하여 가져오기
-            Set<ZSetOperations.TypedTuple<Object>> regions = redisTemplate.opsForZSet()
-                .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, -1); // -1은 모든 요소를 의미
+            Set<Object> gridKeys = redisTemplate.opsForSet().members(ACTIVE_REGIONS_KEY);
 
-            if (regions == null) {
+            if (gridKeys == null || gridKeys.isEmpty()) {
                 log.info("Redis에서 활성 지역 데이터를 찾을 수 없습니다");
                 return List.of();
             }
 
-            List<double[]> result = regions.stream()
-                .map(tuple -> {
+            List<double[]> result = gridKeys.stream()
+                .map(key -> {
                     try {
-                        String regionKey = (String) tuple.getValue();
-                        String[] parts = regionKey.split(":");
-                        return new double[]{
-                            Double.parseDouble(parts[0]),
-                            Double.parseDouble(parts[1])
-                        };
+                        String gridKey = (String) key;
+                        String[] parts = gridKey.split(":");
+                        int x = Integer.parseInt(parts[0]);
+                        int y = Integer.parseInt(parts[1]);
+
+                        // 격자 좌표를 위경도로 역변환 (대표 위경도 사용)
+                        GridCoordinate grid = new GridCoordinate(x, y);
+                        return coordinateConverter.convertGridToLatLon(grid);
                     } catch (Exception e) {
-                        log.warn("활성 지역 데이터 파싱 실패: {}", tuple.getValue());
+                        log.warn("활성 지역 데이터 파싱 실패: {}", key);
                         return null;
                     }
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-            log.info("모든 활성 지역 조회 완료 - 총 {}개 지역", result.size());
+            log.info("모든 활성 지역 조회 완료 - 총 {}개 격자", result.size());
             return result;
 
         } catch (Exception e) {
             log.error("활성 지역 조회 실패", e);
             return List.of();
+        }
+    }
+
+    /**
+     * 이전 배치의 캐시 데이터 정리
+     */
+    public void cleanupOldCacheData() {
+        try {
+            // 이전 시간대의 예보 캐시 삭제
+            Set<String> keys = redisTemplate.keys("weather:forecast:*");
+            if (!keys.isEmpty()) {
+                redisTemplate.delete(keys);
+                log.info("이전 예보 캐시 정리 완료 - {}개 키 삭제", keys.size());
+            }
+        } catch (Exception e) {
+            log.error("캐시 정리 실패", e);
         }
     }
 
