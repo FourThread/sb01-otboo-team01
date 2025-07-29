@@ -7,7 +7,6 @@ import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +15,15 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.NonTransientResourceException;
+import org.springframework.batch.item.ParseException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -39,9 +41,6 @@ public class WeatherChangeDetectionBatch {
     private final Executor apiCallExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
 
-    @Value("${weather.change-detection.max-regions:30}")
-    private int maxDetectionRegions;
-
     @Bean
     public Job weatherChangeDetectionJob(
         JobRepository jobRepository,
@@ -56,85 +55,111 @@ public class WeatherChangeDetectionBatch {
     @Bean
     public Step weatherChangeDetectionStep(
         JobRepository jobRepository,
-        PlatformTransactionManager transactionManager
-    ) {
+        PlatformTransactionManager transactionManager,
+        TaskExecutor batchTaskExecutor) {
         return new StepBuilder("weatherChangeDetectionStep", jobRepository)
-            .tasklet(weatherChangeDetectionTasklet(), transactionManager)
+            .<double[], List<WeatherChangeDto>>chunk(100, transactionManager) // 100개씩 청크 처리
+            .reader(activeRegionsReader())
+            .processor(weatherChangeProcessor())
+            .writer(weatherChangeWriter())
+            .taskExecutor(batchTaskExecutor) // 병렬 처리 활성화
+//            .throttleLimit(4)
             .build();
     }
 
+    /**
+     * ItemReader: Redis에서 모든 활성 지역 조회
+     * 모든 활성 지역 데이터를 청크 단위로 읽기
+     * @return
+     */
     @Bean
-    public Tasklet weatherChangeDetectionTasklet() {
-        return (contribution, chunkContext) -> {
-            log.info("[BATCH-JOB] 날씨 변화 감지 배치 작업 시작");
+    public ItemReader<double[]> activeRegionsReader() {
+        return new ItemReader<double[]>() {
+            private List<double[]> activeRegions;
+            private int currentIndex = 0;
 
-            try {
-                // Redis에서 최근 활성 지역 조회
-                List<double[]> activeRegions = cacheService.getActiveRegions(maxDetectionRegions);
+            @Override
+            public double[] read()
+                throws ParseException, NonTransientResourceException {
 
-                if (activeRegions.isEmpty()) {
-                    log.info("[BATCH-JOB] 활성 지역이 없어 날씨 변화 감지를 건너뜁니다");
-                    return RepeatStatus.FINISHED;
-                }
+                if (activeRegions == null) {
+                    activeRegions = cacheService.getAllActiveRegions();
+                    log.info("[BATCH-CHUNK] 활성 지역 {}개 로드 완료", activeRegions.size());
 
-                log.info("[BATCH-JOB] 활성 지역 {}개에서 날씨 변화 감지 시작", activeRegions.size());
-
-                int totalChanges = 0;
-                int processedRegions = 0;
-
-                // 병렬 처리로 각 지역의 날씨 변화 감지
-                List<CompletableFuture<List<WeatherChangeDto>>> futures = activeRegions.stream()
-                    .map(coords -> CompletableFuture.supplyAsync(() ->
-                        weatherService.detectWeatherChanges(coords[0], coords[1]), apiCallExecutor))
-                    .toList();
-
-                for (CompletableFuture<List<WeatherChangeDto>> future : futures) {
-                    try {
-                        List<WeatherChangeDto> changes = future.join();
-                        processedRegions++;
-
-                        if (!changes.isEmpty()) {
-                            totalChanges += changes.size();
-
-                            sendWeatherChangeEvents(changes);
-
-
-                            log.info("[BATCH-JOB] 날씨 변화 감지됨 - 지역: {}, 변화 수: {}",
-                                getLocationDescription(changes.get(0)), changes.size());
-                        }
-
-                    } catch (Exception e) {
-                        log.error("[BATCH-JOB] 지역별 날씨 변화 감지 중 오류 발생", e);
+                    if (activeRegions.isEmpty()) {
+                        log.info("[BATCH-CHUNK] 활성 지역이 없어 처리를 종료합니다");
+                        return null;
                     }
                 }
 
-                log.info("[BATCH-JOB] 날씨 변화 감지 배치 작업 완료 - 처리된 지역: {}개, 총 변화: {}건",
-                    processedRegions, totalChanges);
+                if (currentIndex >= activeRegions.size()) {
+                    return null; //읽을 데이터 더 이상 없음
+                }
 
-                // ExecutionContext에 결과 저장
-                chunkContext.getStepContext()
-                    .getStepExecution()
-                    .getJobExecution()
-                    .getExecutionContext()
-                    .putInt("processedRegions", processedRegions);
-
-                chunkContext.getStepContext()
-                    .getStepExecution()
-                    .getJobExecution()
-                    .getExecutionContext()
-                    .putInt("totalChanges", totalChanges);
-
-                return RepeatStatus.FINISHED;
-
-            } catch (Exception e) {
-                log.error("[BATCH-JOB] 날씨 변화 감지 배치 작업 실패", e);
-                throw e;
+                return activeRegions.get(currentIndex++);
             }
         };
     }
 
 
+    /**
+     * ItemProcessor: 각 지역의 날씨 변화 감지
+     * 병렬 처리로 성능 최적화
+     */
+    @Bean
+    public ItemProcessor<double[], List<WeatherChangeDto>> weatherChangeProcessor() {
+        return coordinates -> {
+            try {
+                double latitude = coordinates[0];
+                double longitude = coordinates[1];
 
+                log.debug("[BATCH-CHUNK] 날씨 변화 감지 시작 - 위도: {}, 경도: {}", latitude, longitude);
+
+                List<WeatherChangeDto> changes = weatherService.detectWeatherChanges(latitude, longitude);
+
+                if (!changes.isEmpty()) {
+                    log.info("[BATCH-CHUNK] 날씨 변화 감지됨 - 위도: {}, 경도: {}, 변화 수: {}",
+                        latitude, longitude, changes.size());
+                }
+
+                return changes;
+
+            } catch (Exception e) {
+                log.error("[BATCH-CHUNK] 날씨 변화 감지 실패 - 좌표: [{}, {}]",
+                    coordinates[0], coordinates[1], e);
+                // 실패한 항목은 빈 리스트 반환하여 처리 계속
+                return List.of();
+            }
+        };
+    }
+
+    /**
+     * ItemWriter: 감지된 변화를 이벤트로 발행
+     * 배치 단위로 효율적 처리
+     */
+    @Bean
+    public ItemWriter<List<WeatherChangeDto>> weatherChangeWriter() {
+        return chunk -> {
+            int totalChanges = 0;
+
+            for (List<WeatherChangeDto> changes : chunk.getItems()) {
+                if (changes != null && !changes.isEmpty()) {
+                    totalChanges += changes.size();
+                    sendWeatherChangeEvents(changes);
+                }
+            }
+
+            if (totalChanges > 0) {
+                log.info("[BATCH-CHUNK] 청크 처리 완료 - 청크 크기: {}, 총 변화: {}건",
+                    chunk.size(), totalChanges);
+            }
+        };
+    }
+
+
+    /**
+     * 날씨 변화 이벤트 발행
+     */
     private void sendWeatherChangeEvents(List<WeatherChangeDto> changes) {
         for (WeatherChangeDto change : changes) {
             String title = "날씨 급변 알림";
@@ -142,13 +167,12 @@ public class WeatherChangeDetectionBatch {
             NotificationLevel level = determineNotificationLevel(change);
 
             WeatherChangeDetectedEvent event = new WeatherChangeDetectedEvent(
-                    String.valueOf("더미"), // 해당 지역 사람만 필터링 할 때 필요한 값?
+                    getLocationDescription(change),
                     title,
                     content,
                     level
             );
 
-            // 이벤트 발행
             eventPublisher.publishEvent(event);
         }
     }
