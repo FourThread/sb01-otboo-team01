@@ -22,6 +22,7 @@ import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetected
 import com.fourthread.ozang.core.domain.notification.execption.NotificationException;
 import com.fourthread.ozang.core.domain.notification.mapper.NotificationMapper;
 import com.fourthread.ozang.core.domain.notification.repository.NotificationRepository;
+import com.fourthread.ozang.core.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,8 @@ public class NotificationService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
+    private final ProfileRepository profileRepository;
+
 
     @Transactional
     public void create(UUID receiverId, String title, String content,
@@ -87,6 +90,34 @@ public class NotificationService {
 
         log.info("여러 알림 생성 완료: count={}", dtos.size());
     }
+
+    @Transactional
+    public void sendWeatherAlertToGridUsers(Integer gridX, Integer gridY,
+        String title, String content,
+        NotificationLevel level) {
+        log.debug("격자별 날씨 알림 전송 시작: gridX={}, gridY={}, title={}", gridX, gridY, title);
+
+        try {
+            // 해당 격자에 위치한 사용자 ID들 조회
+            List<UUID> targetUserIds = profileRepository.findUserIdsByGridCoordinates(gridX, gridY);
+
+            if (targetUserIds.isEmpty()) {
+                log.debug("격자({}, {})에 위치한 사용자가 없습니다", gridX, gridY);
+                return;
+            }
+
+            Set<UUID> receiverIds = Set.copyOf(targetUserIds);
+
+            log.info("격자({}, {})의 {}명 사용자에게 날씨 알림 전송", gridX, gridY, receiverIds.size());
+
+            createAll(receiverIds, title, content, level);
+
+        } catch (Exception e) {
+            log.error("격자별 날씨 알림 전송 실패: gridX={}, gridY={}", gridX, gridY, e);
+            throw e;
+        }
+    }
+
 
 
     @Transactional
@@ -165,6 +196,7 @@ public class NotificationService {
 
 
     @Transactional
+    @Deprecated
     public void sendWeatherAlertNotification(WeatherChangeDetectedEvent event) {
         Set<UUID> receiverIds = userRepository.findAllUserIds();
 

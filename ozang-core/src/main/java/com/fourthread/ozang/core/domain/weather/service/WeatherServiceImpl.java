@@ -121,6 +121,8 @@ public class WeatherServiceImpl implements WeatherService {
         List<WeatherChangeDto> changes = new ArrayList<>();
 
         try {
+            GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
+
             // 현재 초단기예보 조회
             WeatherDto currentWeather = getWeatherForecast(longitude, latitude);
 
@@ -133,20 +135,20 @@ public class WeatherServiceImpl implements WeatherService {
             }
 
             // 온도 변화 감지
-            changes.addAll(detectTemperatureChanges(currentWeather, previousWeather));
+            changes.addAll(detectTemperatureChanges(currentWeather, previousWeather, gridCoordinate));
 
             // 강수 변화 감지
-            changes.addAll(detectPrecipitationChanges(currentWeather, previousWeather));
+            changes.addAll(detectPrecipitationChanges(currentWeather, previousWeather, gridCoordinate));
 
             // 풍속 변화 감지
-            changes.addAll(detectWindChanges(currentWeather, previousWeather));
+            changes.addAll(detectWindChanges(currentWeather, previousWeather, gridCoordinate));
 
             // 하늘 상태 변화 감지
-            changes.addAll(detectSkyChanges(currentWeather, previousWeather));
+            changes.addAll(detectSkyChanges(currentWeather, previousWeather, gridCoordinate));
 
             if (!changes.isEmpty()) {
-                log.info("날씨 변화 감지됨 - 위도: {}, 경도: {}, 변화 수: {}",
-                    latitude, longitude, changes.size());
+                log.info("날씨 변화 감지됨 - 위도: {}, 경도: {}, 격자: ({}, {}), 변화 수: {}",
+                    latitude, longitude, gridCoordinate.getX(), gridCoordinate.getY(), changes.size());
             }
 
         } catch (Exception e) {
@@ -358,7 +360,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     //  날씨 변화 감지 헬퍼 메서드
-    private List<WeatherChangeDto> detectTemperatureChanges(WeatherDto current, WeatherDto previous) {
+    private List<WeatherChangeDto> detectTemperatureChanges(WeatherDto current, WeatherDto previous, GridCoordinate grid) {
         List<WeatherChangeDto> changes = new ArrayList<>();
 
         double currentTemp = current.temperature().current();
@@ -374,7 +376,9 @@ public class WeatherServiceImpl implements WeatherService {
                 currentTemp,
                 "°C",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
         // 3도 이상 급하강
@@ -386,14 +390,16 @@ public class WeatherServiceImpl implements WeatherService {
                 currentTemp,
                 "°C",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
 
         return changes;
     }
 
-    private List<WeatherChangeDto> detectPrecipitationChanges(WeatherDto current, WeatherDto previous) {
+    private List<WeatherChangeDto> detectPrecipitationChanges(WeatherDto current, WeatherDto previous, GridCoordinate grid) {
         List<WeatherChangeDto> changes = new ArrayList<>();
 
         PrecipitationType currentType = current.precipitation().type();
@@ -408,7 +414,9 @@ public class WeatherServiceImpl implements WeatherService {
                 current.precipitation().amount(),
                 "mm",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
         // 강수 종료
@@ -420,7 +428,9 @@ public class WeatherServiceImpl implements WeatherService {
                 0.0,
                 "mm",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
         // 강수 형태 변화
@@ -433,14 +443,16 @@ public class WeatherServiceImpl implements WeatherService {
                 current.precipitation().amount(),
                 "mm",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
 
         return changes;
     }
 
-    private List<WeatherChangeDto> detectWindChanges(WeatherDto current, WeatherDto previous) {
+    private List<WeatherChangeDto> detectWindChanges(WeatherDto current, WeatherDto previous, GridCoordinate grid) {
         List<WeatherChangeDto> changes = new ArrayList<>();
 
         double currentWind = current.windSpeed().speed();
@@ -455,14 +467,16 @@ public class WeatherServiceImpl implements WeatherService {
                 currentWind,
                 "m/s",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
 
         return changes;
     }
 
-    private List<WeatherChangeDto> detectSkyChanges(WeatherDto current, WeatherDto previous) {
+    private List<WeatherChangeDto> detectSkyChanges(WeatherDto current, WeatherDto previous, GridCoordinate grid) {
         List<WeatherChangeDto> changes = new ArrayList<>();
 
         SkyStatus currentSky = current.skyStatus();
@@ -479,7 +493,9 @@ public class WeatherServiceImpl implements WeatherService {
                 0.0,
                 "",
                 LocalDateTime.now(),
-                current.location()
+                current.location(),
+                grid.getX(),
+                grid.getY()
             ));
         }
 
@@ -639,7 +655,7 @@ public class WeatherServiceImpl implements WeatherService {
         weather.calculateAndSetTemperatureStats(temperatureValues);
 
         Weather savedWeather = weatherRepository.save(weather);
-        log.debug("Weather 엔티티 저장 완료 - 날짜: {}, ID: {}", savedWeather.getId());
+        log.debug("Weather 엔티티 저장 완료 - ID: {}", savedWeather.getId());
 
         return savedWeather;
     }

@@ -12,5 +12,30 @@ public record WeatherChangeDto(
     double newValue,
     String unit,
     LocalDateTime detectedAt,
-    WeatherAPILocation location
-) {}
+    WeatherAPILocation location,
+    Integer gridX,
+    Integer gridY
+) {
+
+    public static WeatherChangeDto create(
+        WeatherChangeType changeType,
+        String description,
+        double oldValue,
+        double newValue,
+        String unit,
+        LocalDateTime detectedAt,
+        WeatherAPILocation location
+    ) {
+        return new WeatherChangeDto(
+            changeType,
+            description,
+            oldValue,
+            newValue,
+            unit,
+            detectedAt,
+            location,
+            location.x(),
+            location.y()
+        );
+    }
+}
