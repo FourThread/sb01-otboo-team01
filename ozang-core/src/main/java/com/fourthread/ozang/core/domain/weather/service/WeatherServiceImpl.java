@@ -423,8 +423,7 @@ public class WeatherServiceImpl implements WeatherService {
             ));
         }
         // 강수 형태 변화
-        else if (previousType != PrecipitationType.NONE && currentType != PrecipitationType.NONE
-            && previousType != currentType) {
+        else if (previousType != PrecipitationType.NONE && previousType != currentType) {
             changes.add(new WeatherChangeDto(
                 WeatherChangeType.PRECIPITATION_TYPE_CHANGE,
                 String.format("%s에서 %s로 변경되었습니다",
