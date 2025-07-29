@@ -31,7 +31,8 @@ public class WeatherCacheService {
 
     private final WeatherCacheKeyGenerator cacheKeyGenerator;
 
-    public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate,
+    public WeatherCacheService(
+        @Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate,
         ObjectMapper objectMapper, WeatherCacheKeyGenerator cacheKeyGenerator) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
@@ -45,7 +46,7 @@ public class WeatherCacheService {
     private static final String ACTIVE_REGIONS_KEY = "weather:active:regions";
 
     /**
-     *  현재 날씨 캐시 관리
+     * 현재 날씨 캐시 관리
      */
 //    public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
 //        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
@@ -71,7 +72,6 @@ public class WeatherCacheService {
 //            return null;
 //        }
 //    }
-
     public void cacheCurrentWeather(double latitude, double longitude, WeatherDto weather) {
         String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
 
@@ -86,16 +86,17 @@ public class WeatherCacheService {
     }
 
     /**
-     *  5일 예보 캐시 관리
+     * 5일 예보 캐시 관리
      */
-    public List<WeatherDto> getForecastFromCache(double latitude, double longitude, String baseTime) {
+    public List<WeatherDto> getForecastFromCache(double latitude, double longitude,
+        String baseTime) {
         String key = cacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
             Object cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
                 List<WeatherDto> result = convertToWeatherDtoList(cached);
-                if(result != null) {
+                if (result != null) {
                     log.debug("Redis 캐시 히트 - 5일 예보: {}", key);
                     recordActiveRegion(latitude, longitude);
                     return result;
@@ -114,7 +115,8 @@ public class WeatherCacheService {
         }
     }
 
-    public void cacheForecast(double latitude, double longitude, String baseTime, List<WeatherDto> forecast) {
+    public void cacheForecast(double latitude, double longitude, String baseTime,
+        List<WeatherDto> forecast) {
         String key = cacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
@@ -127,7 +129,7 @@ public class WeatherCacheService {
     }
 
     /**
-     *  위치 정보 캐시 관리
+     * 위치 정보 캐시 관리
      */
     public WeatherAPILocation getLocationFromCache(double latitude, double longitude) {
         String key = cacheKeyGenerator.generateLocationKey(latitude, longitude);
@@ -136,7 +138,7 @@ public class WeatherCacheService {
             Object cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
                 WeatherAPILocation result = convertToWeatherAPILocation(cached);
-                if(result !=null) {
+                if (result != null) {
                     log.debug("Redis 캐시 히트 - 위치 정보: {}", key);
                     return result;
                 }
@@ -287,21 +289,16 @@ public class WeatherCacheService {
     }
 
 
-
     /**
      * 캐시 워밍업
      */
-    public void warmupCache(double latitude, double longitude, WeatherDto currentWeather,
-        List<WeatherDto> forecast, WeatherAPILocation location) {
+    public void warmupCache(double latitude, double longitude, List<WeatherDto> forecast,
+        WeatherAPILocation location) {
         try {
-            // 현재 날씨 캐시
-            if (currentWeather != null) {
-                cacheCurrentWeather(latitude, longitude, currentWeather);
-            }
-
             // 5일 예보 캐시
             if (forecast != null && !forecast.isEmpty()) {
-                String baseTime = LocalDateTime.now().format(WeatherCacheKeyGenerator.HOUR_FORMATTER);
+                String baseTime = LocalDateTime.now()
+                    .format(WeatherCacheKeyGenerator.HOUR_FORMATTER);
                 cacheForecast(latitude, longitude, baseTime, forecast);
             }
 
