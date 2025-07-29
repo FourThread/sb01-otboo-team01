@@ -3,6 +3,7 @@ package com.fourthread.ozang.batch.domain.weather.batch;
 import com.fourthread.ozang.batch.config.BatchJobExecutionListener;
 import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
 import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetectedEvent;
+import com.fourthread.ozang.core.domain.notification.service.NotificationService;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
@@ -37,7 +38,7 @@ public class WeatherChangeDetectionBatch {
 
     private final WeatherService weatherService;
     private final WeatherCacheService cacheService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
     private final TaskExecutor batchTaskExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
 
@@ -140,40 +141,59 @@ public class WeatherChangeDetectionBatch {
     public ItemWriter<List<WeatherChangeDto>> weatherChangeWriter() {
         return chunk -> {
             int totalChanges = 0;
+            int totalNotifications = 0;
 
             for (List<WeatherChangeDto> changes : chunk.getItems()) {
                 if (changes != null && !changes.isEmpty()) {
                     totalChanges += changes.size();
-                    sendWeatherChangeEvents(changes);
+
+                    // 격자별로 그룹화하여 알림 전송
+                    int sentNotifications = sendGridBasedNotifications(changes);
+                    totalNotifications += sentNotifications;
                 }
             }
 
             if (totalChanges > 0) {
-                log.info("[BATCH-CHUNK] 청크 처리 완료 - 청크 크기: {}, 총 변화: {}건",
-                    chunk.size(), totalChanges);
+                log.info("[BATCH-CHUNK] 청크 처리 완료 - 청크 크기: {}, 총 변화: {}건, 전송된 알림: {}건",
+                    chunk.size(), totalChanges, totalNotifications);
             }
         };
     }
 
-
     /**
-     * 날씨 변화 이벤트 발행
+     * 격자별 날씨 변화 알림 전송
      */
-    private void sendWeatherChangeEvents(List<WeatherChangeDto> changes) {
-        for (WeatherChangeDto change : changes) {
-            String title = "날씨 급변 알림";
-            String content = formatChangeMessage(change);
-            NotificationLevel level = determineNotificationLevel(change);
+    private int sendGridBasedNotifications(List<WeatherChangeDto> changes) {
+        int notificationCount = 0;
 
-            WeatherChangeDetectedEvent event = new WeatherChangeDetectedEvent(
-                    getLocationDescription(change),
+        // 변화별로 해당 격자 사용자들에게 알림 전송
+        for (WeatherChangeDto change : changes) {
+            try {
+                String title = "날씨 급변 알림";
+                String content = formatChangeMessage(change);
+                NotificationLevel level = determineNotificationLevel(change);
+
+                // 격자별 사용자에게만 알림 전송
+                notificationService.sendWeatherAlertToGridUsers(
+                    change.gridX(),
+                    change.gridY(),
                     title,
                     content,
                     level
-            );
+                );
 
-            eventPublisher.publishEvent(event);
+                notificationCount++;
+
+                log.debug("[BATCH-NOTIFICATION] 격자({}, {}) 알림 전송 완료: {}",
+                    change.gridX(), change.gridY(), change.description());
+
+            } catch (Exception e) {
+                log.error("[BATCH-NOTIFICATION] 격자({}, {}) 알림 전송 실패: {}",
+                    change.gridX(), change.gridY(), change.description(), e);
+            }
         }
+
+        return notificationCount;
     }
 
 
