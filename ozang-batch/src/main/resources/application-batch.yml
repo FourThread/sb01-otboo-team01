@@ -91,7 +91,8 @@ weather:
     current:
       ttl: PT1H      # 현재 날씨 1시간
     forecast:
-      ttl: PT3H      # 5일 예보 3시간
+      # 예보 데이터는 배치에서 관리 TTL 없음
+      batch-managed: true
     location:
       ttl: PT24H     # 위치 정보 24시간
 
@@ -105,6 +106,8 @@ batch:
     weather-cache-warmup:
       enabled: true
     weather-change-detection:
+      enabled: true
+    profile-active-region:
       enabled: true
 
 # 로깅 설정

@@ -45,22 +45,8 @@ public class WeatherCacheService {
         log.info("WeatherCacheService 초기화 완료 - Redis DB: 1번 (Weather 전용)");
     }
 
-    private static final Duration CURRENT_WEATHER_TTL = Duration.ofHours(1);
     private static final Duration LOCATION_TTL = Duration.ofHours(24);
     private static final String ACTIVE_REGIONS_KEY = "weather:active:regions";
-
-    public void cacheCurrentWeather(double latitude, double longitude, WeatherDto weather) {
-        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
-
-        try {
-            redisTemplate.opsForValue().set(key, weather, CURRENT_WEATHER_TTL);
-            log.debug("Redis 캐시 저장 - 현재 날씨: {}", key);
-            // 활성 지역으로 기록
-            recordActiveRegion(latitude, longitude);
-        } catch (Exception e) {
-            log.error("Redis 캐시 저장 실패: {}", key, e);
-        }
-    }
 
     /**
      * 5일 예보 캐시 관리
@@ -210,38 +196,22 @@ public class WeatherCacheService {
     }
 
     /**
-     * Profile 기반 활성 지역 일괄 등록 (격자 좌표 기반)
+     * 격자 키 기반 활성 지역 등록
      */
-    public void registerActiveRegionsFromProfiles(List<double[]> profileLocations) {
-        if (profileLocations == null || profileLocations.isEmpty()) {
-            log.info("등록할 프로필 위치가 없습니다");
+    public void registerActiveRegionsFromGridKeys(Set<String> gridKeys) {
+        if (gridKeys == null || gridKeys.isEmpty()) {
+            log.info("등록할 격자 키가 없습니다");
             return;
         }
 
         try {
-            Set<String> gridKeys = profileLocations.stream()
-                .map(location -> {
-                    try {
-                        GridCoordinate grid = coordinateConverter.convertToGrid(location[0], location[1]);
-                        return String.format("%d:%d", grid.getX(), grid.getY());
-                    } catch (Exception e) {
-                        log.warn("격자 변환 실패: 위경도({}, {})", location[0], location[1]);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet()); // 중복 격자 제거
+            redisTemplate.opsForSet().add(ACTIVE_REGIONS_KEY, gridKeys.toArray(new String[0]));
+            // 24시간 TTL 설정
+            redisTemplate.expire(ACTIVE_REGIONS_KEY, Duration.ofHours(24));
 
-            if (!gridKeys.isEmpty()) {
-                redisTemplate.opsForSet().add(ACTIVE_REGIONS_KEY, gridKeys.toArray(new String[0]));
-                // 24시간 TTL 설정
-                redisTemplate.expire(ACTIVE_REGIONS_KEY, Duration.ofHours(24));
-
-                log.info("Profile 기반 활성 지역 등록 완료 - {}개 위치 -> {}개 격자",
-                    profileLocations.size(), gridKeys.size());
-            }
+            log.info("격자 키 기반 활성 지역 등록 완료 - {}개 격자", gridKeys.size());
         } catch (Exception e) {
-            log.error("Profile 기반 활성 지역 등록 실패", e);
+            log.error("격자 키 기반 활성 지역 등록 실패", e);
         }
     }
 

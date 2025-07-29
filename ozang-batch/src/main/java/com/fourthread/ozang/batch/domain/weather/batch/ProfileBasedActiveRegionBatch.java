@@ -5,7 +5,7 @@ import com.fourthread.ozang.core.domain.user.entity.Profile;
 import com.fourthread.ozang.core.domain.user.repository.ProfileRepository;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,26 +67,25 @@ public class ProfileBasedActiveRegionBatch {
                 // 모든 프로필의 위치 정보 조회
                 List<Profile> profiles = profileRepository.findAll();
 
-                List<double[]> profileLocations = profiles.stream()
+                Set<String> gridKeys = profiles.stream()
                     .filter(profile -> profile.getLocation() != null)
-                    .filter(profile -> profile.getLocation().getLatitude() != null
-                        && profile.getLocation().getLongitude() != null)
-                    .map(profile -> new double[]{
-                        profile.getLocation().getLatitude(),
-                        profile.getLocation().getLongitude()
-                    })
-                    .distinct() // 중복 위치 제거
-                    .collect(Collectors.toList());
+                    .filter(profile -> profile.getLocation().getX() != null
+                        && profile.getLocation().getY() != null)
+                    .map(profile -> String.format("%d:%d",
+                        profile.getLocation().getX(),
+                        profile.getLocation().getY()))
+                    .collect(Collectors.toSet()); // Set으로 중복 격자 자동 제거
 
-                log.info("[BATCH-JOB] Profile에서 추출된 위치 정보: {}개", profileLocations.size());
+                log.info("[BATCH-JOB] Profile {}개에서 고유 격자 {}개 추출 완료",
+                    profiles.size(), gridKeys.size());
 
-                if (!profileLocations.isEmpty()) {
+                if (!gridKeys.isEmpty()) {
                     // Redis에 활성 지역으로 등록
-                    cacheService.registerActiveRegionsFromProfiles(profileLocations);
+                    cacheService.registerActiveRegionsFromGridKeys(gridKeys);
 
-                    log.info("[BATCH-JOB] Profile 기반 활성 지역 등록 완료: {}개 지역", profileLocations.size());
+                    log.info("[BATCH-JOB] Profile 기반 활성 지역 등록 완료: {}개 격자", gridKeys.size());
                 } else {
-                    log.info("[BATCH-JOB] 등록할 위치 정보가 없습니다");
+                    log.info("[BATCH-JOB] 등록할 격자 정보가 없습니다");
                 }
 
                 // ExecutionContext에 결과 저장 (모니터링용)
@@ -94,7 +93,7 @@ public class ProfileBasedActiveRegionBatch {
                     .getStepExecution()
                     .getJobExecution()
                     .getExecutionContext()
-                    .putInt("profileActiveRegionCount", profileLocations.size());
+                    .put("profileActiveRegionCount", gridKeys.size());
 
                 return RepeatStatus.FINISHED;
 
