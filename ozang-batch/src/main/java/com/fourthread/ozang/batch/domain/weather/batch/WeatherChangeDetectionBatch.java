@@ -38,7 +38,7 @@ public class WeatherChangeDetectionBatch {
     private final WeatherService weatherService;
     private final WeatherCacheService cacheService;
     private final ApplicationEventPublisher eventPublisher;
-    private final Executor apiCallExecutor;
+    private final TaskExecutor batchTaskExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
 
     @Bean
@@ -55,8 +55,7 @@ public class WeatherChangeDetectionBatch {
     @Bean
     public Step weatherChangeDetectionStep(
         JobRepository jobRepository,
-        PlatformTransactionManager transactionManager,
-        TaskExecutor batchTaskExecutor) {
+        PlatformTransactionManager transactionManager) {
         return new StepBuilder("weatherChangeDetectionStep", jobRepository)
             .<double[], List<WeatherChangeDto>>chunk(100, transactionManager) // 100개씩 청크 처리
             .reader(activeRegionsReader())
