@@ -23,29 +23,29 @@ services:
     volumes:
       - redisdata:/data
 
-  app:
-    build:
-      context: .
-      dockerfile: ozang-app/Dockerfile
-    container_name: o-zang-app
-    restart: unless-stopped
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - ELASTICSEARCH_HOST=elastic
-      - ELASTICSEARCH_PORT=9200
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: ozang-app/Dockerfile
+  #   container_name: o-zang-app
+  #   restart: unless-stopped
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=prod
+  #     - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+  #     - SPRING_DATASOURCE_USERNAME=postgres
+  #     - SPRING_DATASOURCE_PASSWORD=password
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #     - ELASTICSEARCH_HOST=elastic
+  #     - ELASTICSEARCH_PORT=9200
 
 
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-      - redis
-      - elastic
+  #   ports:
+  #     - "8082:80"
+  #   depends_on:
+  #     - db
+  #     - redis
+  #     - elastic
 
   elastic:
     build:
