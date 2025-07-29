@@ -29,10 +29,13 @@ public class WeatherCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
+    private final WeatherCacheKeyGenerator cacheKeyGenerator;
+
     public WeatherCacheService(@Qualifier("weatherRedisTemplate") RedisTemplate<String, Object> redisTemplate,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper, WeatherCacheKeyGenerator cacheKeyGenerator) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.cacheKeyGenerator = cacheKeyGenerator;
         log.info("WeatherCacheService 초기화 완료 - Redis DB: 1번 (Weather 전용)");
     }
 
@@ -45,7 +48,7 @@ public class WeatherCacheService {
      *  현재 날씨 캐시 관리
      */
     public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
-        String key = WeatherCacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
+        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
         try {
             WeatherDto cached = (WeatherDto) redisTemplate.opsForValue().get(key);
             if (cached != null) {
@@ -70,7 +73,7 @@ public class WeatherCacheService {
     }
 
     public void cacheCurrentWeather(double latitude, double longitude, WeatherDto weather) {
-        String key = WeatherCacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
+        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
 
         try {
             redisTemplate.opsForValue().set(key, weather, CURRENT_WEATHER_TTL);
@@ -86,7 +89,7 @@ public class WeatherCacheService {
      *  5일 예보 캐시 관리
      */
     public List<WeatherDto> getForecastFromCache(double latitude, double longitude, String baseTime) {
-        String key = WeatherCacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
+        String key = cacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
             Object cached = redisTemplate.opsForValue().get(key);
@@ -112,7 +115,7 @@ public class WeatherCacheService {
     }
 
     public void cacheForecast(double latitude, double longitude, String baseTime, List<WeatherDto> forecast) {
-        String key = WeatherCacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
+        String key = cacheKeyGenerator.generateForecastWeatherKey(latitude, longitude, baseTime);
 
         try {
             redisTemplate.opsForValue().set(key, forecast, FORECAST_WEATHER_TTL);
@@ -127,7 +130,7 @@ public class WeatherCacheService {
      *  위치 정보 캐시 관리
      */
     public WeatherAPILocation getLocationFromCache(double latitude, double longitude) {
-        String key = WeatherCacheKeyGenerator.generateLocationKey(latitude, longitude);
+        String key = cacheKeyGenerator.generateLocationKey(latitude, longitude);
 
         try {
             Object cached = redisTemplate.opsForValue().get(key);
@@ -152,7 +155,7 @@ public class WeatherCacheService {
     }
 
     public void cacheLocation(double latitude, double longitude, WeatherAPILocation location) {
-        String key = WeatherCacheKeyGenerator.generateLocationKey(latitude, longitude);
+        String key = cacheKeyGenerator.generateLocationKey(latitude, longitude);
 
         try {
             redisTemplate.opsForValue().set(key, location, LOCATION_TTL);
@@ -245,18 +248,30 @@ public class WeatherCacheService {
 
     /**
      * 최근 활성 지역 조회 (배치 작업에서 사용)
+     * @param limit 조회할 최대 개수 (0이면 전체 조회)
      */
     public List<double[]> getActiveRegions(int limit) {
         try {
             // 최근 조회된 순으로 정렬하여 가져오기
-            Set<ZSetOperations.TypedTuple<Object>> regions = redisTemplate.opsForZSet()
-                .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, limit - 1);
+            Set<ZSetOperations.TypedTuple<Object>> regions;
+
+            // limit이 0이면 전체 조회, 아니면 제한된 개수만 조회
+            if(limit <= 0) {
+                regions = redisTemplate.opsForZSet()
+                    .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, -1);
+                log.info("Redis에서 모든 활성 지역 조회");
+            }else{
+                regions = redisTemplate.opsForZSet()
+                    .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, limit - 1);
+                log.info("Redis에서 최대 {}개 활성 지역 조회", limit);
+            }
+
 
             if (regions == null) {
                 return List.of();
             }
 
-            return regions.stream()
+            List<double[]> result = regions.stream()
                 .map(tuple -> {
                     String regionKey = (String) tuple.getValue();
                     String[] parts = regionKey.split(":");
@@ -265,7 +280,10 @@ public class WeatherCacheService {
                         Double.parseDouble(parts[1])
                     };
                 })
-                .collect(Collectors.toList());
+                .toList();
+
+            log.info("활성 지역 조회 완료: {}개", result.size());
+            return result;
         } catch (Exception e) {
             log.error("활성 지역 조회 실패", e);
             return List.of();
