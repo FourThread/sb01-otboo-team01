@@ -17,7 +17,6 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -35,10 +34,6 @@ public class WeatherCacheWarmupBatch {
     private final WeatherCacheService cacheService;
     private final Executor apiCallExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
-
-    @Value("${weather.cache.warmup.max-regions:50}")
-    private int maxWarmupRegions;
-
 
     @Bean
     public Job weatherCacheWarmupJob(
@@ -73,7 +68,7 @@ public class WeatherCacheWarmupBatch {
             log.info("[BATCH-JOB] 활성 지역 날씨 캐시 워밍업 시작");
 
             // Redis에서 최근 활성 지역 조회
-            List<double[]> activeRegions = cacheService.getActiveRegions(maxWarmupRegions);
+            List<double[]> activeRegions = cacheService.getAllActiveRegions();
 
             if (activeRegions.isEmpty()) {
                 log.info("[BATCH-JOB] 활성 지역이 없어 워밍업을 건너뜁니다");

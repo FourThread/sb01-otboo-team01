@@ -47,30 +47,30 @@ public class WeatherCacheService {
     /**
      *  현재 날씨 캐시 관리
      */
-    public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
-        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
-        try {
-            WeatherDto cached = (WeatherDto) redisTemplate.opsForValue().get(key);
-            if (cached != null) {
-                WeatherDto result = convertToWeatherDto(cached);
-                if(result != null) {
-                    log.debug("Redis 캐시 히트 - 현재 날씨: {}", key);
-                    recordActiveRegion(latitude, longitude);
-                    return result;
-                }
-            }
-            return cached;
-        } catch (Exception e) {
-            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
-            try {
-                redisTemplate.delete(key);
-                log.info("손상된 캐시 삭제 완료: {}", key);
-            } catch (Exception deleteEx) {
-                log.error("캐시 삭제 실패: {}", key, deleteEx);
-            }
-            return null;
-        }
-    }
+//    public WeatherDto getCurrentWeatherFromCache(double latitude, double longitude) {
+//        String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
+//        try {
+//            WeatherDto cached = (WeatherDto) redisTemplate.opsForValue().get(key);
+//            if (cached != null) {
+//                WeatherDto result = convertToWeatherDto(cached);
+//                if(result != null) {
+//                    log.debug("Redis 캐시 히트 - 현재 날씨: {}", key);
+//                    recordActiveRegion(latitude, longitude);
+//                    return result;
+//                }
+//            }
+//            return cached;
+//        } catch (Exception e) {
+//            log.error("Redis 캐시 조회 실패: {} - 캐시를 삭제합니다.", key, e);
+//            try {
+//                redisTemplate.delete(key);
+//                log.info("손상된 캐시 삭제 완료: {}", key);
+//            } catch (Exception deleteEx) {
+//                log.error("캐시 삭제 실패: {}", key, deleteEx);
+//            }
+//            return null;
+//        }
+//    }
 
     public void cacheCurrentWeather(double latitude, double longitude, WeatherDto weather) {
         String key = cacheKeyGenerator.generateCurrentWeatherKey(latitude, longitude);
@@ -169,20 +169,20 @@ public class WeatherCacheService {
      * 타입 안전한 변환 메서드
      * @return WeatherDto
      */
-    private WeatherDto convertToWeatherDto(Object cached) {
-        try {
-            if (cached instanceof WeatherDto) {
-                return (WeatherDto) cached;
-            }
-
-            if (cached instanceof Map) {
-                return objectMapper.convertValue(cached, WeatherDto.class);
-            }
-        } catch (Exception e) {
-            log.warn("WeatherDto 변환 실패", e);
-        }
-        return null;
-    }
+//    private WeatherDto convertToWeatherDto(Object cached) {
+//        try {
+//            if (cached instanceof WeatherDto) {
+//                return (WeatherDto) cached;
+//            }
+//
+//            if (cached instanceof Map) {
+//                return objectMapper.convertValue(cached, WeatherDto.class);
+//            }
+//        } catch (Exception e) {
+//            log.warn("WeatherDto 변환 실패", e);
+//        }
+//        return null;
+//    }
 
     /**
      * 타입 안전한 변환 메서드
@@ -248,47 +248,45 @@ public class WeatherCacheService {
 
     /**
      * 최근 활성 지역 조회 (배치 작업에서 사용)
-     * @param limit 조회할 최대 개수 (0이면 전체 조회)
      */
-    public List<double[]> getActiveRegions(int limit) {
+    public List<double[]> getAllActiveRegions() {
         try {
-            // 최근 조회된 순으로 정렬하여 가져오기
-            Set<ZSetOperations.TypedTuple<Object>> regions;
-
-            // limit이 0이면 전체 조회, 아니면 제한된 개수만 조회
-            if(limit <= 0) {
-                regions = redisTemplate.opsForZSet()
-                    .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, -1);
-                log.info("Redis에서 모든 활성 지역 조회");
-            }else{
-                regions = redisTemplate.opsForZSet()
-                    .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, limit - 1);
-                log.info("Redis에서 최대 {}개 활성 지역 조회", limit);
-            }
-
+            // 모든 활성 지역을 최근 조회 순으로 정렬하여 가져오기
+            Set<ZSetOperations.TypedTuple<Object>> regions = redisTemplate.opsForZSet()
+                .reverseRangeWithScores(ACTIVE_REGIONS_KEY, 0, -1); // -1은 모든 요소를 의미
 
             if (regions == null) {
+                log.info("Redis에서 활성 지역 데이터를 찾을 수 없습니다");
                 return List.of();
             }
 
             List<double[]> result = regions.stream()
                 .map(tuple -> {
-                    String regionKey = (String) tuple.getValue();
-                    String[] parts = regionKey.split(":");
-                    return new double[]{
-                        Double.parseDouble(parts[0]),
-                        Double.parseDouble(parts[1])
-                    };
+                    try {
+                        String regionKey = (String) tuple.getValue();
+                        String[] parts = regionKey.split(":");
+                        return new double[]{
+                            Double.parseDouble(parts[0]),
+                            Double.parseDouble(parts[1])
+                        };
+                    } catch (Exception e) {
+                        log.warn("활성 지역 데이터 파싱 실패: {}", tuple.getValue());
+                        return null;
+                    }
                 })
-                .toList();
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-            log.info("활성 지역 조회 완료: {}개", result.size());
+            log.info("모든 활성 지역 조회 완료 - 총 {}개 지역", result.size());
             return result;
+
         } catch (Exception e) {
             log.error("활성 지역 조회 실패", e);
             return List.of();
         }
     }
+
+
 
     /**
      * 캐시 워밍업
