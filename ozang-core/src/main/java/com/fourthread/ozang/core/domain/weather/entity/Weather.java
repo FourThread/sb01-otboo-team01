@@ -59,11 +59,6 @@ public class Weather extends BaseEntity {
     @Embedded
     private WindInfo wind;
 
-    // API 응답 해시 (중복 방지용)
-    @Column(unique = true)
-    @Setter
-    private String apiResponseHash;
-
     public static Weather create(
         LocalDateTime forecastedAt,
         LocalDateTime forecastAt,

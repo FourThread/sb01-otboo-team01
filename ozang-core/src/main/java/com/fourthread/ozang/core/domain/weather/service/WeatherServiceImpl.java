@@ -311,7 +311,8 @@ public class WeatherServiceImpl implements WeatherService {
         // 강수 정보
         PrecipitationType precipitationType = mapPrecipitationType(dataMap.get("PTY"));
         double precipitationAmount = parseAmount(dataMap.get("RN1"));
-        PrecipitationDto precipitationDto = new PrecipitationDto(precipitationType, precipitationAmount, 0.0);
+        double precipitationProbability = parseDouble(dataMap.get("POP"), 0.0) / 100.0;
+        PrecipitationDto precipitationDto = new PrecipitationDto(precipitationType, precipitationAmount, precipitationProbability);
 
         // 풍속 정보
         double windSpeed = parseDouble(dataMap.get("WSD"), 0.0);
@@ -535,41 +536,6 @@ public class WeatherServiceImpl implements WeatherService {
         }
     }
 
-    /**
-     * 날짜별 고유 API 응답 해시 생성
-     * API 응답 + 예보 날짜를 조합하여 각 날씨 데이터마다 고유한 해시 생성
-     *
-     * @param response API 응답
-     * @param targetDate 예보 대상 날짜
-     * @return 날짜별 고유 해시값
-     */
-    private String generateDateSpecificResponseHash(WeatherApiResponse response, LocalDate targetDate) {
-        try {
-            // API 응답 + 예보 날짜를 조합하여 고유한 데이터 생성
-            String combinedData = response.toString() + "_" + targetDate.toString();
-
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(combinedData.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            String resultHash = hexString.toString();
-            log.debug("날짜별 해시 생성 완료 - 날짜: {}, Hash: {}", targetDate, resultHash);
-            return resultHash;
-
-        } catch (Exception e) {
-            log.error("날짜별 해시 생성 실패 - 날짜: {}", targetDate, e);
-            // 실패 시 UUID + 날짜 조합으로 대체
-            return UUID.randomUUID().toString().replace("-", "") + "_" + targetDate.toString().replace("-", "");
-        }
-    }
-
     private String calculateBaseTime() {
         LocalDateTime now = LocalDateTime.now();
         String[] baseTimes = {"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"};
@@ -616,7 +582,7 @@ public class WeatherServiceImpl implements WeatherService {
             if (dayItems != null && !dayItems.isEmpty()) {
                 try {
                     // Weather 엔티티 생성 및 저장
-                    Weather weather = createAndSaveWeatherEntity(dayItems, location, response, targetDate);
+                    Weather weather = createAndSaveWeatherEntity(dayItems, location);
                     savedWeathers.add(weather);
                     log.debug("날씨 데이터 저장 완료 - 날짜: {}, ID: {}", targetDate, weather.getId());
                 } catch (Exception e) {
@@ -655,8 +621,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     private Weather createAndSaveWeatherEntity(List<WeatherApiResponse.Item> dayItems,
-        WeatherAPILocation location, WeatherApiResponse apiResponse, LocalDate targetDate) {
-
+        WeatherAPILocation location) {
         Weather weather = weatherMapper.fromApiResponse(dayItems, location);
 
         List<Double> temperatureValues = dayItems.stream()
@@ -673,11 +638,8 @@ public class WeatherServiceImpl implements WeatherService {
 
         weather.calculateAndSetTemperatureStats(temperatureValues);
 
-        String responseHash = generateDateSpecificResponseHash(apiResponse, targetDate);
-        weather.setApiResponseHash(responseHash);
-
         Weather savedWeather = weatherRepository.save(weather);
-        log.debug("Weather 엔티티 저장 완료 - 날짜: {}, ID: {}", targetDate, savedWeather.getId());
+        log.debug("Weather 엔티티 저장 완료 - 날짜: {}, ID: {}", savedWeather.getId());
 
         return savedWeather;
     }
