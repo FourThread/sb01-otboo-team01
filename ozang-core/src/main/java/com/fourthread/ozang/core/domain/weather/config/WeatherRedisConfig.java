@@ -46,16 +46,6 @@ public class WeatherRedisConfig {
     @Value("${spring.data.redis.timeout:2000}")
     private long timeout;
 
-    @Value("${weather.cache.current.ttl:PT1H}")  // 현재 날씨 1시간
-    private Duration currentWeatherTtl;
-
-    @Value("${weather.cache.forecast.ttl:PT3H}")  // 5일 예보 3시간
-    private Duration forecastWeatherTtl;
-
-    @Value("${weather.cache.location.ttl:PT24H}")  // 위치 정보 24시간
-    private Duration locationTtl;
-
-
     /**
      * 날씨 전용 RedisConnectionFactory 생성
      */

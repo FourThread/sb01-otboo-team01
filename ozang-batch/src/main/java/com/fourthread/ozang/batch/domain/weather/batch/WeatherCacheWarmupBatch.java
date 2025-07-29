@@ -13,9 +13,11 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -24,8 +26,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * 날씨 캐시 워밍업 배치 작업
- * 주요 도시 및 활성 지역의 날씨 정보를 미리 캐싱
+ * 날씨 5일 예보 배치 작업
+ * 활성 지역의 날씨 정보를 미리 캐싱
  */
 @Slf4j
 @Configuration
@@ -40,12 +42,49 @@ public class WeatherCacheWarmupBatch {
     @Bean
     public Job weatherCacheWarmupJob(
         JobRepository jobRepository,
+        Step cacheCleanupStep,
         Step activeRegionsWarmupStep
     ) {
         return new JobBuilder("weatherCacheWarmupJob", jobRepository)
             .listener(batchJobExecutionListener)
-            .start(activeRegionsWarmupStep)
+            // 배치 기반 캐시 갱신: 이전 캐시 정리 후 새로운 캐시 생성
+            .start(cacheCleanupStep)
+            .next(activeRegionsWarmupStep)
             .build();
+    }
+
+    /**
+     * 이전 캐시 데이터 정리 Step
+     */
+    @Bean
+    public Step cacheCleanupStep(
+        JobRepository jobRepository,
+        PlatformTransactionManager transactionManager,
+        Tasklet cacheCleanupTasklet
+    ) {
+        return new StepBuilder("cacheCleanupStep", jobRepository)
+            .tasklet(cacheCleanupTasklet, transactionManager)
+            .build();
+    }
+
+    /**
+     * 이전 캐시 정리 Tasklet
+     */
+    @Bean
+    public Tasklet cacheCleanupTasklet() {
+        return (contribution, chunkContext) -> {
+            log.info("[BATCH-WARMUP] 이전 캐시 데이터 정리 시작");
+
+            try {
+                cacheService.cleanupOldCacheData();
+                log.info("[BATCH-WARMUP] 이전 캐시 데이터 정리 완료");
+
+                return RepeatStatus.FINISHED;
+            } catch (Exception e) {
+                log.error("[BATCH-WARMUP] 캐시 정리 실패", e);
+                throw e;
+            }
+        };
     }
 
     /**
@@ -57,12 +96,11 @@ public class WeatherCacheWarmupBatch {
         PlatformTransactionManager transactionManager
     ) {
         return new StepBuilder("activeRegionsWarmupStep", jobRepository)
-            .<double[], CacheWarmupResult>chunk(100, transactionManager)  // 100개씩 처리 (API 호출 부하 고려)
+            .<double[], CacheWarmupResult>chunk(50, transactionManager)  // API 호출 부하 고려하여 50개씩 처리
             .reader(activeRegionsWarmupReader())
             .processor(weatherCacheWarmupProcessor())
             .writer(cacheWarmupWriter())
             .taskExecutor(batchTaskExecutor)
-//            .throttleLimit(3)  // API 호출 제한 고려
             .faultTolerant()
             .retryLimit(2)
             .retry(Exception.class)
@@ -87,6 +125,7 @@ public class WeatherCacheWarmupBatch {
                     log.info("[BATCH-WARMUP] 활성 지역 {}개 캐시 워밍업 시작", activeRegions.size());
 
                     if (activeRegions.isEmpty()) {
+                        log.warn("[BATCH-WARMUP] 활성 지역이 없습니다. Profile 기반 초기화가 필요할 수 있습니다.");
                         return null;
                     }
                 }
@@ -113,11 +152,10 @@ public class WeatherCacheWarmupBatch {
             try {
                 log.debug("[BATCH-WARMUP] 캐시 워밍업 시작 - 위도: {}, 경도: {}", latitude, longitude);
 
-                // 현재 날씨, 5일 예보, 위치 정보를 순차적으로 조회
+                // 배치 기반 캐시 갱신: 5일 예보와 위치 정보 한 번에 처리
                 List<WeatherDto> forecast = weatherService.getFiveDayForecast(longitude, latitude);
                 WeatherAPILocation location = weatherService.getWeatherLocation(longitude, latitude);
 
-                // 명시적으로 캐시에 저장
                 cacheService.warmupCache(latitude, longitude, forecast, location);
 
                 log.debug("[BATCH-WARMUP] 캐시 워밍업 성공 - 위도: {}, 경도: {}", latitude, longitude);
@@ -153,7 +191,6 @@ public class WeatherCacheWarmupBatch {
             log.info("[BATCH-WARMUP] 청크 처리 완료 - 성공: {}개, 실패: {}개", successCount, failureCount);
         };
     }
-
 
     /**
      * 캐시 워밍업 결과 DTO
