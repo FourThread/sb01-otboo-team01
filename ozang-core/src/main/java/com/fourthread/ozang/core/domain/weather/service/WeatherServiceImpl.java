@@ -165,10 +165,10 @@ public class WeatherServiceImpl implements WeatherService {
 
         String baseTime = calculateBaseTime();
 
-        List<WeatherDto> cachedForecast = cacheService.getForecastFromCache(latitude, longitude,
-            baseTime);
+        List<WeatherDto> cachedForecast = cacheService.getForecastFromCache(latitude, longitude, baseTime);
         if (cachedForecast != null && !cachedForecast.isEmpty()) {
-            log.info("Redis 캐시에서 5일 예보 데이터 반환");
+            log.info("Redis 캐시에서 5일 예보 데이터 반환 - {}건", cachedForecast.size());
+            cacheService.recordActiveRegion(latitude, longitude);
             return cachedForecast;
         }
 
@@ -217,6 +217,8 @@ public class WeatherServiceImpl implements WeatherService {
 
 
             cacheService.cacheForecast(latitude, longitude, baseTime, result);
+
+            cacheService.recordActiveRegion(latitude, longitude);
 
             return result;
 
@@ -614,18 +616,6 @@ public class WeatherServiceImpl implements WeatherService {
 
             if (dayItems != null && !dayItems.isEmpty()) {
                 try {
-                    // 동일한 격자 좌표와 날짜의 최신 데이터가 1시간 이내라면 건너뛰기
-                    Optional<Weather> existingWeather = weatherRepository.findLatestByGridCoordinateAndDate(
-                        grid.getX(), grid.getY(), targetDate.atStartOfDay()
-                    );
-
-                    if (existingWeather.isPresent() &&
-                        existingWeather.get().getForecastedAt().isAfter(LocalDateTime.now().minusHours(1))) {
-                        log.debug("1시간 이내 데이터가 이미 존재하여 DB 저장을 생략합니다 - 날짜: {}", targetDate);
-                        savedWeathers.add(existingWeather.get());
-                        continue;
-                    }
-
                     // Weather 엔티티 생성 및 저장
                     Weather weather = createAndSaveWeatherEntity(dayItems, location, response, targetDate);
                     savedWeathers.add(weather);

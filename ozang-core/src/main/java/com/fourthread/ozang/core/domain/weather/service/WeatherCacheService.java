@@ -177,9 +177,9 @@ public class WeatherCacheService {
     }
 
     /**
-     * 활성 지역 관리 (배치 작업용)
+     * 활성 지역 관리
      */
-    private void recordActiveRegion(double latitude, double longitude) {
+    public void recordActiveRegion(double latitude, double longitude) {
         try {
             GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
             String regionKey = String.format("%d:%d", grid.getX(), grid.getY());
