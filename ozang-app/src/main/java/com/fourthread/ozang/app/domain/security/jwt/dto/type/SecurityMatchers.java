@@ -10,4 +10,5 @@ public class SecurityMatchers {
   public static final String OAUTH2 = "/api/oauth2/**";
   public static final String RESET_PASSWORD = "/api/auth/reset-password";
   public static final String CSRF_TOKEN = "/api/auth/csrf-token";
+  public static final String CALLBACK = "/api/auth/oauth2/callback";
 }

@@ -89,7 +89,7 @@ public class SecurityConfig {
             configurer ->
                 configurer
                     .successHandler(new JwtLoginSuccessHandler(objectMapper, jwtService))
-                    .failureHandler(new CustomLoginFailureHandler(objectMapper))
+                    .failureHandler(new CustomLoginFailureHandler())
         )
         .sessionManagement(session ->
             session

@@ -16,16 +16,12 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 @RequiredArgsConstructor
 public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
-  private final ObjectMapper objectMapper;
-
   @Override
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception) throws IOException, ServletException {
-    log.info("[CustomLoginFailureHandler] 로그인에 실패 했습니다");
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    ErrorResponse errorResponse = new ErrorResponse("Unauthorized", exception.getMessage(), null);
-    response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    log.info("[CustomLoginFailureHandler] 로그인에 실패했습니다: {}", exception.getMessage());
+
+    // 로그인 실패 시 홈(/)으로 리디렉트
+    response.sendRedirect("/");
   }
 }

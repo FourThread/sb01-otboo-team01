@@ -105,6 +105,8 @@ public class JwtService {
       Payload payload = jwsObject.getPayload();
       Map<String, Object> jsonObject = payload.toJSONObject();
 
+//      Map<String, Object> userDto = (Map<String, Object>) jsonObject.get("userDto");
+
       UUID userId = UUID.fromString((String) jsonObject.get("userId"));
       String email = (String) jsonObject.get("email");
       String name = (String) jsonObject.get("name");
