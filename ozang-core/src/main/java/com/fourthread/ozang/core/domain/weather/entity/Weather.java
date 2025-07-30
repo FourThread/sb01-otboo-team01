@@ -202,4 +202,23 @@ public class Weather extends BaseEntity {
     public WindSpeedDto getWindSpeed() {
         return wind.toDto();
     }
+
+    /**
+     * 내부 Info 객체 접근을 위한 getter 메서드들 (날씨 변화 감지용)
+     */
+    public TemperatureInfo getTemperatureInfo() {
+        return temperature;
+    }
+
+    public HumidityInfo getHumidityInfo() {
+        return humidity;
+    }
+
+    public PrecipitationInfo getPrecipitationInfo() {
+        return precipitation;
+    }
+
+    public WindInfo getWindInfo() {
+        return wind;
+    }
 }
