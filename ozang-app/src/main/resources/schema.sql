@@ -27,7 +27,6 @@ CREATE TABLE users
     role                    VARCHAR(255)          NOT NULL,
     temp_password_issued_at TIMESTAMP(6)          NULL,
     CONSTRAINT users_pkey PRIMARY KEY (id),
-    CONSTRAINT uk_users_name UNIQUE (name),
     CONSTRAINT uk_users_email UNIQUE (email),
     CONSTRAINT users_role_check CHECK (role IN ('ADMIN', 'USER'))
 );
