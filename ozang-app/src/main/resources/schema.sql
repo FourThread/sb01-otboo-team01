@@ -103,7 +103,6 @@ CREATE TABLE weathers
 (
     id                                 UUID         NOT NULL,
     created_at                         TIMESTAMP(6) NOT NULL,
---     api_response_hash                  VARCHAR(255) NULL,
     forecast_at                        TIMESTAMP(6) NOT NULL,
     forecasted_at                      TIMESTAMP(6) NOT NULL,
     humidity_compared_to_day_before    FLOAT8       NULL,
@@ -127,7 +126,6 @@ CREATE TABLE weathers
     u_component                        FLOAT8       NULL,
     v_component                        FLOAT8       NULL,
     CONSTRAINT weathers_pkey PRIMARY KEY (id),
---     CONSTRAINT uk_weathers_api_response_hash UNIQUE (api_response_hash),
     CONSTRAINT weathers_sky_status_check CHECK (sky_status IN ('CLEAR', 'MOSTLY_CLOUDY', 'CLOUDY')),
     CONSTRAINT weathers_strength_check CHECK (strength IN ('WEAK', 'MODERATE', 'STRONG')),
     CONSTRAINT weathers_type_check CHECK (type IN ('NONE', 'RAIN', 'RAIN_SNOW', 'SNOW', 'SHOWER'))
