@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -67,34 +68,51 @@ public class WeatherChangeDetectionBatch {
     /**
      * ItemReader: Redis에서 모든 활성 지역 조회
      * 모든 활성 지역 데이터를 청크 단위로 읽기
-     * @return
+     * 상태 초기화: 매번 Redis에서 최신 활성 지역 데이터 조회
      */
     @Bean
+    @StepScope
     public ItemReader<double[]> activeRegionsReader() {
         return new ItemReader<double[]>() {
             private List<double[]> activeRegions;
             private int currentIndex = 0;
+            private boolean initialized = false;
 
             @Override
             public double[] read()
                 throws ParseException, NonTransientResourceException {
 
-                if (activeRegions == null) {
-                    log.info("[BATCH-READER] 활성 지역 로드 시작");
+                // 매 Step 실행마다 Redis에서 활성 지역을 새로 조회
+                if (!initialized) {
+                    log.info("[BATCH-READER] 활성 지역 로드 시작 (Step 스코프 초기화)");
 
+                    // Redis에서 활성 지역 조회
                     activeRegions = cacheService.getAllActiveRegions();
+                    initialized = true;
 
                     log.info("[BATCH-READER] 활성 지역 {}개 로드 완료", activeRegions.size());
 
                     if (activeRegions.isEmpty()) {
-                        log.info("[BATCH-READER] 활성 지역이 없어 처리를 종료합니다");
+                        log.warn("[BATCH-READER] 활성 지역이 없어 처리를 종료합니다");
+                        log.info("[BATCH-READER] Redis 키 상태 재확인을 위해 직접 조회 시도...");
+
+                        // Redis 연결 상태와 키 존재 여부를 재확인
+                        try {
+                            List<double[]> retryRegions = cacheService.getAllActiveRegions();
+                            log.info("[BATCH-READER] 재조회 결과: {}개 지역", retryRegions.size());
+                        } catch (Exception e) {
+                            log.error("[BATCH-READER] Redis 재조회 실패", e);
+                        }
+
                         return null;
                     }
 
-                    // 로드된 활성 지역들 상세 로그 출력
-                    for (int i = 0; i < activeRegions.size(); i++) {
+                    for (int i = 0; i < Math.min(activeRegions.size(), 5); i++) {
                         double[] coords = activeRegions.get(i);
                         log.info("[BATCH-READER] 활성 지역 {}: 위도={}, 경도={}", i+1, coords[0], coords[1]);
+                    }
+                    if (activeRegions.size() > 5) {
+                        log.info("[BATCH-READER] ... 외 {}개 지역", activeRegions.size() - 5);
                     }
                 }
 
@@ -118,6 +136,7 @@ public class WeatherChangeDetectionBatch {
      * 병렬 처리로 성능 최적화
      */
     @Bean
+    @StepScope
     public ItemProcessor<double[], List<WeatherChangeDto>> weatherChangeProcessor() {
         return coordinates -> {
             try {
@@ -148,6 +167,7 @@ public class WeatherChangeDetectionBatch {
      * ItemWriter: 감지된 변화를 이벤트로 발행
      */
     @Bean
+    @StepScope
     public ItemWriter<List<WeatherChangeDto>> weatherChangeWriter() {
         return chunk -> {
             int totalChanges = 0;
