@@ -334,7 +334,6 @@ public class WeatherServiceImpl implements WeatherService {
         List<WeatherDto> cachedForecast = cacheService.getForecastFromCache(latitude, longitude, baseTime);
         if (cachedForecast != null && !cachedForecast.isEmpty()) {
             log.info("Redis 캐시에서 5일 예보 데이터 반환 - {}건", cachedForecast.size());
-            cacheService.recordActiveRegion(latitude, longitude);
             return cachedForecast;
         }
 
