@@ -29,7 +29,7 @@ import org.hibernate.annotations.BatchSize;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUpdatableEntity {
 
-  @Column(length = 100, nullable = false, unique = true)
+  @Column(length = 100, nullable = false)
   private String name;
   @Column(length = 100, nullable = false, unique = true)
   private String email;

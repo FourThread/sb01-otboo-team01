@@ -33,31 +33,34 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
 
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = extractEmail(oAuth2User.getAttributes());
-        log.info("[OAuth2SuccessHandler] 추출된 이메일: {}", email);
+    OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+    String email = extractEmail(oAuth2User.getAttributes());
+    log.info("[OAuth2SuccessHandler] 추출된 이메일: {}", email);
 
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalStateException("OAuth2 인증된 사용자가 데이터베이스에 존재하지 않습니다: " + email));
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new IllegalStateException("OAuth2 인증된 사용자가 데이터베이스에 존재하지 않습니다: " + email));
 
-        log.info("[OAuth2SuccessHandler] OAuth2 로그인 성공 - 사용자: {}", email);
+    log.info("[OAuth2SuccessHandler] OAuth2 로그인 성공 - 사용자: {}", email);
 
-        // JWT 토큰 생성
-        JwtPayloadDto payloadDto = new JwtPayloadDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
-        log.info("[OAuth2SuccessHandler] 이전 토큰을 무효화합니다");
-        jwtService.invalidateJwtTokenByEmail(payloadDto.email());
+    // JWT 토큰 생성
+    JwtPayloadDto payloadDto = new JwtPayloadDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
 
-        JwtTokenResponse jwtSession = jwtService.registerJwtToken(payloadDto);
-        log.info("[OAuth2SuccessHandler] 새로운 Access Token을 발급합니다");
+    JwtTokenResponse jwtSession = jwtService.registerJwtToken(payloadDto);
+    log.info("[OAuth2SuccessHandler] 새로운 Access Token을 발급합니다");
 
     String refreshToken = jwtSession.refreshToken();
     Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
     refreshTokenCookie.setHttpOnly(true);
-    refreshTokenCookie.setPath("/api/auth");
+    refreshTokenCookie.setPath("/");
     response.addCookie(refreshTokenCookie);
 
-    // 성공 메시지와 함께 홈 화면으로 리다이렉트
-    String redirectUrl = "/?success=oauth_login&message=" + java.net.URLEncoder.encode("소셜 로그인에 성공했습니다!", "UTF-8");
+    String accessToken = jwtSession.accessToken();
+    Cookie accessTokenCookie = new Cookie("access_token", accessToken);
+    accessTokenCookie.setHttpOnly(false);
+    accessTokenCookie.setPath("/");
+    response.addCookie(accessTokenCookie);
+
+    String redirectUrl = "/#/";
     response.sendRedirect(redirectUrl);
   }
 
