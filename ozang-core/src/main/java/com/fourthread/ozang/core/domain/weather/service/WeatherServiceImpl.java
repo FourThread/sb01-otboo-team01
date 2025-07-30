@@ -105,20 +105,8 @@ public class WeatherServiceImpl implements WeatherService {
                 throw new WeatherDataFetchException("초단기예보 데이터가 없습니다.");
             }
 
-//
-//            // 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
-//            List<Item> currentHourItems = extractCurrentHourItems(apiResponse);
-//
-//            if (currentHourItems.isEmpty()) {
-//                throw new WeatherDataFetchException("현재 시간 초단기예보 데이터가 없습니다.");
-//            }
-
             // WeatherDto 생성
             WeatherDto weatherDto = createWeatherDtoFromItems(currentForecastItems, location);
-//            // WeatherDto 생성
-//            WeatherDto weatherDto = createWeatherDtoFromItems(currentHourItems, location);
-            log.info("초단기예보 조회 완료 후 활성 지역 기록 - 위도: {}, 경도: {}", latitude, longitude);
-            cacheService.recordActiveRegion(latitude, longitude);
 
             log.info("초단기예보 조회 완료 - 위도: {}, 경도: {}", latitude, longitude);
             return weatherDto;
