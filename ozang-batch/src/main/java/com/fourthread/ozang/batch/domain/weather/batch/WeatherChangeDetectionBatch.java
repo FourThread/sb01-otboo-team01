@@ -2,7 +2,7 @@ package com.fourthread.ozang.batch.domain.weather.batch;
 
 import com.fourthread.ozang.batch.config.BatchJobExecutionListener;
 import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.core.domain.notification.service.NotificationService;
+import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetectedEvent;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
@@ -20,6 +20,7 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -36,9 +37,9 @@ public class WeatherChangeDetectionBatch {
 
     private final WeatherService weatherService;
     private final WeatherCacheService cacheService;
-    private final NotificationService notificationService;
     private final TaskExecutor batchTaskExecutor;
     private final BatchJobExecutionListener batchJobExecutionListener;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Bean
     public Job weatherChangeDetectionJob(
@@ -56,12 +57,13 @@ public class WeatherChangeDetectionBatch {
         JobRepository jobRepository,
         PlatformTransactionManager transactionManager) {
         return new StepBuilder("weatherChangeDetectionStep", jobRepository)
-            .<double[], List<WeatherChangeDto>>chunk(100, transactionManager) // 100개씩 청크 처리
+            .<double[], List<WeatherChangeDto>>chunk(50, transactionManager) // 청크 크기를 50으로 조정
             .reader(activeRegionsReader())
             .processor(weatherChangeProcessor())
             .writer(weatherChangeWriter())
-            .taskExecutor(batchTaskExecutor) // 병렬 처리 활성화
-//            .throttleLimit(4)
+            // 병렬 처리 제거: taskExecutor와 throttleLimit 주석 처리
+             .taskExecutor(batchTaskExecutor) // 병렬 처리 비활성화
+            // .throttleLimit(4)
             .build();
     }
 
@@ -204,13 +206,12 @@ public class WeatherChangeDetectionBatch {
                 NotificationLevel level = determineNotificationLevel(change);
 
                 // 격자별 사용자에게만 알림 전송
-                notificationService.sendWeatherAlertToGridUsers(
-                    change.gridX(),
-                    change.gridY(),
-                    title,
-                    content,
-                    level
-                );
+//                notificationService.sendWeatherAlertToGridUsers(
+//                    new WeatherChangeDetectedEvent(title, content, level, change.gridX(), change.gridY())
+//                );
+
+                eventPublisher.publishEvent(new WeatherChangeDetectedEvent(title, content, level, change.gridX(), change.gridY()));
+
 
                 notificationCount++;
 

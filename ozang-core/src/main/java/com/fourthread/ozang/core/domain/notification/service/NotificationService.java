@@ -62,63 +62,59 @@ public class NotificationService {
                 level
         );
 
-        notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
 
-        NotificationDto dto = notificationMapper.toDto(notification);
+        NotificationDto dto = notificationMapper.toDto(savedNotification);
         eventPublisher.publishEvent(new NotificationCreatedEvent(dto));
 
-        log.info("단일 알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
+        log.info("단일 알림 생성 완료: id={}, receiverId={}", savedNotification.getId(), receiverId);
     }
 
     @Transactional
     public void createAll(Set<UUID> receiverIds, String title, String content,
-                          NotificationLevel level) {
+        NotificationLevel level) {
         log.debug("여러 알림 생성 시작: count={}, level={}, title={}", receiverIds.size(), level, title);
 
         List<Notification> notifications = receiverIds.stream()
-                .map(receiverId -> new Notification(
-                        receiverId,
-                        title,
-                        content,
-                        level
-                )).toList();
+            .map(receiverId -> new Notification(
+                receiverId,
+                title,
+                content,
+                level
+            )).toList();
 
-        notificationRepository.saveAll(notifications);
+        List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
 
-        List<NotificationDto> dtos = notificationMapper.toDtoList(notifications);
+        List<NotificationDto> dtos = notificationMapper.toDtoList(savedNotifications);
         eventPublisher.publishEvent(new MultipleNotificationCreatedEvent(dtos));
 
         log.info("여러 알림 생성 완료: count={}", dtos.size());
     }
 
     @Transactional
-    public void sendWeatherAlertToGridUsers(Integer gridX, Integer gridY,
-        String title, String content,
-        NotificationLevel level) {
-        log.debug("격자별 날씨 알림 전송 시작: gridX={}, gridY={}, title={}", gridX, gridY, title);
+    public void sendWeatherAlertToGridUsers(WeatherChangeDetectedEvent event) {
+        log.debug("격자별 날씨 알림 전송 시작: gridX={}, gridY={}, title={}", event.gridX(), event.gridY(), event.title());
 
         try {
             // 해당 격자에 위치한 사용자 ID들 조회
-            List<UUID> targetUserIds = profileRepository.findUserIdsByGridCoordinates(gridX, gridY);
+            List<UUID> targetUserIds = profileRepository.findUserIdsByGridCoordinates(event.gridX(), event.gridY());
 
             if (targetUserIds.isEmpty()) {
-                log.debug("격자({}, {})에 위치한 사용자가 없습니다", gridX, gridY);
+                log.debug("격자({}, {})에 위치한 사용자가 없습니다", event.gridX(), event.gridY());
                 return;
             }
 
             Set<UUID> receiverIds = Set.copyOf(targetUserIds);
 
-            log.info("격자({}, {})의 {}명 사용자에게 날씨 알림 전송", gridX, gridY, receiverIds.size());
+            log.info("격자({}, {})의 {}명 사용자에게 날씨 알림 전송", event.gridX(), event.gridY(), receiverIds.size());
 
-            createAll(receiverIds, title, content, level);
+            createAll(receiverIds, event.title(), event.content(), event.level());
 
         } catch (Exception e) {
-            log.error("격자별 날씨 알림 전송 실패: gridX={}, gridY={}", gridX, gridY, e);
+            log.error("격자별 날씨 알림 전송 실패: gridX={}, gridY={}", event.gridX(), event.gridY(), e);
             throw e;
         }
     }
-
-
 
     @Transactional
     public void sendRoleChangedNotification(RoleChangedEvent event) {
@@ -194,18 +190,6 @@ public class NotificationService {
         create(receiverId, title, event.dmDto().content(), NotificationLevel.INFO);
     }
 
-
-    @Transactional
-    @Deprecated
-    public void sendWeatherAlertNotification(WeatherChangeDetectedEvent event) {
-        Set<UUID> receiverIds = userRepository.findAllUserIds();
-
-        createAll(receiverIds,
-                event.title(),
-                event.content(),
-                event.level()
-                );
-    }
 
 
     @Transactional(readOnly = true)

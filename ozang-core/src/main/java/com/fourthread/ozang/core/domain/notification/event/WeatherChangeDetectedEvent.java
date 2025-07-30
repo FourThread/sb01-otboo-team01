@@ -4,9 +4,10 @@ import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
 
 
 public record WeatherChangeDetectedEvent(
-        String region,
         String title,
         String content,
-        NotificationLevel level
+        NotificationLevel level,
+        Integer gridX,
+        Integer gridY
 ) {
 }
