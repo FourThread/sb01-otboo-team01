@@ -55,15 +55,8 @@ public class JwtService {
     JwtDto accessJwtDto = generateJwtDto(payloadDto, accessTokenValiditySeconds);
     JwtDto refreshJwtDto = generateJwtDto(payloadDto, refreshTokenValiditySeconds);
 
-    // =============== Redis 연결 실패 시 Graceful Fallback ===============
-    try {
-      redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
-      log.info("[JwtService] Redis에 RefreshToken 저장 완료");
-    } catch (Exception e) {
-      log.warn("[JwtService] Redis 연결 실패 - RefreshToken을 Redis에 저장할 수 없습니다: {}", e.getMessage());
-      log.info("[JwtService] Redis 없이 JWT 토큰 발급을 계속 진행합니다");
-    }
-//    redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
+    redisDao.setValue("refresh:" + payloadDto.email(), refreshJwtDto.token(), Duration.ofSeconds(refreshTokenValiditySeconds));
+    log.info("[JwtService] Redis에 RefreshToken 저장 완료");
     log.info("[JwtService] 토큰 발급 완료 -> AccessToken 만료 시간 : {}, RefreshToken 만료 시간: {}", accessJwtDto.exp(), refreshJwtDto.exp());
 
     return new JwtTokenResponse(accessJwtDto.token(),
@@ -91,6 +84,20 @@ public class JwtService {
         return false;
       }
 
+      String email = jwtDto.payloadDto().email();
+      String key = "user:" + email + ":last_valid_iat";
+      String lastValidStr = (String) redisDao.getValue(key);
+
+      if (lastValidStr != null) {
+        Instant lastValidIat = Instant.parse(lastValidStr);
+        Instant tokenIat = jwtDto.iat();
+
+        if (tokenIat.isBefore(lastValidIat)) {
+          log.warn("[JwtService] 토큰 발급 시각({}) < last_valid_iat({}) → 무효화된 토큰", tokenIat, lastValidIat);
+          return false;
+        }
+      }
+
       return true;
 
     } catch (JOSEException | ParseException e) {
@@ -104,8 +111,6 @@ public class JwtService {
       JWSObject jwsObject = JWSObject.parse(token);
       Payload payload = jwsObject.getPayload();
       Map<String, Object> jsonObject = payload.toJSONObject();
-
-//      Map<String, Object> userDto = (Map<String, Object>) jsonObject.get("userDto");
 
       UUID userId = UUID.fromString((String) jsonObject.get("userId"));
       String email = (String) jsonObject.get("email");
@@ -154,35 +159,29 @@ public class JwtService {
 
   @Transactional
   public void invalidateRefreshToken(String refreshToken) {
-    try {
-      JwtDto jwtDto = parse(refreshToken);
-      String key = "refresh:" + jwtDto.payloadDto().email();
-      redisDao.delete(key);
-      log.info("[JwtService] RefreshToken 무효화 완료 (Redis)");
-    } catch (Exception e) {
-      log.warn("[JwtService] Redis 연결 실패 - RefreshToken 무효화를 건너뜁니다: {}", e.getMessage());
-      log.info("[JwtService] JWT 토큰은 만료 시간에 의해 자동으로 무효화됩니다");
-    }
+    JwtDto jwtDto = parse(refreshToken);
+    String key = "refresh:" + jwtDto.payloadDto().email();
+    redisDao.delete(key);
+    log.info("[JwtService] RefreshToken 무효화 완료 (Redis)");
   }
 
   @Transactional
   public void invalidateJwtTokenByEmail(String email) {
     log.info("[JwtService] 이메일별 JWT 토큰 무효화 시작: {}", email);
-    try {
-      String key = "refresh:" + email;
-      String token = (String) redisDao.getValue(key);
+    String key = "refresh:" + email;
+    String token = (String) redisDao.getValue(key);
 
-      if (token != null) {
-        invalidateRefreshToken(token);
-        log.info("[JwtService] 기존 토큰 무효화 완료");
-      } else {
-        log.info("[JwtService] 무효화할 기존 토큰이 없습니다");
-      }
-    } catch (Exception e) {
-      log.warn("[JwtService] Redis 연결 실패 - 기존 토큰 무효화를 건너뜁니다: {}", e.getMessage());
-      log.info("[JwtService] 새로운 토큰 발급은 정상적으로 진행됩니다");
-      // Redis 실패해도 계속 진행
+    if (token != null) {
+      invalidateRefreshToken(token);
+      log.info("[JwtService] 기존 토큰 무효화 완료");
+    } else {
+      log.info("[JwtService] 무효화할 기존 토큰이 없습니다");
     }
+
+    String accessKey = "user:" + email + ":last_valid_iat";
+    redisDao.setValue(accessKey, Instant.now().toString(), Duration.ofDays(1));
+
+    log.info("[JwtService] 최소 허용 Access Token 발급 시각 저장 완료 - {}", accessKey);
   }
 
   private JwtDto generateJwtDto(JwtPayloadDto payloadDto, long tokenValiditySeconds) {

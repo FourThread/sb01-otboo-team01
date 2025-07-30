@@ -28,13 +28,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
     log.info("[JwtLoginSuccessHandler] 로그인 성공 - 사용자: {}", principal.getPayloadDto().email());
-    log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
-    jwtService.invalidateJwtTokenByEmail(principal.getPayloadDto().email());
+//    log.info("[JwtLoginSuccessHandler] 이전 토큰을 무효화합니다");
+//    jwtService.invalidateJwtTokenByEmail(principal.getPayloadDto().email());
 
-    JwtTokenResponse jwtSession = jwtService.registerJwtToken(principal.getPayloadDto());
+    JwtTokenResponse jwtToken = jwtService.registerJwtToken(principal.getPayloadDto());
     log.info("[JwtLoginSuccessHandler] 새로운 Access Token을 발급합니다");
 
-    String refreshToken = jwtSession.refreshToken();
+    String refreshToken = jwtToken.refreshToken();
     Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
     refreshTokenCookie.setHttpOnly(true);
     response.addCookie(refreshTokenCookie); // refresh token은 쿠키에 저장해서 반환
@@ -43,7 +43,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(jwtSession.accessToken())); // Access Token은 응답 Body에 담아서 반환
+    response.getWriter().write(objectMapper.writeValueAsString(jwtToken.accessToken())); // Access Token은 응답 Body에 담아서 반환
 
   }
 }

@@ -119,6 +119,9 @@ public class UserServiceImpl implements UserService {
 
     log.info("{} 사용자 Role 업데이트를 완료했습니다", findUser.getName());
 
+    log.info("[UserService] Role 업데이트로 인해 사용자 {}의 모든 활성 세션을 로그아웃시킵니다", findUser.getEmail());
+    jwtService.invalidateJwtTokenByEmail(findUser.getEmail());
+
     UserDto dto = userMapper.toDto(findUser);
     eventPublisher.publishEvent(new RoleChangedEvent(dto, requesterId));
 
