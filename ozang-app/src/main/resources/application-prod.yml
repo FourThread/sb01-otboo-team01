@@ -100,17 +100,17 @@ batch:
       enabled: false
     weather-change-detection:
       enabled: false
-
-weather:
-  redis:
-    database: 1  # Weather용 (캐시 데이터)
-  cache:
-    current:
-      ttl: PT1H      # 현재 날씨 1시간
-    forecast:
-      ttl: PT3H      # 5일 예보 3시간
-    location:
-      ttl: PT24H     # 위치 정보 24시간
+#
+#weather:
+#  redis:
+#    database: 1  # Weather용 (캐시 데이터)
+#  cache:
+#    current:
+#      ttl: PT1H      # 현재 날씨 1시간
+#    forecast:
+#      ttl: PT3H      # 5일 예보 3시간
+#    location:
+#      ttl: PT24H     # 위치 정보 24시간
 
 elasticsearch:
   enabled: ${ELASTICSEARCH_ENABLED:true}

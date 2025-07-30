@@ -3,7 +3,7 @@ spring:
     name: ozang-batch
   profiles:
     include: core
-    active: batch
+    active: dev
 
   cache:
     type: redis

@@ -25,14 +25,13 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: 6379
-      database: 0
       ssl:
         enabled: true
-      lettuce:
-        pool:
-          max-active: 8  # 배치용으로 줄임
-          max-idle: 4
-          min-idle: 2
+#      lettuce:
+#        pool:
+#          max-active: 8  # 배치용으로 줄임
+#          max-idle: 4
+#          min-idle: 2
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
