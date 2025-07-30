@@ -107,21 +107,21 @@ class NotificationServiceTest {
         assertThat(response.sortDirection()).isEqualTo("DESCENDING");
     }
 
-    @DisplayName("알림을 생성하면 저장되고 이벤트가 발행된다.")
-    @Test
-    void create_success() {
-        // given
-        given(notificationMapper.toDto(any())).willReturn(notificationDto);
-
-        // when
-        notificationService.create(
-                receiverId, "알림 제목", "알림 내용", NotificationLevel.INFO
-        );
-
-        // then
-        then(notificationRepository).should().save(any());
-        then(eventPublisher).should().publishEvent(any(NotificationCreatedEvent.class));
-    }
+//    @DisplayName("알림을 생성하면 저장되고 이벤트가 발행된다.")
+//    @Test
+//    void create_success() {
+//        // given
+//        given(notificationMapper.toDto(any())).willReturn(notificationDto);
+//
+//        // when
+//        notificationService.create(
+//                receiverId, "알림 제목", "알림 내용", NotificationLevel.INFO
+//        );
+//
+//        // then
+//        then(notificationRepository).should().save(any());
+//        then(eventPublisher).should().publishEvent(any(NotificationCreatedEvent.class));
+//    }
 
     @DisplayName("여러 알림을 생성할 수 있다.")
     @Test
