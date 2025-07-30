@@ -44,8 +44,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     // JWT 토큰 생성
     JwtPayloadDto payloadDto = new JwtPayloadDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
-    log.info("[OAuth2SuccessHandler] 이전 토큰을 무효화합니다");
-    jwtService.invalidateJwtTokenByEmail(payloadDto.email());
 
     JwtTokenResponse jwtSession = jwtService.registerJwtToken(payloadDto);
     log.info("[OAuth2SuccessHandler] 새로운 Access Token을 발급합니다");
@@ -56,15 +54,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     refreshTokenCookie.setPath("/");
     response.addCookie(refreshTokenCookie);
 
-      String accessToken = jwtSession.accessToken();
-      Cookie accessTokenCookie = new Cookie("access_token", accessToken);
-      accessTokenCookie.setHttpOnly(false);
-      accessTokenCookie.setPath("/");
-      response.addCookie(accessTokenCookie);
+    String accessToken = jwtSession.accessToken();
+    Cookie accessTokenCookie = new Cookie("access_token", accessToken);
+    accessTokenCookie.setHttpOnly(false);
+    accessTokenCookie.setPath("/");
+    response.addCookie(accessTokenCookie);
 
-    // 성공 메시지와 함께 홈 화면으로 리다이렉트
-      String redirectUrl = "/#/oauth2/callback?success=oauth_login";
-      response.sendRedirect(redirectUrl);
+    String redirectUrl = "/#/";
+    response.sendRedirect(redirectUrl);
   }
 
   private String extractEmail(Map<String, Object> attributes) {
