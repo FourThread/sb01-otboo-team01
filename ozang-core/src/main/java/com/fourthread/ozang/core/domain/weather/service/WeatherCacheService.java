@@ -184,6 +184,9 @@ public class WeatherCacheService {
             GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
             String regionKey = String.format("%d:%d", grid.getX(), grid.getY());
 
+            log.info("[ACTIVE-REGION] 활성 지역 기록 시작 - 위경도({}, {}) -> 격자({}, {}) -> 키: {}",
+                latitude, longitude, grid.getX(), grid.getY(), regionKey);
+
             redisTemplate.opsForSet().add(ACTIVE_REGIONS_KEY, regionKey);
             // 24시간 TTL 설정
             redisTemplate.expire(ACTIVE_REGIONS_KEY, Duration.ofHours(24));
@@ -220,6 +223,17 @@ public class WeatherCacheService {
      */
     public List<double[]> getAllActiveRegions() {
         try {
+            log.info("[ACTIVE-REGION] 활성 지역 조회 시작 - 키: {}", ACTIVE_REGIONS_KEY);
+
+            // Redis에 키가 존재하는지 먼저 확인
+            Boolean keyExists = redisTemplate.hasKey(ACTIVE_REGIONS_KEY);
+            log.info("[ACTIVE-REGION] 활성 지역 키 존재 여부: {}", keyExists);
+
+            if (!Boolean.TRUE.equals(keyExists)) {
+                log.warn("[ACTIVE-REGION] Redis에 활성 지역 키가 존재하지 않습니다: {}", ACTIVE_REGIONS_KEY);
+                return List.of();
+            }
+
             Set<Object> gridKeys = redisTemplate.opsForSet().members(ACTIVE_REGIONS_KEY);
 
             if (gridKeys == null || gridKeys.isEmpty()) {

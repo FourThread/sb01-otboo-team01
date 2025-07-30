@@ -83,20 +83,34 @@ public class WeatherChangeDetectionBatch {
                 throws ParseException, NonTransientResourceException {
 
                 if (activeRegions == null) {
+                    log.info("[BATCH-READER] 활성 지역 로드 시작");
+
                     activeRegions = cacheService.getAllActiveRegions();
-                    log.info("[BATCH-CHUNK] 활성 지역 {}개 로드 완료", activeRegions.size());
+
+                    log.info("[BATCH-READER] 활성 지역 {}개 로드 완료", activeRegions.size());
 
                     if (activeRegions.isEmpty()) {
-                        log.info("[BATCH-CHUNK] 활성 지역이 없어 처리를 종료합니다");
+                        log.info("[BATCH-READER] 활성 지역이 없어 처리를 종료합니다");
                         return null;
+                    }
+
+                    // 로드된 활성 지역들 상세 로그 출력
+                    for (int i = 0; i < activeRegions.size(); i++) {
+                        double[] coords = activeRegions.get(i);
+                        log.info("[BATCH-READER] 활성 지역 {}: 위도={}, 경도={}", i+1, coords[0], coords[1]);
                     }
                 }
 
                 if (currentIndex >= activeRegions.size()) {
+                    log.info("[BATCH-READER] 모든 활성 지역 처리 완료 - 총 {}개 처리", currentIndex);
                     return null; //읽을 데이터 더 이상 없음
                 }
 
-                return activeRegions.get(currentIndex++);
+                double[] currentRegion = activeRegions.get(currentIndex++);
+                log.debug("[BATCH-READER] 활성 지역 반환 - 인덱스: {}, 위도: {}, 경도: {}",
+                    currentIndex-1, currentRegion[0], currentRegion[1]);
+
+                return currentRegion;
             }
         };
     }
