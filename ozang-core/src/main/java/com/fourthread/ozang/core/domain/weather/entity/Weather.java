@@ -24,7 +24,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "weathers", schema = "public")
@@ -58,11 +57,6 @@ public class Weather extends BaseEntity {
 
     @Embedded
     private WindInfo wind;
-
-    // API 응답 해시 (중복 방지용)
-    @Column(unique = true)
-    @Setter
-    private String apiResponseHash;
 
     public static Weather create(
         LocalDateTime forecastedAt,
@@ -206,5 +200,24 @@ public class Weather extends BaseEntity {
 
     public WindSpeedDto getWindSpeed() {
         return wind.toDto();
+    }
+
+    /**
+     * 내부 Info 객체 접근을 위한 getter 메서드들 (날씨 변화 감지용)
+     */
+    public TemperatureInfo getTemperatureInfo() {
+        return temperature;
+    }
+
+    public HumidityInfo getHumidityInfo() {
+        return humidity;
+    }
+
+    public PrecipitationInfo getPrecipitationInfo() {
+        return precipitation;
+    }
+
+    public WindInfo getWindInfo() {
+        return wind;
     }
 }

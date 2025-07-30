@@ -1,12 +1,9 @@
 package com.fourthread.ozang.app.domain.clothes.service;
 
-import static com.fourthread.ozang.core.common.exception.ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND;
-import static com.fourthread.ozang.core.common.exception.ErrorCode.CLOTHES_NOT_FOUND;
-import static com.fourthread.ozang.core.common.exception.ErrorCode.USER_NOT_FOUND;
-
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesCreateRequest;
 import com.fourthread.ozang.app.domain.clothes.dto.requeset.ClothesUpdateRequest;
 
+import com.fourthread.ozang.core.common.exception.ErrorCode;
 import com.fourthread.ozang.core.domain.clothes.dto.response.ClothesAttributeDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDto;
 import com.fourthread.ozang.app.domain.clothes.dto.response.ClothesDtoCursorResponse;
@@ -60,7 +57,7 @@ public class ClothesService {
     public ClothesDto create(ClothesCreateRequest request, MultipartFile image) {
 
         if (!userRepository.existsById(request.ownerId())) {
-            throw new UserException(USER_NOT_FOUND, this.getClass().getSimpleName(), USER_NOT_FOUND.getMessage());
+            throw new UserException(ErrorCode.USER_NOT_FOUND, this.getClass().getSimpleName(), ErrorCode.USER_NOT_FOUND.getMessage());
         }
 
         String imageUrl = null;
@@ -88,7 +85,8 @@ public class ClothesService {
     @Transactional
     public ClothesDto update(UUID clothesId, ClothesUpdateRequest request, MultipartFile imageFile) {
         Clothes clothes = clothesRepository.findById(clothesId)
-                .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new ClothesException(
+                    ErrorCode.CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), ErrorCode.CLOTHES_NOT_FOUND.getMessage()));
 
         updateNameAndType(clothes, request.name(), request.type());
 
@@ -127,7 +125,7 @@ public class ClothesService {
     private void addAttributesToClothes(Clothes clothes, List<ClothesAttributeDto> attributeDtos) {
         for (ClothesAttributeDto attrDto : attributeDtos) {
             ClothesAttributeDefinition def = definitionRepository.findById(attrDto.definitionId())
-                    .orElseThrow(() -> new ClothesAttributeDefinitionException(CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND.getMessage()));
+                    .orElseThrow(() -> new ClothesAttributeDefinitionException(ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND, this.getClass().getSimpleName(), ErrorCode.CLOTHES_ATTRIBUTE_DEFINITION_NOT_FOUND.getMessage()));
             ClothesAttribute attribute = new ClothesAttribute(def, attrDto.value());
             clothes.addAttribute(attribute);
         }
@@ -136,7 +134,7 @@ public class ClothesService {
     @Transactional
     public void delete(UUID clothesId) {
         Clothes clothes = clothesRepository.findById(clothesId)
-                .orElseThrow(() -> new ClothesException(CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), CLOTHES_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new ClothesException(ErrorCode.CLOTHES_NOT_FOUND, this.getClass().getSimpleName(), ErrorCode.CLOTHES_NOT_FOUND.getMessage()));
 
         String imageUrl = clothes.getImageUrl();
         if (imageUrl != null && !imageUrl.isBlank()) {

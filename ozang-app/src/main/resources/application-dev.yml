@@ -66,20 +66,20 @@ spring:
 
   batch:
     job:
-      enabled: true
+      enabled: false
     jdbc:
       initialize-schema: embedded
 
-batch:
-  weather:
-    retention-days: 3
-  scheduler:
-    weather-cleanup:
-      enabled: true
-    weather-cache-warmup:
-      enabled: true
-    weather-change-detection:
-      enabled: true
+#batch:
+#  weather:
+#    retention-days: 3
+#  scheduler:
+#    weather-cleanup:
+#      enabled: true
+#    weather-cache-warmup:
+#      enabled: true
+#    weather-change-detection:
+#      enabled: true
 
 weather:
   redis:
@@ -137,7 +137,6 @@ logging:
     root: INFO
     com.fourthread.ozang: DEBUG
     org.springframework.web: DEBUG
-    org.springframework.batch: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.data.redis: DEBUG

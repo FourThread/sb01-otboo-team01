@@ -3,7 +3,7 @@ spring:
     name: ozang-batch
   profiles:
     include: core
-    active: batch
+    active: dev
 
   cache:
     type: redis
@@ -38,8 +38,7 @@ weather:
       ttl: PT3H  # 5일 예보 캐시 TTL (3시간)
     location:
       ttl: PT24H # 위치 정보 캐시 TTL (24시간)
-    warmup:
-      max-regions: 50  # 최대 워밍업 지역 수
+
   api:
     key:  ${WEATHER_API_KEY}
     base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
@@ -47,8 +46,6 @@ weather:
       url: ${weather.api.base-url}/getUltraSrtNcst
     forecast:
       url: ${weather.api.base-url}/getVilageFst
-  change-detection:
-    max-regions: 30  # 최대 감지 지역 수
 
 kakao:
   api:

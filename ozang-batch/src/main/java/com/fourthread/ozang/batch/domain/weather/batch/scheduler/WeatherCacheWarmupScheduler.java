@@ -30,38 +30,64 @@ public class WeatherCacheWarmupScheduler {
     @Qualifier("weatherCacheWarmupJob")
     private final Job weatherCacheWarmupJob;
 
+    @Qualifier("profileActiveRegionInitJob")
+    private final Job profileActiveRegionInitJob;
+
     @Value("${batch.scheduler.weather-cache-warmup.enabled:true}")
     private boolean weatherCacheWarmupEnabled;
 
     /**
-     * 주요 도시 캐시 워밍업 작업
-     * 매일 새벽 5:30에 실행
+     * 기상청 단기예보 제공 시각 기준 캐시 워밍업
+     * 매일 2:10, 5:10, 8:10, 11:10, 14:10, 17:10, 20:10, 23:10에 실행
      */
-    @Scheduled(cron = "0 30 5 * * *", zone = "#{@timezoneId}")
-    public void runMajorCitiesCacheWarmup() {
+    @Scheduled(cron = "0 10 2,5,8,11,14,17,20,23 * * ?", zone = "#{@timezoneId}")
+    public void runWeatherCacheWarmupAtForecastTimes() {
         if (!weatherCacheWarmupEnabled) {
             log.debug("날씨 캐시 워밍업이 비활성화되어 있습니다");
             return;
         }
 
-        log.info("[BATCH-SCHEDULER] 주요 도시 캐시 워밍업 시작");
-        executeWarmupJob("scheduled_major_cities", "주요 도시 캐시 워밍업");
+        log.info("[BATCH-SCHEDULER] 기상청 단기예보 제공 시각 기준 캐시 워밍업 시작");
+        executeWarmupJob("scheduled_forecast_time", "기상청 단기예보 제공 시각 캐시 워밍업");
     }
 
     /**
-     * 활성 지역 캐시 갱신 작업
-     * 매시간 정각에 실행
+     * Profile 기반 활성 지역 초기화 작업
+     * 매일 새벽 1:00에 실행 (단기예보 첫 제공 시각 전)
      */
-    @Scheduled(cron = "0 0 * * * *", zone = "#{@timezoneId}")
-    public void runActiveRegionsCacheRefresh() {
+    @Scheduled(cron = "0 0 1 * * *", zone = "#{@timezoneId}")
+    public void runProfileActiveRegionInit() {
         if (!weatherCacheWarmupEnabled) {
-            log.debug("날씨 캐시 워밍업이 비활성화되어 있습니다");
+            log.debug("Profile 활성 지역 초기화가 비활성화되어 있습니다");
             return;
         }
 
-        log.info("[BATCH-SCHEDULER] 활성 지역 캐시 갱신 시작");
-        executeWarmupJob("scheduled_active_regions", "활성 지역 캐시 갱신");
+        log.info("[BATCH-SCHEDULER] Profile 기반 활성 지역 초기화 시작");
+        executeProfileActiveRegionJob();
     }
+
+    /**
+     * Profile 기반 활성 지역 초기화 배치 실행
+     */
+    private void executeProfileActiveRegionJob() {
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("timestamp", System.currentTimeMillis())
+                .addString("jobType", "scheduled_profile_active_region")
+                .addString("triggeredBy", "scheduler")
+                .addString("timezone", zoneId.getId())
+                .toJobParameters();
+
+            JobExecution jobExecution = asyncJobLauncher.run(profileActiveRegionInitJob, jobParameters);
+
+            log.info("[BATCH-SCHEDULER] Profile 기반 활성 지역 초기화 시작 - Job ID={}, Status={}",
+                jobExecution.getId(), jobExecution.getStatus());
+
+        } catch (Exception e) {
+            log.error("[BATCH-SCHEDULER] Profile 기반 활성 지역 초기화 실행 실패", e);
+        }
+    }
+
 
     /**
      * 캐시 워밍업 배치 실행 공통 메서드

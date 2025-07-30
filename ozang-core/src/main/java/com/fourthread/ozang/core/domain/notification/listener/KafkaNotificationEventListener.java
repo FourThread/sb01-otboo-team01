@@ -27,11 +27,10 @@ public class KafkaNotificationEventListener {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
-
     @KafkaListener(topics = "ozang.weather.alert.detected")
     public void consumeWeatherAlert(String payload) throws JsonProcessingException {
         WeatherChangeDetectedEvent event = objectMapper.readValue(payload, WeatherChangeDetectedEvent.class);
-        notificationService.sendWeatherAlertNotification(event);
+        notificationService.sendWeatherAlertToGridUsers(event);
     }
 
 

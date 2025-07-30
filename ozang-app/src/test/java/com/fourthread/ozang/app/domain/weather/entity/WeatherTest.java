@@ -65,12 +65,10 @@ class WeatherTest {
                 .temperature(new TemperatureInfo())
                 .humidity(new HumidityInfo())
                 .wind(new WindInfo())
-                .apiResponseHash("test-hash")
                 .build();
 
             assertThat(weather).isNotNull();
             assertThat(weather.getSkyStatus()).isEqualTo(SkyStatus.CLOUDY);
-            assertThat(weather.getApiResponseHash()).isEqualTo("test-hash");
         }
     }
 

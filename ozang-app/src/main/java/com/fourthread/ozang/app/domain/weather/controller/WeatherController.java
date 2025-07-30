@@ -28,30 +28,6 @@ public class WeatherController {
 
     private final WeatherService weatherService;
 
-    /**
-     * 날씨 정보 조회 API
-     */
-//    @GetMapping("/today")
-//    public ResponseEntity<WeatherDto> getWeather(
-//        @RequestParam
-//        @NotNull(message = "경도는 필수입니다")
-//        @Min(value = 124, message = "경도는 124 이상이어야 합니다")
-//        @Max(value = 132, message = "경도는 132 이하여야 합니다")
-//        Double longitude,
-//
-//        @RequestParam
-//        @NotNull(message = "위도는 필수입니다")
-//        @Min(value = 33, message = "위도는 33 이상이어야 합니다")
-//        @Max(value = 43, message = "위도는 43 이하여야 합니다")
-//        Double latitude
-//    ) {
-//        log.info("날씨 정보 요청 - 위도: {}, 경도: {}", latitude, longitude);
-//
-//        List<WeatherDto> weatherDataList = weatherService.getFiveDayForecast(longitude, latitude);
-//        WeatherDto weatherData = weatherDataList.get(0);
-//        return ResponseEntity.ok(weatherData);
-//    }
-
     @GetMapping
     public ResponseEntity<List<WeatherDto>> getFiveDayForecast(
         @RequestParam @NotNull @Min(124) @Max(132) Double longitude,
