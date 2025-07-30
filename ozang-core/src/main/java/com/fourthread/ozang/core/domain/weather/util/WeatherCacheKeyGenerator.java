@@ -53,18 +53,34 @@ public class WeatherCacheKeyGenerator {
             key, grid.getX(), grid.getY());
         return key;
     }
+
     /**
      * 위치 정보 캐시 키 생성
-     * 형식: weather:location:{gridX}:{gridY}
+     * 형식: weather:location:{lat3}:{lon3}
+     * @return 위경도 기반 위치 캐시 키 (소수점 3자리, 약 100m 정밀도)
      */
     public String generateLocationKey(double latitude, double longitude) {
-        GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
+        String lat3 = String.format("%.3f", latitude);
+        String lon3 = String.format("%.3f", longitude);
 
-        String key = String.format("weather:location:%d:%d",
-            grid.getX(), grid.getY());
+        String key = String.format("weather:location:%s:%s", lat3, lon3);
 
-        log.debug("위치 정보 캐시 키 생성: {} (격자 좌표: {}, {})",
-            key, grid.getX(), grid.getY());
+        log.debug("위치 정보 캐시 키 생성: {} (위경도: {}, {}) - 개선된 위치 기반 키",
+            key, latitude, longitude);
         return key;
     }
+//    /**
+//     * 위치 정보 캐시 키 생성
+//     * 형식: weather:location:{gridX}:{gridY}
+//     */
+//    public String generateLocationKey(double latitude, double longitude) {
+//        GridCoordinate grid = coordinateConverter.convertToGrid(latitude, longitude);
+//
+//        String key = String.format("weather:location:%d:%d",
+//            grid.getX(), grid.getY());
+//
+//        log.debug("위치 정보 캐시 키 생성: {} (격자 좌표: {}, {})",
+//            key, grid.getX(), grid.getY());
+//        return key;
+//    }
 }

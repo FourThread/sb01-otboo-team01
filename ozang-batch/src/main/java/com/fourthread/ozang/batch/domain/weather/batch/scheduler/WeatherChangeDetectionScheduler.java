@@ -37,6 +37,7 @@ public class WeatherChangeDetectionScheduler {
      * 날씨 변화 감지 작업
      * 매 10분마다 실행하여 실시간 날씨 변화 감지
      */
+//    @Scheduled(cron = "0/10 * * * * ?", zone = "#{@timezoneId}")
     @Scheduled(cron = "0 */10 * * * ?", zone = "#{@timezoneId}")
     public void runWeatherChangeDetection() {
         if (!weatherChangeDetectionEnabled) {
