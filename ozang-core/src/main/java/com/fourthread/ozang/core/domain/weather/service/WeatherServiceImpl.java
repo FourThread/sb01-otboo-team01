@@ -23,12 +23,13 @@ import com.fourthread.ozang.core.domain.weather.exception.WeatherDataFetchExcept
 import com.fourthread.ozang.core.domain.weather.mapper.WeatherMapper;
 import com.fourthread.ozang.core.domain.weather.repository.WeatherRepository;
 import com.fourthread.ozang.core.domain.weather.util.CoordinateConverter;
-import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,15 +96,29 @@ public class WeatherServiceImpl implements WeatherService {
             // 위치 정보 조회 (캐시 먼저 확인)
             WeatherAPILocation location = getWeatherLocation(longitude, latitude);
 
-            // 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
-            List<Item> currentHourItems = extractCurrentHourItems(apiResponse);
+            // 초단기예보 특성에 맞는 데이터 추출 (현재 시간이 아닌 가장 최근 예보 시간 기준)
+            List<Item> currentForecastItems = extractUltraShortForecastItems(apiResponse);
 
-            if (currentHourItems.isEmpty()) {
-                throw new WeatherDataFetchException("현재 시간 초단기예보 데이터가 없습니다.");
+            if (currentForecastItems.isEmpty()) {
+                log.warn("초단기예보 데이터가 없습니다. API 응답 분석:");
+                logApiResponseForDebug(apiResponse);
+                throw new WeatherDataFetchException("초단기예보 데이터가 없습니다.");
             }
 
+//
+//            // 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
+//            List<Item> currentHourItems = extractCurrentHourItems(apiResponse);
+//
+//            if (currentHourItems.isEmpty()) {
+//                throw new WeatherDataFetchException("현재 시간 초단기예보 데이터가 없습니다.");
+//            }
+
             // WeatherDto 생성
-            WeatherDto weatherDto = createWeatherDtoFromItems(currentHourItems, location);
+            WeatherDto weatherDto = createWeatherDtoFromItems(currentForecastItems, location);
+//            // WeatherDto 생성
+//            WeatherDto weatherDto = createWeatherDtoFromItems(currentHourItems, location);
+            log.info("초단기예보 조회 완료 후 활성 지역 기록 - 위도: {}, 경도: {}", latitude, longitude);
+            cacheService.recordActiveRegion(latitude, longitude);
 
             log.info("초단기예보 조회 완료 - 위도: {}, 경도: {}", latitude, longitude);
             return weatherDto;
@@ -111,6 +126,131 @@ public class WeatherServiceImpl implements WeatherService {
         } catch (Exception e) {
             log.error("초단기예보 조회 실패", e);
             throw new WeatherDataFetchException("초단기예보 조회 중 오류 발생", e);
+        }
+    }
+
+    /**
+     * =============================================================================
+     * 초단기예보 특성에 맞는 데이터 추출
+     * - 초단기예보는 매시 30분에 생성되어 45분 이후 제공
+     * - 현재 시간과 가장 가까운 예보 시간의 데이터를 추출
+     * =============================================================================
+     */
+    private List<Item> extractUltraShortForecastItems(WeatherApiResponse apiResponse) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 모든 예보 시간 데이터를 시간순으로 정렬
+        List<Item> allItems = apiResponse.response().body().items().item();
+
+        log.info("초단기예보 데이터 추출 시작 - 현재시간: {}, 전체 아이템 수: {}", now, allItems.size());
+
+        // 예보 시간별로 그룹화
+        Map<String, List<Item>> itemsByForecastDateTime = allItems.stream()
+            .collect(Collectors.groupingBy(item -> item.fcstDate() + item.fcstTime()));
+
+        log.info("초단기예보 예보시간별 그룹 수: {}", itemsByForecastDateTime.size());
+
+        // 사용 가능한 예보 시간들을 로그로 출력
+        itemsByForecastDateTime.keySet().stream()
+            .sorted()
+            .forEach(datetime -> {
+                String date = datetime.substring(0, 8);
+                String time = datetime.substring(8);
+                log.info("사용 가능한 예보시간: {} {}", date, time);
+            });
+
+        // 현재 시간과 가장 가까운 예보 시간 찾기 (현재 시간 이후의 가장 가까운 시간)
+        Optional<String> bestForecastDateTime = itemsByForecastDateTime.keySet().stream()
+            .filter(datetime -> {
+                try {
+                    LocalDateTime forecastTime = LocalDateTime.parse(datetime,
+                        DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+                    // 현재 시간 이후이거나 같은 시간
+                    return !forecastTime.isBefore(now);
+                } catch (Exception e) {
+                    log.warn("예보시간 파싱 실패: {}", datetime);
+                    return false;
+                }
+            })
+            .min(Comparator.comparing(datetime -> {
+                LocalDateTime forecastTime = LocalDateTime.parse(datetime,
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+                return Math.abs(Duration.between(now, forecastTime).toMinutes());
+            }));
+
+        if (bestForecastDateTime.isPresent()) {
+            String selectedDateTime = bestForecastDateTime.get();
+            String selectedDate = selectedDateTime.substring(0, 8);
+            String selectedTime = selectedDateTime.substring(8);
+
+            log.info("선택된 예보시간: {} {} (현재시간: {})", selectedDate, selectedTime, now);
+
+            List<Item> result = itemsByForecastDateTime.get(selectedDateTime);
+            log.info("선택된 예보시간의 데이터 수: {}", result.size());
+
+            return result;
+        }
+
+        // 현재 시간 이후 데이터가 없으면 가장 최근 데이터 사용
+        log.warn("현재 시간 이후 예보 데이터가 없음. 가장 최근 데이터 사용");
+
+        Optional<String> latestDateTime = itemsByForecastDateTime.keySet().stream()
+            .max(Comparator.naturalOrder());
+
+        if (latestDateTime.isPresent()) {
+            String selectedDateTime = latestDateTime.get();
+            String selectedDate = selectedDateTime.substring(0, 8);
+            String selectedTime = selectedDateTime.substring(8);
+
+            log.info("가장 최근 예보시간 사용: {} {}", selectedDate, selectedTime);
+
+            List<Item> result = itemsByForecastDateTime.get(selectedDateTime);
+            log.info("가장 최근 예보시간의 데이터 수: {}", result.size());
+
+            return result;
+        }
+
+        log.error("사용할 수 있는 초단기예보 데이터가 없습니다");
+        return List.of();
+    }
+
+    /**
+     * =============================================================================
+     * API 응답 디버깅용 로그 출력
+     * =============================================================================
+     */
+    private void logApiResponseForDebug(WeatherApiResponse apiResponse) {
+        try {
+            List<Item> items = apiResponse.response().body().items().item();
+
+            log.info("=== 초단기예보 API 응답 분석 ===");
+            log.info("총 아이템 수: {}", items.size());
+
+            // 날짜/시간별 아이템 수 확인
+            Map<String, Long> countByDateTime = items.stream()
+                .collect(Collectors.groupingBy(
+                    item -> item.fcstDate() + " " + item.fcstTime(),
+                    Collectors.counting()
+                ));
+
+            log.info("날짜/시간별 아이템 수:");
+            countByDateTime.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> log.info("  {}: {}개", entry.getKey(), entry.getValue()));
+
+            // 카테고리별 아이템 수 확인
+            Map<String, Long> countByCategory = items.stream()
+                .collect(Collectors.groupingBy(Item::category, Collectors.counting()));
+
+            log.info("카테고리별 아이템 수:");
+            countByCategory.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> log.info("  {}: {}개", entry.getKey(), entry.getValue()));
+
+            log.info("===============================");
+
+        } catch (Exception e) {
+            log.error("API 응답 분석 중 오류 발생", e);
         }
     }
 
@@ -239,6 +379,8 @@ public class WeatherServiceImpl implements WeatherService {
         WeatherAPILocation cachedLocation = cacheService.getLocationFromCache(latitude, longitude);
         if (cachedLocation != null) {
             log.info("Redis 캐시에서 위치 정보 반환");
+            log.info("위치 정보 캐시 히트 후 활성 지역 기록 - 위도: {}, 경도: {}", latitude, longitude);
+            cacheService.recordActiveRegion(latitude, longitude);
             return cachedLocation;
         }
 
@@ -252,6 +394,9 @@ public class WeatherServiceImpl implements WeatherService {
         );
 
         cacheService.cacheLocation(latitude, longitude, location);
+
+        log.info("새로운 위치 정보 생성 후 활성 지역 기록 - 위도: {}, 경도: {}", latitude, longitude);
+        cacheService.recordActiveRegion(latitude, longitude);
 
         return location;
 
