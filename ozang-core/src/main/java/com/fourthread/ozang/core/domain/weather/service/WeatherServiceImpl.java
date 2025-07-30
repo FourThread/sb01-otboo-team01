@@ -130,11 +130,9 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     /**
-     * =============================================================================
      * 초단기예보 특성에 맞는 데이터 추출
      * - 초단기예보는 매시 30분에 생성되어 45분 이후 제공
      * - 현재 시간과 가장 가까운 예보 시간의 데이터를 추출
-     * =============================================================================
      */
     private List<Item> extractUltraShortForecastItems(WeatherApiResponse apiResponse) {
         LocalDateTime now = LocalDateTime.now();
@@ -215,9 +213,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     /**
-     * =============================================================================
      * API 응답 디버깅용 로그 출력
-     * =============================================================================
      */
     private void logApiResponseForDebug(WeatherApiResponse apiResponse) {
         try {
@@ -247,7 +243,7 @@ public class WeatherServiceImpl implements WeatherService {
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> log.info("  {}: {}개", entry.getKey(), entry.getValue()));
 
-            log.info("===============================");
+            log.info("=======");
 
         } catch (Exception e) {
             log.error("API 응답 분석 중 오류 발생", e);
@@ -270,7 +266,15 @@ public class WeatherServiceImpl implements WeatherService {
             WeatherDto previousWeather = getPreviousHourWeather(latitude, longitude);
 
             if (previousWeather == null) {
-                log.debug("이전 시간 데이터가 없어 변화 감지를 건너뜁니다.");
+                log.info("이전 시간 데이터가 없어 변화 감지를 건너뜁니다 - 격자({}, {})",
+                    gridCoordinate.getX(), gridCoordinate.getY());
+
+                // 현재 날씨 정보를 DB에 저장하여 다음 변화 감지 시 기준으로 사용
+                try {
+                    saveCurrentWeatherForFutureComparison(currentWeather, gridCoordinate);
+                } catch (Exception e) {
+                    log.warn("현재 날씨 정보 저장 실패", e);
+                }
                 return changes;
             }
 
@@ -297,6 +301,38 @@ public class WeatherServiceImpl implements WeatherService {
 
         return changes;
     }
+
+
+    /**
+     * 현재 날씨 정보를 DB에 저장하여 다음 변화 감지 시 기준으로 사용
+     */
+    private void saveCurrentWeatherForFutureComparison(WeatherDto currentWeather, GridCoordinate gridCoordinate) {
+        try {
+            // WeatherDto를 Weather 엔티티로 변환하여 저장
+            WeatherAPILocation location = currentWeather.location();
+
+            Weather weather = Weather.create(
+                currentWeather.forecastedAt(),
+                currentWeather.forecastAt(),
+                location,
+                currentWeather.skyStatus()
+            );
+
+            // 상세 날씨 정보 설정
+            weather.getTemperatureInfo().setCurrent(currentWeather.temperature().current());
+            weather.getHumidityInfo().setCurrent(currentWeather.humidity().current());
+            weather.getPrecipitationInfo().setType(currentWeather.precipitation().type());
+            weather.getPrecipitationInfo().setAmount(currentWeather.precipitation().amount());
+            weather.getWindInfo().setSpeed(currentWeather.windSpeed().speed());
+
+            weatherRepository.save(weather);
+            log.debug("현재 날씨 정보 DB 저장 완료 - 격자({}, {})", gridCoordinate.getX(), gridCoordinate.getY());
+
+        } catch (Exception e) {
+            log.warn("현재 날씨 정보 DB 저장 실패 - 격자({}, {})", gridCoordinate.getX(), gridCoordinate.getY(), e);
+        }
+    }
+
 
     @Override
     @Transactional
@@ -428,19 +464,6 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     /**
-     * 현재 시간 기준 가장 가까운 예보 시간의 데이터 추출
-     */
-    private List<Item> extractCurrentHourItems(WeatherApiResponse apiResponse) {
-        LocalDateTime now = LocalDateTime.now();
-        String targetDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String targetTime = now.format(DateTimeFormatter.ofPattern("HH00"));
-
-        return apiResponse.response().body().items().item().stream()
-            .filter(item -> targetDate.equals(item.fcstDate()) && targetTime.equals(item.fcstTime()))
-            .toList();
-    }
-
-    /**
      * API 응답 아이템들로부터 WeatherDto 생성
      */
     private WeatherDto createWeatherDtoFromItems(List<Item> items, WeatherAPILocation location) {
@@ -485,19 +508,58 @@ public class WeatherServiceImpl implements WeatherService {
     /**
      * 1시간 전 날씨 데이터 조회
      */
+    /**
+     * 1시간 전 날씨 데이터 조회 로직 개선
+     * - DB에서 격자 좌표 기준으로 최근 데이터 조회
+     * - 캐시에서도 조회 시도
+     */
     private WeatherDto getPreviousHourWeather(Double latitude, Double longitude) {
         try {
-            // 캐시에서 1시간 전 데이터 조회 시도
-            String previousHourKey = LocalDateTime.now().minusHours(1)
-                .format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
-
-            // DB에서 조회
             GridCoordinate gridCoordinate = coordinateConverter.convertToGrid(latitude, longitude);
-            Optional<Weather> previousWeather = weatherRepository.findLatestByGridCoordinateAndDate(
-                gridCoordinate.getX(), gridCoordinate.getY(), LocalDateTime.now().minusHours(1)
+
+            log.info("이전 시간 날씨 데이터 조회 시작 - 격자({}, {})", gridCoordinate.getX(), gridCoordinate.getY());
+
+            // 1. DB에서 가장 최근 날씨 데이터 조회 (1시간 전후 범위에서)
+            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+            LocalDateTime twoHoursAgo = LocalDateTime.now().minusHours(2);
+
+            log.info("이전 데이터 조회 범위: {} ~ {}", twoHoursAgo, oneHourAgo);
+
+            // 해당 격자의 최근 데이터 조회
+            Optional<Weather> recentWeather = weatherRepository.findLatestByGridCoordinate(
+                gridCoordinate.getX(), gridCoordinate.getY()
             );
 
-            return previousWeather.map(weatherMapper::toDto).orElse(null);
+            if (recentWeather.isPresent()) {
+                Weather weather = recentWeather.get();
+                log.info("DB에서 이전 날씨 데이터 조회 성공 - 예보시간: {}, 생성시간: {}",
+                    weather.getForecastAt(), weather.getForecastedAt());
+
+                // 너무 오래된 데이터는 제외 (6시간 이상 차이)
+                if (weather.getForecastedAt().isAfter(LocalDateTime.now().minusHours(6))) {
+                    WeatherDto result = weatherMapper.toDto(weather);
+                    log.info("DB에서 적절한 이전 날씨 데이터 반환");
+                    return result;
+                } else {
+                    log.warn("DB의 날씨 데이터가 너무 오래됨 - 생성시간: {}", weather.getForecastedAt());
+                }
+            } else {
+                log.info("DB에서 해당 격자의 날씨 데이터를 찾을 수 없음");
+            }
+
+            // 2. DB에 적절한 데이터가 없으면 현재 초단기예보로 대체 시도
+            log.info("DB에 적절한 이전 데이터가 없어 현재 초단기예보로 기준 데이터 생성 시도");
+
+            try {
+                // 현재 초단기예보를 조회하여 기준 데이터로 사용
+                WeatherDto currentForecast = getWeatherForecast(longitude, latitude);
+                log.info("현재 초단기예보를 기준 데이터로 사용");
+                return currentForecast;
+            } catch (Exception e) {
+                log.warn("현재 초단기예보 조회도 실패: {}", e.getMessage());
+                return null;
+            }
+
         } catch (Exception e) {
             log.warn("이전 시간 날씨 데이터 조회 실패", e);
             return null;

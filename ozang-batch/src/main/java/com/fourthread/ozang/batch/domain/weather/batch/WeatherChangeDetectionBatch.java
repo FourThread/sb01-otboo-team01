@@ -2,13 +2,11 @@ package com.fourthread.ozang.batch.domain.weather.batch;
 
 import com.fourthread.ozang.batch.config.BatchJobExecutionListener;
 import com.fourthread.ozang.core.domain.notification.entity.NotificationLevel;
-import com.fourthread.ozang.core.domain.notification.event.WeatherChangeDetectedEvent;
 import com.fourthread.ozang.core.domain.notification.service.NotificationService;
 import com.fourthread.ozang.core.domain.weather.dto.WeatherChangeDto;
 import com.fourthread.ozang.core.domain.weather.service.WeatherCacheService;
 import com.fourthread.ozang.core.domain.weather.service.WeatherService;
 import java.util.List;
-import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -21,7 +19,6 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -149,7 +146,6 @@ public class WeatherChangeDetectionBatch {
 
     /**
      * ItemWriter: 감지된 변화를 이벤트로 발행
-     * 배치 단위로 효율적 처리
      */
     @Bean
     public ItemWriter<List<WeatherChangeDto>> weatherChangeWriter() {
@@ -230,15 +226,5 @@ public class WeatherChangeDetectionBatch {
             case PRECIPITATION_START, PRECIPITATION_TYPE_CHANGE -> NotificationLevel.INFO;
             case PRECIPITATION_END, SKY_CHANGE -> NotificationLevel.INFO;
         };
-    }
-
-    /**
-     * 위치 설명 추출
-     */
-    private String getLocationDescription(WeatherChangeDto change) {
-        List<String> locationNames = change.location().locationNames();
-        return locationNames.isEmpty() ?
-            String.format("%.2f,%.2f", change.location().latitude(), change.location().longitude()) :
-            locationNames.get(0);
     }
 }
