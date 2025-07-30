@@ -241,6 +241,9 @@ public class WeatherCacheService {
                 return List.of();
             }
 
+            Long setSize = redisTemplate.opsForSet().size(ACTIVE_REGIONS_KEY);
+            log.info("[ACTIVE-REGION] 활성 지역 Set 크기: {}", setSize);
+
             List<double[]> result = gridKeys.stream()
                 .map(key -> {
                     try {
@@ -260,7 +263,8 @@ public class WeatherCacheService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-            log.info("모든 활성 지역 조회 완료 - 총 {}개 격자", result.size());
+            log.info("[ACTIVE-REGION] 모든 활성 지역 조회 완료 - 총 {}개 격자, 변환 성공 {}개",
+                gridKeys.size(), result.size());
             return result;
 
         } catch (Exception e) {
