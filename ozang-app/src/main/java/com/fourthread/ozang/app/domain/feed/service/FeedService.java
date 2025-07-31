@@ -215,7 +215,9 @@ public class FeedService {
     feedLikeRepository.save(feedLike);
     reflectFeedLikeOnFeedDocument(feedId, feed);
 
-    eventPublisher.publishEvent(new FeedLikedEvent(feedLike.getId(), feed.getAuthor().getId(), feed.getContent(), likeByUser.getName()));
+    if(feed.getAuthor().getId() != likeByUserId){
+      eventPublisher.publishEvent(new FeedLikedEvent(feedLike.getId(), feed.getAuthor().getId(), feed.getContent(), likeByUser.getName()));
+    }
 
     return feedMapper.toDto(feed, feed.getAuthor(), feed.getWeather(), getOotdsByFeed(feed));
   }

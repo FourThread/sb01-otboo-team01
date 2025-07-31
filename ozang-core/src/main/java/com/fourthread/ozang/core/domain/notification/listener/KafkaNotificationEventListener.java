@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j
@@ -86,6 +87,7 @@ public class KafkaNotificationEventListener {
         }
     }
 
+    @Transactional
     @Async("eventTaskExecutor")
     @KafkaListener(topics = "ozang.feed_commented")
     public void consumeFeedCommented(String payload) throws JsonProcessingException {
@@ -99,6 +101,7 @@ public class KafkaNotificationEventListener {
         }
     }
 
+    @Transactional
     @Async("eventTaskExecutor")
     @KafkaListener(topics = "ozang.following_feed_created")
     public void consumeFollowingFeedCreated(String payload) throws JsonProcessingException {
@@ -125,6 +128,7 @@ public class KafkaNotificationEventListener {
         }
     }
 
+    @Transactional
     @Async("eventTaskExecutor")
     @KafkaListener(topics = "ozang.dm_received")
     public void consumeDmReceived(String payload) throws JsonProcessingException {
