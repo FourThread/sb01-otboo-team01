@@ -143,11 +143,13 @@ ozang
 ```
 
 ## 👤 Member Introduce R&R
-
+<div align="center">
+  
 | 이용구 👑 | 김태현 | 김준우 | 이원길 |
 |:---:|:---:|:---:|:---:|
 | <img src="https://avatars.githubusercontent.com/u/86422079?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/89383263?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/128487020?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/139864668?v=4" width="100"> |
 | [**이용구 (팀장)**](https://github.com/reflash407) | **[김태현](https://github.com/9taetae9)** | **[김준우](https://github.com/normaldeve)** | **[이원길](https://github.com/realitsyourman)** |
 | • 의상<br>• 알림<br>• 팔로우<br>• 발표 영상 | • 프로젝트 관리<br>• 인프라 관리<br>• 날씨 기능<br>• DB 구축 | • 사용자 인증/인가<br>• 사용자 도메인<br>• 배포 다이어그램 및 PPT 작성<br>• 인프라 구성 (Grafana, Prometheus)<br>• 프론트 코드 커스텀 | • 피드 기능<br>• 좋아요<br>• DM 기능<br>• 의상 추천 |
+</div>
 
 
