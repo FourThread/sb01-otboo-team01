@@ -81,7 +81,7 @@ OZANG 프로젝트는 사용자가 등록한 옷을 날씨 기반으로 개인 �
 
 **Infra**
 
-<img src="https://img.shields.io/badge/CDN-DC682E?style=for-the-badge&logoColor=white"> 
+<img src="https://img.shields.io/badge/CloudFront-DC682E?style=for-the-badge&logoColor=white"> 
 <img src="https://img.shields.io/badge/ALB-DC682E?style=for-the-badge&logoColor=white"> 
 <img src="https://img.shields.io/badge/AWS%20ECR-FFB71B?style=for-the-badge&logoColor=white"> 
 <img src="https://img.shields.io/badge/AWS%20ECS-FFB71B?style=for-the-badge&logoColor=white"> 
