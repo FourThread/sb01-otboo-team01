@@ -4,8 +4,10 @@
 > 
 > BE : 김준우, 김태현, 이용구, 이원길
 
-## ⌚ Project Duration
-25.06.23 ~ 25.07.31
+## ⌚ Project Info
+기간 : 25.06.23 ~ 25.07.31 <br>
+시연 영상 : https://www.youtube.com/watch?v=fOUkyDvbtDo <br>
+배포 주소 : https://www.ozang.shop/
 
 ## 👀 Project Overview
 OZANG 프로젝트는 사용자가 등록한 옷을 날씨 기반으로 개인 맞춤형 의상 조합을 추천해주는 플랫폼 <br>
