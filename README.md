@@ -1,66 +1,39 @@
 ![header](https://capsule-render.vercel.app/api?type=cylinder&color=black&height=150&section=header&text=OZANG&fontSize=50&fontColor=d6ace6)
 
-> 코드잇 스프린트 1기 최종 프로젝트
-> 
-> BE : 김준우, 김태현, 이용구, 이원길
-
-## ⌚ Project Info
-기간 : 25.06.23 ~ 25.07.31 <br>
-시연 영상 : https://www.youtube.com/watch?v=fOUkyDvbtDo <br>
-배포 주소 : https://www.ozang.shop/
-
-## 👀 Project Overview
-OZANG 프로젝트는 사용자가 등록한 옷을 날씨 기반으로 개인 맞춤형 의상 조합을 추천해주는 플랫폼 <br>
-추천된 의상은 OOTD에 등록할 수 있으며, 다른 사용자의 스타일을 팔로우, 좋아요 및 댓글과 DM을 통해 함께 즐길 수 있습니다.
+## 프로젝트 소개
+### 👗 OZANG(옷장을 부탁해) - AI 의상 추천 서비스
+**OZANG(옷장을 부탁해)** 은 사용자가 소유한 의상을 기반으로 **날씨와 개인 취향을 분석**하여 최적의 의상 조합을 추천하는 **AI 기반 개인화 스타일링 플랫폼**입니다. <br>
+단순한 추천을 넘어, 사용자는 자신의 스타일을 **OOTD(Outfit Of The Day) 피드**에 공유하고, 다른 사용자와 **팔로우, 좋아요, 댓글, DM** 등 소셜 기능을 통해 패션 커뮤니티를 형성할 수 있습니다.
 <img width="1872" height="993" alt="image" src="https://github.com/user-attachments/assets/26309ec3-4051-4e2d-b6b8-26ff1cece4f9" />
 
-## ✨ Features
 
-**사용자 관리**
-- 관리자 계정 초기화 및 권한 관리 (ADMIN / USER)
-- 계정 잠금 및 자동 로그아웃 처리
-- JWT 기반 로그인/로그아웃 및 회원가입
-- 임시 비밀번호 발급 및 만료 처리
-- Google / Kakao 소셜 로그인 연동
 
-**프로필 관리**
-- 사용자 이미지, 성별, 생년월일, 위치, 온도 민감도 설정
-- 위도/경도를 기반으로 날씨 API 및 카카오 API 연동
+<br>
 
-**의상 관리**
-- 어드민: 의상 속성 등록
-- 사용자: 구매 링크 기반 자동 등록 (크롤링 활용)
-- 무신사, 29CM 등에서 자동 추출 가능
+## ⌚ 프로젝트 정보
+* **기간**: 2025.06.23 ~ 2025.07.31
+* **시연 영상**: [YouTube 링크](https://www.youtube.com/watch?v=fOUkyDvbtDo)
+* **배포 주소**: [https://www.ozang.shop](https://www.ozang.shop)
 
-**날씨 데이터 관리**
-- 기상청 단기 예보 Open API 기반 데이터 수집
-- Spring Batch로 정기 작업 스케줄링
-- 특이 기상 변화 시 사용자 알림 발송
+<br>
 
-**의상 추천**
-- 날씨, 프로필, 등록 의상 데이터를 활용한 추천 기능
-- 커스텀 알고리즘 및 LLM(OpenAI, HuggingFace 등) 활용 가능
 
-**OOTD 피드**
-- 추천된 의상 조합을 피드에 등록
-- 좋아요 및 댓글 기능 제공
-- 내 피드에 대한 반응에 실시간 알림 전송
+## ✨ 주요 기능
 
-**팔로우 & DM**
-- 사용자 간 팔로우 및 알림 연동
-- 웹소켓 기반 DM(실시간 채팅) 기능 제공
-- 사용자 ID 기반 DM Key 생성 및 채널 구독 방식
+| 기능 | 설명 |
+| :--- | :--- |
+| **사용자 관리** | <ul><li>관리자 계정 초기화 및 권한 관리 (ADMIN / USER)</li><li>계정 잠금 및 자동 로그아웃 처리</li><li>JWT 기반 로그인/로그아웃 및 회원가입</li><li>임시 비밀번호 발급 및 만료 처리</li><li>Google/Kakao 소셜 로그인 연동</li></ul> |
+| **프로필 관리** | <ul><li>사용자 이미지, 성별, 생년월일, 위치, 온도 민감도 설정</li><li>위도/경도를 기반으로 날씨 API 및 카카오 API 연동</li></ul> |
+| **의상 관리** | <ul><li>사용자 의상 등록 및 속성 관리</li><li>웹 크롤링을 통한 쇼핑몰 링크(무신사, 29CM 등) 기반 정보 자동 입력</li></ul> |
+| **날씨 데이터** | <ul><li>기상청 Open API를 활용한 실시간 날씨 데이터 수집</li><li>Spring Batch로 정기 작업 스케줄링</li><li>사용자 위치 기반 날씨 정보 제공 및 특이 기상 변화 알림</li></ul> |
+| **AI 의상 추천** | <ul><li>날씨, 사용자 프로필(온도 민감도), 보유 의상을 종합한 개인 맞춤 추천</li><li>LLM API(OpenAI) 활용</li></ul> |
+| **OOTD 소셜 피드** | <ul><li>추천 조합을 활용한 OOTD 피드 등록</li><li>좋아요 및 댓글 기능 제공</li></ul> |
+| **팔로우 & DM** | <ul><li>사용자 간 팔로우 및 알림 연동</li><li>WebSocket 기반 DM(실시간 채팅) 기능 제공</li></ul> |
+| **알림 시스템** | <ul><li>Server-Sent Events(SSE), Kafka 기반 실시간 알림 제공</li><li>이벤트(권한 변경, 피드 좋아요 및 댓글, 팔로우 / 피드 등록, DM 수신, 의상 속성 추가) 기반 알림 발송</li></ul> |
 
-**알림 시스템**
-- Server-Sent Events(SSE) 기반 실시간 알림
-- 다음 이벤트에 알림 발송:
-  - 권한 변경
-  - 피드 좋아요 및 댓글
-  - 팔로우 / 피드 등록
-  - DM 수신
-  - 의상 속성 추가
+<br>
 
-## 🌱 Tech Stack
+## 🌱 기술 스택
 <div align="center">
 
 **Back-end**  
@@ -110,17 +83,24 @@ OZANG 프로젝트는 사용자가 등록한 옷을 날씨 기반으로 개인 �
 <img src="https://img.shields.io/badge/junit5-25A162?style=for-the-badge&logo=junit5&logoColor=white"> 
 <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white"> 
 
-**ETC**  
+**Collaboration**  
 
-<img src="https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"> 
-<img src="https://img.shields.io/badge/env-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black"> 
+<img src="https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black">
+<img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white">
 
 </div>
 
-## 🖥️ System Architecture
+
+
+## 🖥️ 시스템 아키텍처
 <img width="1632" height="1139" alt="스크린샷 2025-07-31 105851" src="https://github.com/user-attachments/assets/fe9dcc42-06b3-451b-8679-6129cb45c7ec" />
 
-## 📁 File Structure
+## 🗂️ ERD
+<img width="3840" height="2223" alt="Untitled diagram _ Mermaid Chart-2025-08-11-055331" src="https://github.com/user-attachments/assets/fc56729f-5e61-492c-a292-94b8df10a2e2" />
+
+
+
+## 📁 프로젝트 구조
 ```
 ozang
 ├── build.gradle
@@ -146,14 +126,13 @@ ozang
 │   └── exception           # 공통 예외 처리 및 validation
 ```
 
-## 👤 Member Introduce R&R
+## 👥  팀원 구성 & R&R
 <div align="center">
   
-| 이용구 👑 | 김태현 | 김준우 | 이원길 |
+| [**이용구 (팀장)**](https://github.com/reflash407) | **[김태현](https://github.com/9taetae9)** | **[김준우](https://github.com/normaldeve)** | **[이원길](https://github.com/realitsyourman)** |
 |:---:|:---:|:---:|:---:|
 | <img src="https://avatars.githubusercontent.com/u/86422079?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/89383263?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/128487020?v=4" width="100"> | <img src="https://avatars.githubusercontent.com/u/139864668?v=4" width="100"> |
-| [**이용구 (팀장)**](https://github.com/reflash407) | **[김태현](https://github.com/9taetae9)** | **[김준우](https://github.com/normaldeve)** | **[이원길](https://github.com/realitsyourman)** |
-| • 의상<br>• 알림<br>• 팔로우<br>• 발표 영상 | • 프로젝트 관리<br>• 인프라 관리<br>• 날씨 기능<br>• DB 구축 | • 사용자 인증/인가<br>• 사용자 도메인<br>• 배포 다이어그램 및 PPT 작성<br>• 인프라 구성 (Grafana, Prometheus)<br>• 프론트 코드 커스텀 | • 피드 기능<br>• 좋아요<br>• DM 기능<br>• 의상 추천 |
+| • 의상<br>• 알림<br>• 팔로우<br>• 발표 영상 | • 프로젝트 관리(자동화 workflow 구축, 멀티모듈 설계)<br>• 인프라(CI/CD 파이프라인, 시스템 아키텍처 설계)<br>• 날씨(캐싱, 배치 시스템 구현)<br>• DB 구축(ERD 설계, 스키마 관리) | • 사용자 인증/인가<br>• 사용자 도메인<br>• 배포 다이어그램 및 PPT 작성<br>• 모니터링 시스템 구축(Grafana, Prometheus)<br>• 프론트 코드 커스텀 | • 피드 기능<br>• 좋아요<br>• DM 기능<br>• 의상 추천 |
 </div>
 
 
